@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'compliance_engine'
+require 'compliance_engine/data/version'
 
 # Work with compliance data
 class ComplianceEngine::Data
@@ -55,7 +56,7 @@ class ComplianceEngine::Data
     }
 
     begin
-      data[file][:content] = parse(file)
+      data[file] = parse(file)
     rescue => e
       warn e.message
     end
@@ -84,6 +85,7 @@ class ComplianceEngine::Data
   # Parse YAML or JSON files
   #
   # @param [String] file The path to the compliance data file
+  # @return [Hash]
   def parse(file)
     contents = if File.extname(file) == '.json'
                  require 'json'
@@ -92,11 +94,8 @@ class ComplianceEngine::Data
                  require 'yaml'
                  YAML.safe_load(File.read(file))
                end
-    # The top-level key version must be present and must equal 2.0.0.
     raise ComplianceEngine::Error, "File must contain a hash, found #{contents.class} in #{file}" unless contents.is_a?(Hash)
-    raise ComplianceEngine::Error, "Missing version in #{file}" unless contents.key?('version')
-    raise ComplianceEngine::Error, "version must be 2.0.0, found '#{contents['version']}' in #{file}" unless contents['version'] == '2.0.0'
-    contents
+    { version: Version.new(contents['version']), content: contents }
   end
 
   # Print debugging messages to the console.

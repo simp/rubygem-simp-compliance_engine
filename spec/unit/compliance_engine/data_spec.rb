@@ -108,4 +108,29 @@ RSpec.describe ComplianceEngine::Data do
       expect(compliance_engine.get('file')).to be_nil
     end
   end
+
+  context 'with an invalid version number' do
+    subject(:compliance_engine) { described_class.new('file') }
+
+    before(:each) do
+      allow(File).to receive(:directory?).with('file').and_return(false)
+      allow(File).to receive(:file?).with('file').and_return(true)
+      allow(File).to receive(:size).with('file').and_return(0)
+      allow(File).to receive(:mtime).with('file').and_return(Time.now)
+      allow(File).to receive(:read).with('file').and_return("---\nversion: 1.0")
+    end
+
+    it 'initializes' do
+      expect(compliance_engine).not_to be_nil
+      expect(compliance_engine).to be_instance_of(described_class)
+    end
+
+    it 'returns an empty list of files' do
+      expect(compliance_engine.files).to eq([])
+    end
+
+    it 'get returns nil' do
+      expect(compliance_engine.get('file')).to be_nil
+    end
+  end
 end
