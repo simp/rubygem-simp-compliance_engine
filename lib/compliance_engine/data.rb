@@ -2,6 +2,16 @@
 
 require 'compliance_engine'
 require 'compliance_engine/data/version'
+require 'compliance_engine/data/component'
+require 'compliance_engine/data/ce'
+require 'compliance_engine/data/check'
+require 'compliance_engine/data/control'
+require 'compliance_engine/data/profile'
+require 'compliance_engine/data/collection'
+require 'compliance_engine/data/ces'
+require 'compliance_engine/data/checks'
+require 'compliance_engine/data/controls'
+require 'compliance_engine/data/profiles'
 
 # Work with compliance data
 class ComplianceEngine::Data
@@ -78,6 +88,14 @@ class ComplianceEngine::Data
     data[file][:content]
   rescue
     nil
+  end
+
+  # Return a list of profiles
+  #
+  # @return [Array<String>]
+  def profiles
+    @profiles ||= Profiles.new(self)
+    @profiles.keys
   end
 
   private
