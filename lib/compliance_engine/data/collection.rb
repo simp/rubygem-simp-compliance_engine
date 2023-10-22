@@ -9,10 +9,11 @@ module ComplianceEngine
       # A generic compliance engine data collection
       def initialize(data)
         @collection ||= {}
+        hash_key = key
         data.files.each do |file|
-          data.get(file)['profiles']&.each do |key, value|
-            @collection[key] ||= collected.new(key)
-            @collection[key].add(value)
+          data.get(file)[hash_key]&.each do |k, v|
+            @collection[k] ||= collected.new(k)
+            @collection[k].add(v)
           end
         end
       end
