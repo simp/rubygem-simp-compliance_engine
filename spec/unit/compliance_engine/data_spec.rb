@@ -156,6 +156,7 @@ RSpec.describe ComplianceEngine::Data do
       {
         'test_module_00' => {
           'a/file.yaml' => <<~A_YAML,
+            ---
             version: '2.0.0'
             profiles:
               test_profile_00:
@@ -164,14 +165,32 @@ RSpec.describe ComplianceEngine::Data do
               test_profile_01:
                 ces:
                   ce_01: true
+            ce:
+              ce_00: {}
+              ce_01: {}
             A_YAML
           'b/file.yaml' => <<~B_YAML,
+            ---
             version: '2.0.0'
             profiles:
               test_profile_01:
                 ces:
                   ce_02: true
+            ce:
+              ce_02: {}
             B_YAML
+        },
+        'test_module_01' => {
+          'c/file.yaml' => <<~C_YAML,
+            ---
+            version: '2.0.0'
+            profiles:
+              test_profile_02:
+                ces:
+                  ce_03: true
+            ce:
+              ce_03: {}
+            C_YAML
         },
       }
     end
@@ -207,12 +226,101 @@ RSpec.describe ComplianceEngine::Data do
     end
 
     it 'returns a list of files' do
-      expect(compliance_engine.files).to eq(test_data.map { |module_path, files| files.map { |name, content| "#{module_path}/SIMP/compliance_profiles/#{name}" } }.flatten)
+      expect(compliance_engine.files).to eq(test_data.map { |module_path, files| files.map { |name, _| "#{module_path}/SIMP/compliance_profiles/#{name}" } }.flatten)
     end
 
     it 'returns a list of profiles' do
       expect(compliance_engine.profiles).to be_instance_of(ComplianceEngine::Data::Profiles)
-      expect(compliance_engine.profiles.keys).to eq(['test_profile_00', 'test_profile_01'])
+      expect(compliance_engine.profiles.keys).to eq(['test_profile_00', 'test_profile_01', 'test_profile_02'])
+    end
+
+    it 'returns a list of ces' do
+      expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Data::Ces)
+      expect(compliance_engine.ces.keys).to eq(['ce_00', 'ce_01', 'ce_02', 'ce_03'])
+    end
+  end
+
+  context 'with confines' do
+    def test_data
+      {
+        'test_module_00' => {
+          # Example from SCE docs
+          'a/file.yaml' => <<~A_YAML,
+            ---
+            version: 2.0.0
+            profiles:
+              custom_profile_1:
+                ces:
+                  enable_widget_spinner_audit_logging: true
+            ce:
+              enable_widget_spinner_audit_logging:
+                controls:
+                  nist_800_53:rev4:AU-2: true
+                title: 'Ensure logging is enabled for Widget Spinner'
+                description: 'This setting enables usage and security logging for the Widget Spinner application.'
+                confine:
+                  os.release.major:
+                    - 7
+                    - 8
+                  os.name:
+                    - CentOS
+                    - OracleLinux
+                    - RedHat
+            checks:
+              widget_spinner_audit_logging:
+                type: 'puppet-class-parameter'
+                settings:
+                  parameter: 'widget_spinner::audit_logging'
+                  value: true
+                ces:
+                  - enable_widget_spinner_audit_logging
+            A_YAML
+        },
+      }
+    end
+
+    subject(:compliance_engine) { described_class.new(*test_data.keys) }
+
+    before(:each) do
+      test_data.each do |module_path, file_data|
+        allow(File).to receive(:directory?).with(module_path).and_return(true)
+        allow(Dir).to receive(:exist?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
+        allow(Dir).to receive(:exist?).with("#{module_path}/simp/compliance_profiles").and_return(false)
+        allow(Dir).to receive(:glob).with(
+          [
+            "#{module_path}/SIMP/compliance_profiles/**/*.yaml",
+            "#{module_path}/SIMP/compliance_profiles/**/*.json",
+          ],
+        ).and_return(
+          file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+        )
+
+        file_data.each do |name, contents|
+          filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
+          allow(File).to receive(:size).with(filename).and_return(contents.length)
+          allow(File).to receive(:mtime).with(filename).and_return(Time.now)
+          allow(File).to receive(:read).with(filename).and_return(contents)
+        end
+      end
+    end
+
+    it 'initializes' do
+      expect(compliance_engine).not_to be_nil
+      expect(compliance_engine).to be_instance_of(described_class)
+    end
+
+    it 'returns a list of files' do
+      expect(compliance_engine.files).to eq(test_data.map { |module_path, files| files.map { |name, _| "#{module_path}/SIMP/compliance_profiles/#{name}" } }.flatten)
+    end
+
+    it 'returns a list of profiles' do
+      expect(compliance_engine.profiles).to be_instance_of(ComplianceEngine::Data::Profiles)
+      expect(compliance_engine.profiles.keys).to eq(['custom_profile_1'])
+    end
+
+    it 'returns a list of ces' do
+      expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Data::Ces)
+      expect(compliance_engine.ces.keys).to eq(['enable_widget_spinner_audit_logging'])
     end
   end
 end

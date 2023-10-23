@@ -99,6 +99,27 @@ class ComplianceEngine::Data
     @profiles ||= Profiles.new(self)
   end
 
+  # Return a collection of CEs
+  #
+  # @return [ComplianceEngine::Data::CEs]
+  def ces
+    @ces ||= Ces.new(self)
+  end
+
+  # Return a collection of checks
+  #
+  # @return [ComplianceEngine::Data::Checks]
+  def checks
+    @checks ||= Checks.new(self)
+  end
+
+  # Return a collection of controls
+  #
+  # @return [ComplianceEngine::Data::Controls]
+  def controls
+    @controls ||= Controls.new(self)
+  end
+
   private
 
   # Parse YAML or JSON files
