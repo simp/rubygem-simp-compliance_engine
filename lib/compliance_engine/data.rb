@@ -37,7 +37,8 @@ class ComplianceEngine::Data
           ['yaml', 'json'].map { |type| "#{path}/#{dir}/**/*.#{type}" }
         }.flatten
         # debug "Globs: #{globs}"
-        Dir.glob(globs) do |file|
+        # Using .each here to make mocking with rspec easier.
+        Dir.glob(globs).each do |file|
           update(file)
         end
       elsif File.file?(path)
@@ -52,6 +53,7 @@ class ComplianceEngine::Data
   #
   # @param [String] file The path to the compliance data file
   def update(file)
+    # debug "Scanning #{file}"
     # If we've already scanned this file, and the size and modification
     # time of the file haven't changed, skip it.
     size = File.size(file)
@@ -90,12 +92,11 @@ class ComplianceEngine::Data
     nil
   end
 
-  # Return a list of profiles
+  # Return a profile collection
   #
-  # @return [Array<String>]
+  # @return [ComplianceEngine::Data::Profiles]
   def profiles
     @profiles ||= Profiles.new(self)
-    @profiles.keys
   end
 
   private
