@@ -120,6 +120,29 @@ class ComplianceEngine::Data
     @controls ||= Controls.new(self)
   end
 
+  # Return all confines
+  #
+  # @return [Hash]
+  def confines
+    return @confines unless @confines.nil?
+
+    require 'deep_merge'
+
+    @confines ||= {}
+
+    [profiles, ces, checks, controls].each do |collection|
+      # require 'pry-byebug'; binding.pry
+      collection.to_h.each do |_, v|
+        v.to_a.each do |component|
+          next unless component.key?('confine')
+          @confines = @confines.deep_merge!(component['confine'])
+        end
+      end
+    end
+
+    @confines
+  end
+
   private
 
   # Parse YAML or JSON files

@@ -17,8 +17,7 @@ module ComplianceEngine
         @component[:fragments] << value
       end
 
-      def to_h
-        # FIXME: This should implement merge behavior.
+      def to_a
         @component[:fragments]
       end
     end

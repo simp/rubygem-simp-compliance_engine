@@ -4,6 +4,17 @@ require 'spec_helper'
 require 'compliance_engine'
 
 RSpec.describe ComplianceEngine::Data do
+  before(:each) do
+    allow(File).to receive(:directory?).and_call_original
+    allow(File).to receive(:file?).and_call_original
+    allow(File).to receive(:read).and_call_original
+    allow(File).to receive(:mtime).and_call_original
+    allow(File).to receive(:size).and_call_original
+
+    allow(Dir).to receive(:exist?).and_call_original
+    allow(Dir).to receive(:glob).and_call_original
+  end
+
   context 'with no paths' do
     subject(:compliance_engine) { described_class.new }
 
@@ -321,6 +332,11 @@ RSpec.describe ComplianceEngine::Data do
     it 'returns a list of ces' do
       expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Data::Ces)
       expect(compliance_engine.ces.keys).to eq(['enable_widget_spinner_audit_logging'])
+    end
+
+    it 'returns a hash of confines' do
+      expect(compliance_engine.confines).to be_instance_of(Hash)
+      expect(compliance_engine.confines.keys).to eq(['os.release.major', 'os.name'])
     end
   end
 end
