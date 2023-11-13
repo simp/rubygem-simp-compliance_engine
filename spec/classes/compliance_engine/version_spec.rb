@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'compliance_engine'
 
-RSpec.describe ComplianceEngine::Data::Version do
+RSpec.describe ComplianceEngine::Version do
   context 'with a valid version number' do
     subject(:version) { described_class.new('2.0.0') }
 
@@ -21,7 +21,7 @@ RSpec.describe ComplianceEngine::Data::Version do
     subject(:version) { described_class.new('1.0') }
 
     it 'fails to initialize' do
-      expect { version }.to raise_error(ComplianceEngine::Error, %r{Unsupported version})
+      expect { version }.to raise_error(StandardError, %r{Unsupported version})
     end
   end
 
@@ -29,7 +29,7 @@ RSpec.describe ComplianceEngine::Data::Version do
     subject(:version) { described_class.new(nil) }
 
     it 'fails to initialize' do
-      expect { version }.to raise_error(ComplianceEngine::Error, %r{Missing version})
+      expect { version }.to raise_error(StandardError, %r{Missing version})
     end
   end
 end

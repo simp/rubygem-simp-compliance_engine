@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'compliance_engine'
 
-RSpec.describe ComplianceEngine::Data::Collection do
+RSpec.describe ComplianceEngine::Collection do
   subject(:collection) { described_class.new(ComplianceEngine::Data.new) }
 
   it 'does not initialize' do

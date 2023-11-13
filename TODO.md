@@ -9,3 +9,6 @@ Unimplemented features, in no particular order:
 - [ ] Add missing documentation
 - [ ] Reset state when files are updated
 - [ ] Shared state between multiple objects (store file data)
+- [ ] Command-line tools for examining compliance data
+- [ ] Lint support (replace `scelint`)
+- [ ] Resolve oval ids to CEs

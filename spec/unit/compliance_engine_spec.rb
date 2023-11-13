@@ -10,6 +10,6 @@ RSpec.describe ComplianceEngine do
   it 'initializes' do
     compliance_engine = described_class.new
     expect(compliance_engine).not_to be_nil
-    expect(compliance_engine).to be_instance_of(ComplianceEngine::ComplianceEngine)
+    expect(compliance_engine).to be_instance_of(ComplianceEngine::Data)
   end
 end

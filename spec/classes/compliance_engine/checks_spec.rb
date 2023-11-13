@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'compliance_engine'
 
-RSpec.describe ComplianceEngine::Data::Checks do
+RSpec.describe ComplianceEngine::Checks do
   subject(:checks) { described_class.new(ComplianceEngine::Data.new) }
 
   it 'initializes' do

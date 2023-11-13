@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
 require 'compliance_engine'
-require 'compliance_engine/data/version'
-require 'compliance_engine/data/component'
-require 'compliance_engine/data/ce'
-require 'compliance_engine/data/check'
-require 'compliance_engine/data/control'
-require 'compliance_engine/data/profile'
-require 'compliance_engine/data/collection'
-require 'compliance_engine/data/ces'
-require 'compliance_engine/data/checks'
-require 'compliance_engine/data/controls'
-require 'compliance_engine/data/profiles'
+require 'compliance_engine/version'
+require 'compliance_engine/component'
+require 'compliance_engine/ce'
+require 'compliance_engine/check'
+require 'compliance_engine/control'
+require 'compliance_engine/profile'
+require 'compliance_engine/collection'
+require 'compliance_engine/ces'
+require 'compliance_engine/checks'
+require 'compliance_engine/controls'
+require 'compliance_engine/profiles'
 
 # Work with compliance data
 class ComplianceEngine::Data
@@ -94,30 +94,30 @@ class ComplianceEngine::Data
 
   # Return a profile collection
   #
-  # @return [ComplianceEngine::Data::Profiles]
+  # @return [ComplianceEngine::Profiles]
   def profiles
-    @profiles ||= Profiles.new(self)
+    @profiles ||= ComplianceEngine::Profiles.new(self)
   end
 
   # Return a collection of CEs
   #
-  # @return [ComplianceEngine::Data::CEs]
+  # @return [ComplianceEngine::CEs]
   def ces
-    @ces ||= Ces.new(self)
+    @ces ||= ComplianceEngine::Ces.new(self)
   end
 
   # Return a collection of checks
   #
-  # @return [ComplianceEngine::Data::Checks]
+  # @return [ComplianceEngine::Checks]
   def checks
-    @checks ||= Checks.new(self)
+    @checks ||= ComplianceEngine::Checks.new(self)
   end
 
   # Return a collection of controls
   #
-  # @return [ComplianceEngine::Data::Controls]
+  # @return [ComplianceEngine::Controls]
   def controls
-    @controls ||= Controls.new(self)
+    @controls ||= ComplianceEngine::Controls.new(self)
   end
 
   # Return all confines
@@ -131,7 +131,6 @@ class ComplianceEngine::Data
     @confines ||= {}
 
     [profiles, ces, checks, controls].each do |collection|
-      # require 'pry-byebug'; binding.pry
       collection.to_h.each do |_, v|
         v.to_a.each do |component|
           next unless component.key?('confine')
@@ -158,7 +157,7 @@ class ComplianceEngine::Data
                  YAML.safe_load(File.read(file))
                end
     raise ComplianceEngine::Error, "File must contain a hash, found #{contents.class} in #{file}" unless contents.is_a?(Hash)
-    { version: Version.new(contents['version']), content: contents }
+    { version: ComplianceEngine::Version.new(contents['version']), content: contents }
   end
 
   # Print debugging messages to the console.

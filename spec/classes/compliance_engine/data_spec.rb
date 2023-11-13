@@ -241,12 +241,12 @@ RSpec.describe ComplianceEngine::Data do
     end
 
     it 'returns a list of profiles' do
-      expect(compliance_engine.profiles).to be_instance_of(ComplianceEngine::Data::Profiles)
+      expect(compliance_engine.profiles).to be_instance_of(ComplianceEngine::Profiles)
       expect(compliance_engine.profiles.keys).to eq(['test_profile_00', 'test_profile_01', 'test_profile_02'])
     end
 
     it 'returns a list of ces' do
-      expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Data::Ces)
+      expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Ces)
       expect(compliance_engine.ces.keys).to eq(['ce_00', 'ce_01', 'ce_02', 'ce_03'])
     end
   end
@@ -325,12 +325,12 @@ RSpec.describe ComplianceEngine::Data do
     end
 
     it 'returns a list of profiles' do
-      expect(compliance_engine.profiles).to be_instance_of(ComplianceEngine::Data::Profiles)
+      expect(compliance_engine.profiles).to be_instance_of(ComplianceEngine::Profiles)
       expect(compliance_engine.profiles.keys).to eq(['custom_profile_1'])
     end
 
     it 'returns a list of ces' do
-      expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Data::Ces)
+      expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Ces)
       expect(compliance_engine.ces.keys).to eq(['enable_widget_spinner_audit_logging'])
     end
 

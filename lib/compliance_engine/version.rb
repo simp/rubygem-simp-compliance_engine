@@ -2,4 +2,20 @@
 
 module ComplianceEngine
   VERSION = '0.1.0'
+
+  # Handle supported compliance data versions
+  class Version
+    # Verify that the version is supported
+    #
+    # @param [String] version The version to verify
+    def initialize(version)
+      raise 'Missing version' if version.nil?
+      raise "Unsupported version '#{version}'" unless version == '2.0.0'
+      @version = version
+    end
+
+    def to_s
+      @version
+    end
+  end
 end
