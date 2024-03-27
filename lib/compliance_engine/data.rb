@@ -16,12 +16,15 @@ require 'compliance_engine/profiles'
 # Work with compliance data
 class ComplianceEngine::Data
   # @param [Array<String>] paths The paths to the compliance data files
-  def initialize(*paths)
+  def initialize(*paths, facts: nil, enforcement_tolerance: nil)
     @data ||= {}
     open(*paths) unless paths.nil? || paths.empty?
+    @facts = facts
+    @enforcement_tolerance = enforcement_tolerance
   end
 
-  attr_accessor :data
+  # FIXME: Setting any of these should all invalidate any cached data
+  attr_accessor :data, :facts, :enforcement_tolerance
 
   # Scan paths for compliance data files
   #
@@ -131,7 +134,7 @@ class ComplianceEngine::Data
     @confines ||= {}
 
     [profiles, ces, checks, controls].each do |collection|
-      collection.to_h.each do |_, v|
+      collection.to_h.each_value do |v|
         v.to_a.each do |component|
           next unless component.key?('confine')
           @confines = @confines.deep_merge!(component['confine'])
