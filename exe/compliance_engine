@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'compliance_engine/cli'
+
+exitval = ComplianceEngine::CLI.new(ARGV)
+
+exit(exitval) if exitval.is_a?(Integer)

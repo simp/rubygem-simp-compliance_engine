@@ -39,6 +39,10 @@ class ComplianceEngine::Collection
     collection.keys
   end
 
+  def [](key)
+    collection[key]
+  end
+
   private
 
   # Returns the key of the object.
