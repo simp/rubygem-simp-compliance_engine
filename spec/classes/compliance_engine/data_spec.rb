@@ -325,18 +325,55 @@ RSpec.describe ComplianceEngine::Data do
     end
 
     it 'returns a list of profiles' do
-      expect(compliance_engine.profiles).to be_instance_of(ComplianceEngine::Profiles)
-      expect(compliance_engine.profiles.keys).to eq(['custom_profile_1'])
+      profiles = compliance_engine.profiles
+      expect(profiles).to be_instance_of(ComplianceEngine::Profiles)
+      expect(profiles.keys).to eq(['custom_profile_1'])
     end
 
     it 'returns a list of ces' do
-      expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Ces)
-      expect(compliance_engine.ces.keys).to eq(['enable_widget_spinner_audit_logging'])
+      ces = compliance_engine.ces
+      expect(ces).to be_instance_of(ComplianceEngine::Ces)
+      expect(ces.keys).to eq(['enable_widget_spinner_audit_logging'])
     end
 
     it 'returns a hash of confines' do
-      expect(compliance_engine.confines).to be_instance_of(Hash)
-      expect(compliance_engine.confines.keys).to eq(['os.release.major', 'os.name'])
+      confines = compliance_engine.confines
+      expect(confines).to be_instance_of(Hash)
+      expect(confines.keys).to eq(['os.release.major', 'os.name'])
+    end
+
+    it 'returns no hiera data when there are no profiles' do
+      hiera = compliance_engine.hiera
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({})
+    end
+
+    it 'returns no hiera data when there are no valid profiles' do
+      hiera = compliance_engine.hiera(['invalid_profile'])
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({})
+    end
+
+    it 'returns confined hiera data' do
+      compliance_engine.facts = { 'os' => { 'release' => { 'major' => '7' }, 'name' => 'CentOS' } }
+      hiera = compliance_engine.hiera(['custom_profile_1'])
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({ 'widget_spinner::audit_logging' => true })
+    end
+
+    it 'skips hiera data when there is no match' do
+      pending 'TODO: implement confinement'
+      compliance_engine.facts = { 'os' => { 'release' => { 'major' => '12' }, 'name' => 'Debian' } }
+      hiera = compliance_engine.hiera(['custom_profile_1'])
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({})
+    end
+
+    it 'returns unconfined hiera data' do
+      compliance_engine.facts = nil
+      hiera = compliance_engine.hiera(['custom_profile_1'])
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({ 'widget_spinner::audit_logging' => true })
     end
   end
 end

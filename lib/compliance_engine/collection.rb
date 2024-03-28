@@ -9,17 +9,20 @@ class ComplianceEngine::Collection
   # @param data [Object] the data to initialize the object with
   # @return [void]
   def initialize(data)
+    @facts = data.facts
+    @enforcement_tolerance = data.enforcement_tolerance
+    @environment_data = data.environment_data
     @collection ||= {}
     hash_key = key
     data.files.each do |file|
       data.get(file)[hash_key]&.each do |k, v|
-        @collection[k] ||= collected.new(k)
+        @collection[k] ||= collected.new(k, data: self)
         @collection[k].add(v)
       end
     end
   end
 
-  attr_accessor :collection
+  attr_accessor :collection, :facts, :enforcement_tolerance, :environment_data
 
   # Converts the object to a hash representation.
   #
@@ -28,7 +31,7 @@ class ComplianceEngine::Collection
   # @fixme This should implement merge behavior.
   def to_h
     # FIXME: This should implement merge behavior.
-    collection
+    collection.reject { |k, _| k.is_a?(Symbol) }
   end
 
   # Returns the keys of the collection.
@@ -36,7 +39,7 @@ class ComplianceEngine::Collection
   # @return [Array] the keys of the collection
   def keys
     # FIXME: Implement confinement
-    collection.keys
+    to_h.keys
   end
 
   def [](key)

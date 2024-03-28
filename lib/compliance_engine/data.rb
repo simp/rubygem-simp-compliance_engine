@@ -13,6 +13,8 @@ require 'compliance_engine/checks'
 require 'compliance_engine/controls'
 require 'compliance_engine/profiles'
 
+require 'deep_merge'
+
 # Work with compliance data
 class ComplianceEngine::Data
   # @param [Array<String>] paths The paths to the compliance data files
@@ -24,7 +26,7 @@ class ComplianceEngine::Data
   end
 
   # FIXME: Setting any of these should all invalidate any cached data
-  attr_accessor :data, :facts, :enforcement_tolerance
+  attr_accessor :data, :facts, :enforcement_tolerance, :environment_data
 
   # Scan paths for compliance data files
   #
@@ -129,8 +131,6 @@ class ComplianceEngine::Data
   def confines
     return @confines unless @confines.nil?
 
-    require 'deep_merge'
-
     @confines ||= {}
 
     [profiles, ces, checks, controls].each do |collection|
@@ -145,7 +145,59 @@ class ComplianceEngine::Data
     @confines
   end
 
+  def hiera(requested_profiles = [])
+    # If we have no valid profiles, we won't have any hiera data.
+    return {} if requested_profiles.empty?
+
+    cache_key = requested_profiles.to_s
+
+    @hiera ||= {}
+
+    return @hiera[cache_key] if @hiera.key?(cache_key)
+
+    valid_profiles = []
+    requested_profiles.each do |profile|
+      if profiles[profile].nil?
+        warn "Requested profile '#{profile}' not defined"
+        next
+      end
+
+      valid_profiles << profile
+    end
+
+    # If we have no valid profiles, we won't have any hiera data.
+    if valid_profiles.empty?
+      @hiera[cache_key] = {}
+      return @hiera[cache_key]
+    end
+
+    parameters = {}
+
+    checks.to_h.each_value do |value|
+      next unless value.type == 'puppet-class-parameter'
+
+      valid_profiles.each do |profile|
+        next if profiles[profile].nil?
+        next unless correlate(value.ces, profiles[profile].ces) || correlate(value.controls, profiles[profile].controls)
+        next unless value.settings.key?('parameter') && value.settings.key?('value')
+        parameters = parameters.deep_merge!({ value.settings['parameter'] => value.settings['value'] })
+      end
+    end
+
+    @hiera[cache_key] = parameters
+  end
+
   private
+
+  def correlate(a, b)
+    return false if a.nil? || b.nil?
+    unless a.is_a?(Array) && b.is_a?(Hash)
+      raise ComplianceEngine::Error, "Expected array and hash, got #{a.class} and #{b.class}"
+    end
+    return false if a.empty? || b.empty?
+
+    a.any? { |item| b[item] }
+  end
 
   # Parse YAML or JSON files
   #
