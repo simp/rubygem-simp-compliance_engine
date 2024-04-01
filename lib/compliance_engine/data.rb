@@ -176,9 +176,9 @@ class ComplianceEngine::Data
     checks.to_h.each_value do |value|
       next unless value.type == 'puppet-class-parameter'
 
-      valid_profiles.each do |profile|
+      valid_profiles.reverse_each do |profile|
         next if profiles[profile].nil?
-        next unless correlate(value.ces, profiles[profile].ces) || correlate(value.controls, profiles[profile].controls)
+        next unless correlate(value.ces, profiles[profile].ces) || correlate(value.controls, profiles[profile].controls) || profiles[profile].ces.to_h.any? { |k, _| correlate(value.controls, ces[k]&.controls) }
         next unless value.settings.key?('parameter') && value.settings.key?('value')
         parameters = parameters.deep_merge!({ value.settings['parameter'] => value.settings['value'] })
       end
