@@ -1,7 +1,9 @@
 Unimplemented features, in no particular order:
 
-- [ ] Limit ces/checks/controls based on selected profile
-- [ ] Correlation between ces/controls and checks
+- [x] Limit ces/checks/controls based on selected profile
+- [x] Correlation between ces/controls and checks
+- [ ] Test merge of profiles (ordering of settings)
+- [ ] Test malformed data
 - [ ] Storage and resolution of facts
 - [ ] Confinement
 - [ ] Enforcement tolerance
