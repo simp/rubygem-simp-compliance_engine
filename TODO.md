@@ -14,3 +14,6 @@ Unimplemented features, in no particular order:
 - [ ] Command-line tools for examining compliance data
 - [ ] Lint support (replace `scelint`)
 - [ ] Resolve oval ids to CEs
+- [ ] Puppet environment support
+    - [ ] Read/store metadata
+    - [ ] Load compliance data from a module path
