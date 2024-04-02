@@ -41,6 +41,10 @@ class ComplianceEngine::Component
     # TODO: Return confined & deep-merged data
   end
 
+  def key
+    component[:key]
+  end
+
   def title
     element(:title, 'title')
   end

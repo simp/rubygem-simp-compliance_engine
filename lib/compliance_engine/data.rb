@@ -178,7 +178,7 @@ class ComplianceEngine::Data
 
       valid_profiles.reverse_each do |profile|
         next if profiles[profile].nil?
-        next unless mapping?(value, profile)
+        next unless mapping?(value, profiles[profile])
         next unless value.settings.key?('parameter') && value.settings.key?('value')
         parameters = parameters.deep_merge!({ value.settings['parameter'] => value.settings['value'] })
       end
@@ -190,16 +190,20 @@ class ComplianceEngine::Data
   private
 
   def mapping?(check, profile)
+    @mapping ||= {}
+    cache_key = [check.key, profile.key].to_s
+    return @mapping[cache_key] if @mapping.key?(cache_key)
+
     # Correlate based on CEs
-    return true if correlate(check.ces, profiles[profile].ces)
+    return @mapping[cache_key] = true if correlate(check.ces, profile.ces)
 
     # Correlate based on controls
-    return true if correlate(check.controls, profiles[profile].controls)
+    return @mapping[cache_key] = true if correlate(check.controls, profile.controls)
 
     # Correlate based on CEs and controls
-    return true if profiles[profile].ces.to_h.any? { |k, _| correlate(check.controls, ces[k]&.controls) }
+    return @mapping[cache_key] = true if profile.ces.to_h.any? { |k, _| correlate(check.controls, ces[k]&.controls) }
 
-    false
+    @mapping[cache_key] = false
   end
 
   def correlate(a, b)
