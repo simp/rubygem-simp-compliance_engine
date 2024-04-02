@@ -94,12 +94,12 @@ class ComplianceEngine::Component
       if fragment.key?('confine')
       end
 
-      # TODO: Implement confinement based on Puppet enviroment data
+      # TODO: Implement confinement based on Puppet environment data
       if fragment.key?('confine') && fragment['confine'].key?('module_name')
       end
 
       # TODO: Implement confinement based on remediation risk
-      if fragment.key?('remediation')
+      if self.is_a?(ComplianceEngine::Check) && fragment.key?('remediation')
       end
 
       @fragments << fragment

@@ -492,7 +492,7 @@ RSpec.describe ComplianceEngine::Data do
                   parameter: 'widget_spinner::audit_logging'
                   value: true
                 controls:
-                  - nist_800_53:rev4:AU-2
+                  nist_800_53:rev4:AU-2: true
             A_YAML
         },
       }
@@ -579,7 +579,7 @@ RSpec.describe ComplianceEngine::Data do
                   parameter: 'widget_spinner::audit_logging'
                   value: true
                 controls:
-                  - nist_800_53:rev4:AU-2
+                  nist_800_53:rev4:AU-2: true
             A_YAML
         },
       }

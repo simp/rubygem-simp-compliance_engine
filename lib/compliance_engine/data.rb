@@ -198,10 +198,12 @@ class ComplianceEngine::Data
     return @mapping[cache_key] = true if correlate(check.ces, profile.ces)
 
     # Correlate based on controls
-    return @mapping[cache_key] = true if correlate(check.controls, profile.controls)
+    controls = check.controls&.select { |_, v| v }&.map { |k, _| k }
+
+    return @mapping[cache_key] = true if correlate(controls, profile.controls)
 
     # Correlate based on CEs and controls
-    return @mapping[cache_key] = true if profile.ces.to_h.any? { |k, _| correlate(check.controls, ces[k]&.controls) }
+    return @mapping[cache_key] = true if profile.ces.to_h.any? { |k, _| correlate(controls, ces[k]&.controls) }
 
     @mapping[cache_key] = false
   end
