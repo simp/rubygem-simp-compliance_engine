@@ -13,6 +13,8 @@ require 'compliance_engine/checks'
 require 'compliance_engine/controls'
 require 'compliance_engine/profiles'
 
+require 'deep_merge'
+
 # Work with compliance data
 class ComplianceEngine::Data
   # @param [Array<String>] paths The paths to the compliance data files
@@ -23,8 +25,35 @@ class ComplianceEngine::Data
     @enforcement_tolerance = enforcement_tolerance
   end
 
-  # FIXME: Setting any of these should all invalidate any cached data
-  attr_accessor :data, :facts, :enforcement_tolerance
+  # Setting any of these should all invalidate any cached data
+  attr_reader :data, :facts, :enforcement_tolerance, :environment_data
+
+  def data=(data)
+    @data = data
+    invalidate_cache
+  end
+
+  def facts=(facts)
+    @facts = facts
+    invalidate_cache
+  end
+
+  def enforcement_tolerance=(enforcement_tolerance)
+    @enforcement_tolerance = enforcement_tolerance
+    invalidate_cache
+  end
+
+  def environment_data=(environment_data)
+    @environment_data = environment_data
+    invalidate_cache
+  end
+
+  def invalidate_cache
+    [profiles, checks, controls, ces].each { |obj| obj.invalidate_cache(self) }
+    @hiera = nil
+    @confines = nil
+    @mapping = nil
+  end
 
   # Scan paths for compliance data files
   #
@@ -81,7 +110,8 @@ class ComplianceEngine::Data
   #
   # @return [Array<String>]
   def files
-    return @files unless @files.nil?
+    # FIXME: This needs to be recalculated when files are added or updated.
+    # return @files unless @files.nil?
     @files = data.select { |_file, data| data.key?(:content) }.keys
   end
 
@@ -99,6 +129,7 @@ class ComplianceEngine::Data
   #
   # @return [ComplianceEngine::Profiles]
   def profiles
+    # FIXME: This needs to be recalculated when files are added or updated.
     @profiles ||= ComplianceEngine::Profiles.new(self)
   end
 
@@ -106,6 +137,7 @@ class ComplianceEngine::Data
   #
   # @return [ComplianceEngine::CEs]
   def ces
+    # FIXME: This needs to be recalculated when files are added or updated.
     @ces ||= ComplianceEngine::Ces.new(self)
   end
 
@@ -113,6 +145,7 @@ class ComplianceEngine::Data
   #
   # @return [ComplianceEngine::Checks]
   def checks
+    # FIXME: This needs to be recalculated when files are added or updated.
     @checks ||= ComplianceEngine::Checks.new(self)
   end
 
@@ -120,6 +153,7 @@ class ComplianceEngine::Data
   #
   # @return [ComplianceEngine::Controls]
   def controls
+    # FIXME: This needs to be recalculated when files are added or updated.
     @controls ||= ComplianceEngine::Controls.new(self)
   end
 
@@ -128,8 +162,6 @@ class ComplianceEngine::Data
   # @return [Hash]
   def confines
     return @confines unless @confines.nil?
-
-    require 'deep_merge'
 
     @confines ||= {}
 
@@ -145,7 +177,78 @@ class ComplianceEngine::Data
     @confines
   end
 
+  def hiera(requested_profiles = [])
+    # If we have no valid profiles, we won't have any hiera data.
+    return {} if requested_profiles.empty?
+
+    cache_key = requested_profiles.to_s
+
+    @hiera ||= {}
+
+    return @hiera[cache_key] if @hiera.key?(cache_key)
+
+    valid_profiles = []
+    requested_profiles.each do |profile|
+      if profiles[profile].nil?
+        warn "Requested profile '#{profile}' not defined"
+        next
+      end
+
+      valid_profiles << profile
+    end
+
+    # If we have no valid profiles, we won't have any hiera data.
+    if valid_profiles.empty?
+      @hiera[cache_key] = {}
+      return @hiera[cache_key]
+    end
+
+    parameters = {}
+
+    checks.to_h.each_value do |value|
+      next unless value.type == 'puppet-class-parameter'
+
+      valid_profiles.reverse_each do |profile|
+        next if profiles[profile].nil?
+        next unless mapping?(value, profiles[profile])
+        next unless value.settings.key?('parameter') && value.settings.key?('value')
+        parameters = parameters.deep_merge!({ value.settings['parameter'] => value.settings['value'] })
+      end
+    end
+
+    @hiera[cache_key] = parameters
+  end
+
   private
+
+  def mapping?(check, profile)
+    @mapping ||= {}
+    cache_key = [check.key, profile.key].to_s
+    return @mapping[cache_key] if @mapping.key?(cache_key)
+
+    # Correlate based on CEs
+    return @mapping[cache_key] = true if correlate(check.ces, profile.ces)
+
+    # Correlate based on controls
+    controls = check.controls&.select { |_, v| v }&.map { |k, _| k }
+
+    return @mapping[cache_key] = true if correlate(controls, profile.controls)
+
+    # Correlate based on CEs and controls
+    return @mapping[cache_key] = true if profile.ces.to_h.any? { |k, _| correlate(controls, ces[k]&.controls) }
+
+    @mapping[cache_key] = false
+  end
+
+  def correlate(a, b)
+    return false if a.nil? || b.nil?
+    unless a.is_a?(Array) && b.is_a?(Hash)
+      raise ComplianceEngine::Error, "Expected array and hash, got #{a.class} and #{b.class}"
+    end
+    return false if a.empty? || b.empty?
+
+    a.any? { |item| b[item] }
+  end
 
   # Parse YAML or JSON files
   #
