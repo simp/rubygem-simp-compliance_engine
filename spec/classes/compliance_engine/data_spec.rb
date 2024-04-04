@@ -263,6 +263,14 @@ RSpec.describe ComplianceEngine::Data do
               custom_profile_1:
                 ces:
                   enable_widget_spinner_audit_logging: true
+                confine:
+                  os.release.major:
+                    - '7'
+                    - '8'
+                  os.name:
+                    - CentOS
+                    - OracleLinux
+                    - RedHat
             ce:
               enable_widget_spinner_audit_logging:
                 controls:
@@ -271,8 +279,8 @@ RSpec.describe ComplianceEngine::Data do
                 description: 'This setting enables usage and security logging for the Widget Spinner application.'
                 confine:
                   os.release.major:
-                    - 7
-                    - 8
+                    - '7'
+                    - '8'
                   os.name:
                     - CentOS
                     - OracleLinux
@@ -362,7 +370,6 @@ RSpec.describe ComplianceEngine::Data do
     end
 
     it 'skips hiera data when there is no match' do
-      pending 'TODO: implement confinement'
       compliance_engine.facts = { 'os' => { 'release' => { 'major' => '12' }, 'name' => 'Debian' } }
       hiera = compliance_engine.hiera(['custom_profile_1'])
       expect(hiera).to be_instance_of(Hash)
@@ -388,6 +395,14 @@ RSpec.describe ComplianceEngine::Data do
               custom_profile_1:
                 ces:
                   enable_widget_spinner_audit_logging: true
+                confine:
+                  os.release.major:
+                    - 7
+                    - 8
+                  os.name:
+                    - CentOS
+                    - OracleLinux
+                    - RedHat
             ce:
               enable_widget_spinner_audit_logging:
                 controls:

@@ -25,8 +25,35 @@ class ComplianceEngine::Data
     @enforcement_tolerance = enforcement_tolerance
   end
 
-  # FIXME: Setting any of these should all invalidate any cached data
-  attr_accessor :data, :facts, :enforcement_tolerance, :environment_data
+  # Setting any of these should all invalidate any cached data
+  attr_reader :data, :facts, :enforcement_tolerance, :environment_data
+
+  def data=(data)
+    @data = data
+    invalidate_cache
+  end
+
+  def facts=(facts)
+    @facts = facts
+    invalidate_cache
+  end
+
+  def enforcement_tolerance=(enforcement_tolerance)
+    @enforcement_tolerance = enforcement_tolerance
+    invalidate_cache
+  end
+
+  def environment_data=(environment_data)
+    @environment_data = environment_data
+    invalidate_cache
+  end
+
+  def invalidate_cache
+    [profiles, checks, controls, ces].each { |obj| obj.invalidate_cache(self) }
+    @hiera = nil
+    @confines = nil
+    @mapping = nil
+  end
 
   # Scan paths for compliance data files
   #
@@ -83,7 +110,8 @@ class ComplianceEngine::Data
   #
   # @return [Array<String>]
   def files
-    return @files unless @files.nil?
+    # FIXME: This needs to be recalculated when files are added or updated.
+    # return @files unless @files.nil?
     @files = data.select { |_file, data| data.key?(:content) }.keys
   end
 
@@ -101,6 +129,7 @@ class ComplianceEngine::Data
   #
   # @return [ComplianceEngine::Profiles]
   def profiles
+    # FIXME: This needs to be recalculated when files are added or updated.
     @profiles ||= ComplianceEngine::Profiles.new(self)
   end
 
@@ -108,6 +137,7 @@ class ComplianceEngine::Data
   #
   # @return [ComplianceEngine::CEs]
   def ces
+    # FIXME: This needs to be recalculated when files are added or updated.
     @ces ||= ComplianceEngine::Ces.new(self)
   end
 
@@ -115,6 +145,7 @@ class ComplianceEngine::Data
   #
   # @return [ComplianceEngine::Checks]
   def checks
+    # FIXME: This needs to be recalculated when files are added or updated.
     @checks ||= ComplianceEngine::Checks.new(self)
   end
 
@@ -122,6 +153,7 @@ class ComplianceEngine::Data
   #
   # @return [ComplianceEngine::Controls]
   def controls
+    # FIXME: This needs to be recalculated when files are added or updated.
     @controls ||= ComplianceEngine::Controls.new(self)
   end
 

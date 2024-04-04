@@ -19,6 +19,13 @@ class ComplianceEngine::Component
 
   attr_accessor :component, :facts, :enforcement_tolerance, :environment_data
 
+  def invalidate_cache(data)
+    @facts = data.facts
+    @enforcement_tolerance = data.enforcement_tolerance
+    @environment_data = data.environment_data
+    @fragments = nil
+  end
+
   # Adds a value to the fragments array of the component.
   #
   # @param value [Object] The value to be added to the fragments array.
@@ -71,6 +78,48 @@ class ComplianceEngine::Component
 
   private
 
+  def fact_match?(fact, confine)
+    if confine.is_a?(String)
+      return fact != confine.delete_prefix('!') if confine.start_with?('!')
+
+      fact == confine
+    elsif confine.is_a?(Array)
+      confine.any? { |value| fact_match?(fact, value) }
+    else
+      fact == confine
+    end
+  end
+
+  def confine_away?(fragment)
+    return false unless fragment.key?('confine')
+
+    fragment['confine'].each do |k, v|
+      if k == 'module_name'
+        # TODO: Implement confinement based on Puppet environment data
+        unless environment_data.nil?
+          module_version = fragment['confine']['module_version']
+        end
+      elsif k == 'module_version'
+        warn "Missing module name for #{fragment}" unless fragment['confine'].key?('module_name')
+      else
+        # Confinement based on Puppet facts
+        unless facts.nil?
+          fact = facts.dig(*k.split('.'))
+          if fact.nil?
+            warn "Fact #{k} not found for #{fragment}"
+            return true
+          end
+          unless fact_match?(fact, v)
+            warn "Fact #{k} #{fact} does not match #{v} for #{fragment}"
+            return true
+          end
+        end
+      end
+    end
+
+    false
+  end
+
   def fragments
     return @fragments unless @fragments.nil?
 
@@ -90,16 +139,25 @@ class ComplianceEngine::Component
         next
       end
 
-      # TODO: Implement confinement based on Puppet facts
-      if fragment.key?('confine')
-      end
+      next if confine_away?(fragment)
 
-      # TODO: Implement confinement based on Puppet environment data
-      if fragment.key?('confine') && fragment['confine'].key?('module_name')
-      end
+      # Confinement based on remediation risk
+      if enforcement_tolerance.is_a?(Integer) && is_a?(ComplianceEngine::Check) && fragment.key?('remediation')
+        if fragment['remediation'].key?('disabled')
+          message = "Remediation disabled for #{fragment}"
+          reason = fragment['remediation']['disabled']&.map { |value| value['reason'] }&.reject { |value| value.nil? }&.join("\n")
+          message += "\n#{reason}" unless reason.nil?
+          warn message
+          next
+        end
 
-      # TODO: Implement confinement based on remediation risk
-      if self.is_a?(ComplianceEngine::Check) && fragment.key?('remediation')
+        if fragment['remediation'].key?('risk')
+          risk_level = fragment['remediation']['risk']&.map { |value| value['level'] }&.select { |value| value.is_a?(Integer) }&.max
+          if risk_level.is_a?(Integer) && risk_level >= enforcement_tolerance
+            warn "Remediation risk #{risk_level} exceeds enforcement tolerance #{enforcement_tolerance} for #{fragment}"
+            next
+          end
+        end
       end
 
       @fragments << fragment

@@ -24,6 +24,13 @@ class ComplianceEngine::Collection
 
   attr_accessor :collection, :facts, :enforcement_tolerance, :environment_data
 
+  def invalidate_cache(data)
+    @facts = data.facts
+    @enforcement_tolerance = data.enforcement_tolerance
+    @environment_data = data.environment_data
+    collection.each_value { |obj| obj.invalidate_cache(data) }
+  end
+
   # Converts the object to a hash representation.
   #
   # @return [Hash] the hash representation of the object.
