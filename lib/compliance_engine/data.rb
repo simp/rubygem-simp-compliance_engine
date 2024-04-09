@@ -239,10 +239,10 @@ class ComplianceEngine::Data
     return @mapping[cache_key] if @mapping.key?(cache_key)
 
     # Correlate based on CEs
-    if profile_or_ce.is_a?(ComplianceEngine::Profile)
-      return @mapping[cache_key] = true if correlate(check.ces, profile_or_ce.ces)
-    else
-      return @mapping[cache_key] = true if check.ces&.include?(profile_or_ce.key)
+    if profile_or_ce.is_a?(ComplianceEngine::Profile) && correlate(check.ces, profile_or_ce.ces)
+      return @mapping[cache_key] = true
+    elsif check.ces&.include?(profile_or_ce.key)
+      return @mapping[cache_key] = true
     end
 
     # Correlate based on controls
