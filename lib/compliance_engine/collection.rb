@@ -17,17 +17,17 @@ class ComplianceEngine::Collection
     data.files.each do |file|
       data.get(file)[hash_key]&.each do |k, v|
         @collection[k] ||= collected.new(k, data: self)
-        @collection[k].add(v)
+        @collection[k].add(file, v)
       end
     end
   end
 
   attr_accessor :collection, :facts, :enforcement_tolerance, :environment_data
 
-  def invalidate_cache(data)
-    @facts = data.facts
-    @enforcement_tolerance = data.enforcement_tolerance
-    @environment_data = data.environment_data
+  def invalidate_cache(data = nil)
+    @facts = data&.facts
+    @enforcement_tolerance = data&.enforcement_tolerance
+    @environment_data = data&.environment_data
     collection.each_value { |obj| obj.invalidate_cache(data) }
   end
 

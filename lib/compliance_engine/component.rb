@@ -14,15 +14,15 @@ class ComplianceEngine::Component
       @enforcement_tolerance = data.enforcement_tolerance
       @environment_data = data.environment_data
     end
-    @component ||= { key: name, fragments: [] }
+    @component ||= { key: name, fragments: {} }
   end
 
   attr_accessor :component, :facts, :enforcement_tolerance, :environment_data
 
-  def invalidate_cache(data)
-    @facts = data.facts
-    @enforcement_tolerance = data.enforcement_tolerance
-    @environment_data = data.environment_data
+  def invalidate_cache(data = nil)
+    @facts = data&.facts
+    @enforcement_tolerance = data&.enforcement_tolerance
+    @environment_data = data&.environment_data
     @fragments = nil
   end
 
@@ -30,15 +30,15 @@ class ComplianceEngine::Component
   #
   # @param value [Object] The value to be added to the fragments array.
   # @return [void]
-  def add(value)
-    component[:fragments] << value
+  def add(filename, value)
+    component[:fragments][filename] = value
   end
 
   # Returns an array of fragments from the component.
   #
   # @return [Array] an array of fragments
   def to_a
-    component[:fragments]
+    component[:fragments].values
   end
 
   # Returns an array of fragments from the component.
@@ -78,13 +78,17 @@ class ComplianceEngine::Component
 
   private
 
-  def fact_match?(fact, confine)
+  def fact_match?(fact, confine, depth = 0)
     if confine.is_a?(String)
       return fact != confine.delete_prefix('!') if confine.start_with?('!')
 
       fact == confine
     elsif confine.is_a?(Array)
-      confine.any? { |value| fact_match?(fact, value) }
+      if depth == 0
+        confine.any? { |value| fact_match?(fact, value, depth + 1) }
+      else
+        fact == confine
+      end
     else
       fact == confine
     end
@@ -123,19 +127,19 @@ class ComplianceEngine::Component
   def fragments
     return @fragments unless @fragments.nil?
 
-    @fragments ||= []
+    @fragments ||= {}
 
-    component[:fragments].each do |fragment|
+    component[:fragments].each do |filename, fragment|
       # If none of the confinable data is present in the object,
       # ignore confinement data entirely.
       if facts.nil? && enforcement_tolerance.nil? && environment_data.nil?
-        @fragments << fragment
+        @fragments[filename] = fragment
         next
       end
 
       # If no confine data is present in the fragment, include it.
       if !fragment.key?('confine') && !fragment.key?('remediation')
-        @fragments << fragment
+        @fragments[filename] = fragment
         next
       end
 
@@ -160,7 +164,7 @@ class ComplianceEngine::Component
         end
       end
 
-      @fragments << fragment
+      @fragments[filename] = fragment
     end
 
     @fragments
@@ -169,7 +173,7 @@ class ComplianceEngine::Component
   def element(key, value)
     return component[key] if component.key?(key)
 
-    fragments.each do |fragment|
+    fragments.each_value do |fragment|
       next unless fragment.key?(value)
 
       if fragment[value].is_a?(Array)
