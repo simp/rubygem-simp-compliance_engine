@@ -166,7 +166,7 @@ class ComplianceEngine::Data
     @confines ||= {}
 
     [profiles, ces, checks, controls].each do |collection|
-      collection.to_h.each_value do |v|
+      collection.each_value do |v|
         v.to_a.each do |component|
           next unless component.key?('confine')
           @confines = @confines.deep_merge!(component['confine'])
@@ -205,7 +205,7 @@ class ComplianceEngine::Data
 
     parameters = {}
 
-    checks.to_h.each_value do |value|
+    checks.each_value do |value|
       next unless value.type == 'puppet-class-parameter'
 
       valid_profiles.reverse_each do |profile|
@@ -235,7 +235,7 @@ class ComplianceEngine::Data
     return @mapping[cache_key] = true if correlate(controls, profile.controls)
 
     # Correlate based on CEs and controls
-    return @mapping[cache_key] = true if profile.ces.to_h.any? { |k, _| correlate(controls, ces[k]&.controls) }
+    return @mapping[cache_key] = true if profile.ces&.any? { |k, _| correlate(controls, ces[k]&.controls) }
 
     @mapping[cache_key] = false
   end

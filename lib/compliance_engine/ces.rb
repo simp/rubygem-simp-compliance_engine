@@ -9,7 +9,7 @@ class ComplianceEngine::Ces < ComplianceEngine::Collection
 
     @by_oval_id ||= {}
 
-    collection.to_h.each do |k, v|
+    to_h.each do |k, v|
       v.oval_ids&.each do |oval_id|
         @by_oval_id[oval_id] ||= []
         @by_oval_id[oval_id] << k

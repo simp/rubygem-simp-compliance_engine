@@ -53,6 +53,30 @@ class ComplianceEngine::Collection
     collection[key]
   end
 
+  def each(&block)
+    to_h.each(&block)
+  end
+
+  def each_value(&block)
+    to_h.each_value(&block)
+  end
+
+  def any?(&block)
+    to_h.any?(&block)
+  end
+
+  def all?(&block)
+    to_h.all?(&block)
+  end
+
+  def select(&block)
+    to_h.select(&block)
+  end
+
+  def reject(&block)
+    to_h.reject(&block)
+  end
+
   private
 
   # Returns the key of the object.
