@@ -215,34 +215,43 @@ class ComplianceEngine::Data
     @hiera[cache_key] = parameters
   end
 
-  def check_mapping(requested_profile)
-    raise ArgumentError, 'Argument must be a ComplianceEngine::Profile object' unless requested_profile.is_a?(ComplianceEngine::Profile)
+  def check_mapping(profile_or_ce)
+    raise ArgumentError, 'Argument must be a ComplianceEngine::Profile object' unless profile_or_ce.is_a?(ComplianceEngine::Profile) || profile_or_ce.is_a?(ComplianceEngine::Ce)
+
+    cache_key = "#{profile_or_ce.class}:#{profile_or_ce.key}"
 
     @check_mapping ||= {}
-    return @check_mapping[requested_profile.key] if @check_mapping.key?(requested_profile.key)
 
-    @check_mapping[requested_profile.key] = checks.select do |_, check|
-      mapping?(check, requested_profile)
+    return @check_mapping[cache_key] if @check_mapping.key?(cache_key)
+
+    @check_mapping[cache_key] = checks.select do |_, check|
+      mapping?(check, profile_or_ce)
     end
   end
 
   private
 
-  def mapping?(check, profile)
+  def mapping?(check, profile_or_ce)
+    raise ArgumentError, 'Argument must be a ComplianceEngine::Profile object' unless profile_or_ce.is_a?(ComplianceEngine::Profile) || profile_or_ce.is_a?(ComplianceEngine::Ce)
+
     @mapping ||= {}
-    cache_key = [check.key, profile.key].to_s
+    cache_key = [check.key, "#{profile_or_ce.class}:#{profile_or_ce.key}"].to_s
     return @mapping[cache_key] if @mapping.key?(cache_key)
 
     # Correlate based on CEs
-    return @mapping[cache_key] = true if correlate(check.ces, profile.ces)
+    if profile_or_ce.is_a?(ComplianceEngine::Profile)
+      return @mapping[cache_key] = true if correlate(check.ces, profile_or_ce.ces)
+    else
+      return @mapping[cache_key] = true if check.ces&.include?(profile_or_ce.key)
+    end
 
     # Correlate based on controls
     controls = check.controls&.select { |_, v| v }&.map { |k, _| k }
 
-    return @mapping[cache_key] = true if correlate(controls, profile.controls)
+    return @mapping[cache_key] = true if correlate(controls, profile_or_ce.controls)
 
     # Correlate based on CEs and controls
-    return @mapping[cache_key] = true if profile.ces&.any? { |k, _| correlate(controls, ces[k]&.controls) }
+    return @mapping[cache_key] = true if profile_or_ce.is_a?(ComplianceEngine::Profile) && profile_or_ce.ces&.any? { |k, _| correlate(controls, ces[k]&.controls) }
 
     @mapping[cache_key] = false
   end

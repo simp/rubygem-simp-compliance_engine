@@ -487,6 +487,22 @@ RSpec.describe ComplianceEngine::Data do
       expect(hiera).to be_instance_of(Hash)
       expect(hiera).to eq({ 'widget_spinner::audit_logging' => true })
     end
+
+    it 'returns checks for a profile' do
+      checks = compliance_engine.check_mapping(compliance_engine.profiles['custom_profile_1'])
+      checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
+      keys = checks.values.map { |check| check.key }
+      expect(keys).to be_instance_of(Array)
+      expect(keys).to eq(['widget_spinner_audit_logging'])
+    end
+
+    it 'returns checks for a ce' do
+      checks = compliance_engine.check_mapping(compliance_engine.ces['enable_widget_spinner_audit_logging'])
+      checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
+      keys = checks.values.map { |check| check.key }
+      expect(keys).to be_instance_of(Array)
+      expect(keys).to eq(['widget_spinner_audit_logging'])
+    end
   end
 
   context 'with mapping based on control' do
@@ -662,6 +678,22 @@ RSpec.describe ComplianceEngine::Data do
       hiera = compliance_engine.hiera(['custom_profile_1'])
       expect(hiera).to be_instance_of(Hash)
       expect(hiera).to eq({ 'widget_spinner::audit_logging' => true })
+    end
+
+    it 'returns checks for a profile' do
+      checks = compliance_engine.check_mapping(compliance_engine.profiles['custom_profile_1'])
+      checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
+      keys = checks.values.map { |check| check.key }
+      expect(keys).to be_instance_of(Array)
+      expect(keys).to eq(['widget_spinner_audit_logging'])
+    end
+
+    it 'returns checks for a ce' do
+      checks = compliance_engine.check_mapping(compliance_engine.ces['enable_widget_spinner_audit_logging'])
+      checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
+      keys = checks.values.map { |check| check.key }
+      expect(keys).to be_instance_of(Array)
+      expect(keys).to eq(['widget_spinner_audit_logging'])
     end
   end
 end
