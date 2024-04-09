@@ -17,13 +17,14 @@ class ComplianceEngine::Component
     @component ||= { key: name, fragments: {} }
   end
 
-  attr_accessor :component, :facts, :enforcement_tolerance, :environment_data
+  attr_accessor :component, :facts, :enforcement_tolerance, :environment_data, :cache
 
   def invalidate_cache(data = nil)
     @facts = data&.facts
     @enforcement_tolerance = data&.enforcement_tolerance
     @environment_data = data&.environment_data
     @fragments = nil
+    @cache = nil
   end
 
   # Adds a value to the fragments array of the component.
@@ -53,27 +54,27 @@ class ComplianceEngine::Component
   end
 
   def title
-    element(:title, 'title')
+    element('title')
   end
 
   def description
-    element(:description, 'description')
+    element('description')
   end
 
   def oval_ids
-    element(:oval_ids, 'oval-ids')
+    element('oval-ids')
   end
 
   def controls
-    element(:controls, 'controls')
+    element('controls')
   end
 
   def identifiers
-    element(:identifiers, 'identifiers')
+    element('identifiers')
   end
 
   def ces
-    element(:ces, 'ces')
+    element('ces')
   end
 
   private
@@ -170,23 +171,25 @@ class ComplianceEngine::Component
     @fragments
   end
 
-  def element(key, value)
-    return component[key] if component.key?(key)
+  def element(key)
+    return cache[key] if cache&.key?(key)
+
+    cache ||= {}
 
     fragments.each_value do |fragment|
-      next unless fragment.key?(value)
+      next unless fragment.key?(key)
 
-      if fragment[value].is_a?(Array)
-        component[key] ||= []
-        component[key] += fragment[value]
-      elsif fragment[value].is_a?(Hash)
-        component[key] ||= {}
-        component[key] = component[key].deep_merge!(fragment[value])
+      if fragment[key].is_a?(Array)
+        cache[key] ||= []
+        cache[key] += fragment[key]
+      elsif fragment[key].is_a?(Hash)
+        cache[key] ||= {}
+        cache[key] = cache[key].deep_merge!(fragment[key])
       else
-        component[key] = fragment[value]
+        cache[key] = fragment[key]
       end
     end
 
-    component[key]
+    cache[key]
   end
 end

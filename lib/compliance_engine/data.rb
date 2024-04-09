@@ -53,6 +53,7 @@ class ComplianceEngine::Data
     @hiera = nil
     @confines = nil
     @mapping = nil
+    @check_mapping = nil
   end
 
   # Scan paths for compliance data files
@@ -194,7 +195,7 @@ class ComplianceEngine::Data
         next
       end
 
-      valid_profiles << profile
+      valid_profiles << profiles[profile]
     end
 
     # If we have no valid profiles, we won't have any hiera data.
@@ -205,18 +206,24 @@ class ComplianceEngine::Data
 
     parameters = {}
 
-    checks.each_value do |value|
-      next unless value.type == 'puppet-class-parameter'
-
-      valid_profiles.reverse_each do |profile|
-        next if profiles[profile].nil?
-        next unless mapping?(value, profiles[profile])
-        next unless value.settings.key?('parameter') && value.settings.key?('value')
-        parameters = parameters.deep_merge!({ value.settings['parameter'] => value.settings['value'] })
+    valid_profiles.reverse_each do |profile|
+      check_mapping(profile).each_value do |check|
+        parameters = parameters.deep_merge!(check.hiera)
       end
     end
 
     @hiera[cache_key] = parameters
+  end
+
+  def check_mapping(requested_profile)
+    raise ArgumentError, 'Argument must be a ComplianceEngine::Profile object' unless requested_profile.is_a?(ComplianceEngine::Profile)
+
+    @check_mapping ||= {}
+    return @check_mapping[requested_profile.key] if @check_mapping.key?(requested_profile.key)
+
+    @check_mapping[requested_profile.key] = checks.select do |_, check|
+      mapping?(check, requested_profile)
+    end
   end
 
   private
