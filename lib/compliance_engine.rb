@@ -7,10 +7,18 @@ require 'compliance_engine/data'
 module ComplianceEngine
   class Error < StandardError; end
 
+  # Open compliance data
+  #
+  # @param [Array<String>] paths The paths to the compliance data files
+  # @return [ComplianceEngine::Data]
   def self.open(*paths)
     Data.new(*paths)
   end
 
+  # Open compliance data
+  #
+  # @param [Array<String>] paths The paths to the compliance data files
+  # @return [ComplianceEngine::Data]
   def self.new(*paths)
     Data.new(*paths)
   end

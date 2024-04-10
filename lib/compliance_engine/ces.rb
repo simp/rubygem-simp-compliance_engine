@@ -4,28 +4,45 @@ require 'compliance_engine'
 
 # A collection of compliance engine data CEs
 class ComplianceEngine::Ces < ComplianceEngine::Collection
+  # A Hash of CEs by OVAL ID
+  #
+  # @return [Hash]
   def by_oval_id
     return @by_oval_id unless @by_oval_id.nil?
 
     @by_oval_id ||= {}
 
-    to_h.each do |k, v|
+    each do |k, v|
       v.oval_ids&.each do |oval_id|
-        @by_oval_id[oval_id] ||= []
-        @by_oval_id[oval_id] << k
+        @by_oval_id[oval_id] ||= {}
+        @by_oval_id[oval_id][k] = v
       end
     end
 
-    @by_oval_id.each_key { |k| @by_oval_id[k].uniq! }
     @by_oval_id
+  end
+
+  # Invalidate all cached data
+  #
+  # @param data [ComplianceEngine::Data, NilClass] the data to initialize the object with
+  # @return [NilClass]
+  def invalidate_cache(data = nil)
+    @by_oval_id = nil
+    super
   end
 
   private
 
+  # Returns the key of the collection in compliance engine source data
+  #
+  # @return [String]
   def key
     'ce'
   end
 
+  # Returns the class to use for the collection
+  #
+  # @return [Class]
   def collected
     ComplianceEngine::Ce
   end

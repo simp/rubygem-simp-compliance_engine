@@ -28,26 +28,37 @@ class ComplianceEngine::Data
   # Setting any of these should all invalidate any cached data
   attr_reader :data, :facts, :enforcement_tolerance, :environment_data
 
+  # Set the object data
+  # @param [Hash] data The data to initialize the object with
   def data=(data)
     @data = data
     invalidate_cache
   end
 
+  # Set the facts
+  # @param [Hash] facts The facts to initialize the object with
   def facts=(facts)
     @facts = facts
     invalidate_cache
   end
 
+  # Set the enforcement tolerance
+  # @param [Hash] enforcement_tolerance The enforcement tolerance to initialize
   def enforcement_tolerance=(enforcement_tolerance)
     @enforcement_tolerance = enforcement_tolerance
     invalidate_cache
   end
 
+  # Set the environment data
+  # @param [Hash] environment_data The environment data to initialize the object with
   def environment_data=(environment_data)
     @environment_data = environment_data
     invalidate_cache
   end
 
+  # Invalidate all cached data
+  #
+  # @return [NilClass]
   def invalidate_cache
     [profiles, checks, controls, ces].each { |obj| obj.invalidate_cache(self) }
     @hiera = nil
@@ -178,6 +189,10 @@ class ComplianceEngine::Data
     @confines
   end
 
+  # Return all Hiera data from checks that map to the requested profiles
+  #
+  # @param [Array<String>] requested_profiles The requested profiles
+  # @return [Hash]
   def hiera(requested_profiles = [])
     # If we have no valid profiles, we won't have any hiera data.
     return {} if requested_profiles.empty?
@@ -215,6 +230,10 @@ class ComplianceEngine::Data
     @hiera[cache_key] = parameters
   end
 
+  # Return all checks that map to the requested profile or CE
+  #
+  # @param [ComplianceEngine::Profile, ComplianceEngine::Ce] profile_or_ce The requested profile or CE
+  # @return [Hash]
   def check_mapping(profile_or_ce)
     raise ArgumentError, 'Argument must be a ComplianceEngine::Profile object' unless profile_or_ce.is_a?(ComplianceEngine::Profile) || profile_or_ce.is_a?(ComplianceEngine::Ce)
 
@@ -231,6 +250,11 @@ class ComplianceEngine::Data
 
   private
 
+  # Return true if the check is mapped to the profile or CE
+  #
+  # @param [ComplianceEngine::Check] check The check
+  # @param [ComplianceEngine::Profile, ComplianceEngine::Ce] profile_or_ce The profile or CE
+  # @return [TrueClass, FalseClass]
   def mapping?(check, profile_or_ce)
     raise ArgumentError, 'Argument must be a ComplianceEngine::Profile object' unless profile_or_ce.is_a?(ComplianceEngine::Profile) || profile_or_ce.is_a?(ComplianceEngine::Ce)
 
@@ -256,6 +280,11 @@ class ComplianceEngine::Data
     @mapping[cache_key] = false
   end
 
+  # Correlate between arrays and hashes
+  #
+  # @param [Array] a An array
+  # @param [Hash] b A hash
+  # @return [TrueClass, FalseClass]
   def correlate(a, b)
     return false if a.nil? || b.nil?
     unless a.is_a?(Array) && b.is_a?(Hash)

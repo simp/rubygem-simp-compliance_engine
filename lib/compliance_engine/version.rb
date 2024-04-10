@@ -14,6 +14,9 @@ module ComplianceEngine
       @version = version
     end
 
+    # Convert the version to a string
+    #
+    # @return [String]
     def to_s
       @version
     end
