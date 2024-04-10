@@ -18,7 +18,7 @@ class ComplianceEngine::Component
     @component ||= { key: name, fragments: {} }
   end
 
-  attr_accessor :component, :facts, :enforcement_tolerance, :environment_data, :cache
+  attr_accessor :component, :facts, :enforcement_tolerance, :environment_data
 
   # Invalidate all cached data
   #
@@ -29,7 +29,7 @@ class ComplianceEngine::Component
     @enforcement_tolerance = data&.enforcement_tolerance
     @environment_data = data&.environment_data
     @fragments = nil
-    @cache = nil
+    @element = nil
   end
 
   # Adds a value to the fragments array of the component.
@@ -65,35 +65,35 @@ class ComplianceEngine::Component
   #
   # @return [String] the title of the component
   def title
-    element('title')
+    element['title']
   end
 
   # Returns the description of the component
   #
   # @return [String] the description of the component
   def description
-    element('description')
+    element['description']
   end
 
   # Returns the oval ids of the component
   #
   # @return [Array] the oval ids of the component
   def oval_ids
-    element('oval-ids')
+    element['oval-ids']
   end
 
   # Returns the controls of the component
   #
   # @return [Hash] the controls of the component
   def controls
-    element('controls')
+    element['controls']
   end
 
   # Returns the identifiers of the component
   #
   # @return [Hash] the identifiers of the component
   def identifiers
-    element('identifiers')
+    element['identifiers']
   end
 
   # Returns the ces of the component
@@ -101,7 +101,7 @@ class ComplianceEngine::Component
   # @return [Array, Hash] the ces of the component
   # @note This returns an Array for checks and a Hash for other components
   def ces
-    element('ces')
+    element['ces']
   end
 
   private
@@ -212,29 +212,21 @@ class ComplianceEngine::Component
     @fragments
   end
 
-  # Returns an element of the component
+  # Returns a merged view of the component fragments
   #
-  # @param [String] key The key of the element
   # @return [Object] the element of the component
-  def element(key)
-    return cache[key] if cache&.key?(key)
-
-    cache ||= {}
+  def element
+    return @element unless @element.nil?
 
     fragments.each_value do |fragment|
-      next unless fragment.key?(key)
-
-      if fragment[key].is_a?(Array)
-        cache[key] ||= []
-        cache[key] += fragment[key]
-      elsif fragment[key].is_a?(Hash)
-        cache[key] ||= {}
-        cache[key] = cache[key].deep_merge!(fragment[key])
-      else
-        cache[key] = fragment[key]
-      end
+      @element = if @element.nil?
+                   fragment
+                 else
+                   @element.deep_merge!(fragment)
+                 end
     end
 
-    cache[key]
+    @element = {} if @element.nil?
+    @element
   end
 end

@@ -8,7 +8,7 @@ class ComplianceEngine::Check < ComplianceEngine::Component
   #
   # @return [Hash] the settings of the check
   def settings
-    element('settings')
+    element['settings']
   end
 
   # Returns the Puppet class parameters of the check
@@ -26,14 +26,14 @@ class ComplianceEngine::Check < ComplianceEngine::Component
   #
   # @return [String] the type of the check
   def type
-    element('type')
+    element['type']
   end
 
   # Returns the remediation data of the check
   #
   # @return [Hash] the remediation data of the check
   def remediation
-    element('remediation')
+    element['remediation']
   end
 
   # Invalidate all cached data
