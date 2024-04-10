@@ -22,15 +22,6 @@ class ComplianceEngine::Ces < ComplianceEngine::Collection
     @by_oval_id
   end
 
-  # Invalidate all cached data
-  #
-  # @param data [ComplianceEngine::Data, NilClass] the data to initialize the object with
-  # @return [NilClass]
-  def invalidate_cache(data = nil)
-    @by_oval_id = nil
-    super
-  end
-
   private
 
   # Returns the key of the collection in compliance engine source data

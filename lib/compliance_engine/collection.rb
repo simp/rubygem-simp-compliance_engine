@@ -8,9 +8,7 @@ class ComplianceEngine::Collection
   #
   # @param data [ComplianceEngine::Data] the data to initialize the object with
   def initialize(data)
-    @facts = data.facts
-    @enforcement_tolerance = data.enforcement_tolerance
-    @environment_data = data.environment_data
+    context_variables.each { |var| instance_variable_set(var, data.instance_variable_get(var)) }
     @collection ||= {}
     hash_key = key
     data.files.each do |file|
@@ -23,15 +21,14 @@ class ComplianceEngine::Collection
 
   attr_accessor :collection, :facts, :enforcement_tolerance, :environment_data
 
-  # Invalidate all cached data
+  # Invalidate the cache of computed data
   #
   # @param data [ComplianceEngine::Data, NilClass] the data to initialize the object with
   # @return [NilClass]
   def invalidate_cache(data = nil)
-    @facts = data&.facts
-    @enforcement_tolerance = data&.enforcement_tolerance
-    @environment_data = data&.environment_data
+    context_variables.each { |var| instance_variable_set(var, data&.instance_variable_get(var)) }
     collection.each_value { |obj| obj.invalidate_cache(data) }
+    (instance_variables - (context_variables + [:@collection])).each { |var| instance_variable_set(var, nil) }
     nil
   end
 
@@ -104,6 +101,13 @@ class ComplianceEngine::Collection
   end
 
   private
+
+  # Get the context variables
+  #
+  # @return [Array<Symbol>]
+  def context_variables
+    [:@enforcement_tolerance, :@environment_data, :@facts]
+  end
 
   # Returns the key of the object
   #

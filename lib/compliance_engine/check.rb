@@ -35,13 +35,4 @@ class ComplianceEngine::Check < ComplianceEngine::Component
   def remediation
     element['remediation']
   end
-
-  # Invalidate all cached data
-  #
-  # @param data [ComplianceEngine::Data, ComplianceEngine::Collection, NilClass] the data to initialize the object with
-  # @return [NilClass]
-  def invalidate_cache(data = nil)
-    @hiera = nil
-    super
-  end
 end

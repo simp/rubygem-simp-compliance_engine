@@ -30,41 +30,46 @@ class ComplianceEngine::Data
 
   # Set the object data
   # @param [Hash] data The data to initialize the object with
-  def data=(data)
-    @data = data
+  def data=(value)
+    @data = value
     invalidate_cache
   end
 
   # Set the facts
   # @param [Hash] facts The facts to initialize the object with
-  def facts=(facts)
-    @facts = facts
+  def facts=(value)
+    @facts = value
     invalidate_cache
   end
 
   # Set the enforcement tolerance
   # @param [Hash] enforcement_tolerance The enforcement tolerance to initialize
-  def enforcement_tolerance=(enforcement_tolerance)
-    @enforcement_tolerance = enforcement_tolerance
+  def enforcement_tolerance=(value)
+    @enforcement_tolerance = value
     invalidate_cache
   end
 
   # Set the environment data
   # @param [Hash] environment_data The environment data to initialize the object with
-  def environment_data=(environment_data)
-    @environment_data = environment_data
+  def environment_data=(value)
+    @environment_data = value
     invalidate_cache
   end
 
-  # Invalidate all cached data
+  # Invalidate the cache of computed data
   #
   # @return [NilClass]
   def invalidate_cache
-    [profiles, checks, controls, ces].each { |obj| obj.invalidate_cache(self) }
-    @hiera = nil
-    @confines = nil
-    @mapping = nil
-    @check_mapping = nil
+    collection_variables.each { |var| instance_variable_get(var)&.invalidate_cache(self) }
+    cache_variables.each { |var| instance_variable_set(var, nil) }
+  end
+
+  # Discard all parsed data other than the top-level data
+  #
+  # @return [NilClass]
+  def reset_collection
+    # Discard any cached objects
+    (instance_variables - (data_variables + context_variables)).each { |var| instance_variable_set(var, nil) }
   end
 
   # Scan paths for compliance data files
@@ -97,7 +102,6 @@ class ComplianceEngine::Data
   #
   # @param [String] file The path to the compliance data file
   def update(file)
-    # debug "Scanning #{file}"
     # If we've already scanned this file, and the size and modification
     # time of the file haven't changed, skip it.
     size = File.size(file)
@@ -106,25 +110,25 @@ class ComplianceEngine::Data
       return
     end
 
-    data[file] = {
-      size: size,
-      mtime: mtime,
-    }
+    data[file] = begin
+                   parse(file)
+                 rescue => e
+                   warn e.message
+                   {}
+                 end
 
-    begin
-      data[file] = parse(file)
-    rescue => e
-      warn e.message
-    end
+    data[file][:size] = size
+    data[file][:mtime] = mtime
+
+    reset_collection
   end
 
   # Get a list of files with compliance data
   #
   # @return [Array<String>]
   def files
-    # FIXME: This needs to be recalculated when files are added or updated.
-    # return @files unless @files.nil?
-    @files = data.select { |_file, data| data.key?(:content) }.keys
+    return @files unless @files.nil?
+    @files = data.select { |_, file| file.key?(:content) }.keys
   end
 
   # Get the compliance data for a given file
@@ -141,7 +145,6 @@ class ComplianceEngine::Data
   #
   # @return [ComplianceEngine::Profiles]
   def profiles
-    # FIXME: This needs to be recalculated when files are added or updated.
     @profiles ||= ComplianceEngine::Profiles.new(self)
   end
 
@@ -149,7 +152,6 @@ class ComplianceEngine::Data
   #
   # @return [ComplianceEngine::CEs]
   def ces
-    # FIXME: This needs to be recalculated when files are added or updated.
     @ces ||= ComplianceEngine::Ces.new(self)
   end
 
@@ -157,7 +159,6 @@ class ComplianceEngine::Data
   #
   # @return [ComplianceEngine::Checks]
   def checks
-    # FIXME: This needs to be recalculated when files are added or updated.
     @checks ||= ComplianceEngine::Checks.new(self)
   end
 
@@ -165,7 +166,6 @@ class ComplianceEngine::Data
   #
   # @return [ComplianceEngine::Controls]
   def controls
-    # FIXME: This needs to be recalculated when files are added or updated.
     @controls ||= ComplianceEngine::Controls.new(self)
   end
 
@@ -249,6 +249,34 @@ class ComplianceEngine::Data
   end
 
   private
+
+  # Get the collection variables
+  #
+  # @return [Array<Symbol>]
+  def collection_variables
+    [:@profiles, :@checks, :@controls, :@ces]
+  end
+
+  # Get the data variables
+  #
+  # @return [Array<Symbol>]
+  def data_variables
+    [:@data]
+  end
+
+  # Get the context variables
+  #
+  # @return [Array<Symbol>]
+  def context_variables
+    [:@enforcement_tolerance, :@environment_data, :@facts]
+  end
+
+  # Get the cache variables
+  #
+  # @return [Array<Symbol>]
+  def cache_variables
+    instance_variables - (data_variables + collection_variables + context_variables)
+  end
 
   # Return true if the check is mapped to the profile or CE
   #
