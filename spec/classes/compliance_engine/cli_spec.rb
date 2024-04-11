@@ -10,8 +10,7 @@ RSpec.describe ComplianceEngine::CLI do
     allow(binding).to receive(:irb).and_return(true)
   end
 
-  xit 'initializes' do
-    pending('TODO: implement mocking of binding.irb')
+  it 'initializes' do
     expect(cli).not_to be_nil
     expect(cli).to be_instance_of(described_class)
   end

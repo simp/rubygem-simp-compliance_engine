@@ -3,6 +3,4 @@
 
 require 'compliance_engine/cli'
 
-exitval = ComplianceEngine::CLI.new(ARGV)
-
-exit(exitval) if exitval.is_a?(Integer)
+ComplianceEngine::CLI.start(ARGV)
