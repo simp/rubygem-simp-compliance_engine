@@ -34,6 +34,13 @@ class ComplianceEngine::CLI < Thor
     end
   end
 
+  desc 'profiles', 'List available profiles'
+  def profiles
+    data = ComplianceEngine::Data.new(*options[:module], facts: facts, enforcement_tolerance: options[:enforcement_tolerance])
+    require 'yaml'
+    puts data.profiles.select { |key, value| value.ces&.count&.positive? || value.controls&.count&.positive? }.keys.to_yaml
+  end
+
   desc 'inspect', 'Start an interactive shell'
   def inspect
     # Run the CLI with `data` as the object containing the compliance data.
