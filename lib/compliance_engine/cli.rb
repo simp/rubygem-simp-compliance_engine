@@ -1,18 +1,44 @@
 # frozen_string_literal: true
 
 require 'compliance_engine'
-require 'optparse'
+require 'thor'
 
 # Compliance Engine CLI
-class ComplianceEngine::CLI
-  def initialize(args)
-    # Immediately return with an exit value if options
-    # include --help or --version.
-    return options(args) if options(args).is_a?(Integer)
+class ComplianceEngine::CLI < Thor
+  class_option :facts, type: :string
+  class_option :enforcement_tolerance, type: :numeric
+  class_option :module, type: :array, default: []
 
-    # Otherwise, run the CLI with `data` as the
-    # object containing the compliance data.
-    data = ComplianceEngine::Data.new(*args)
+  desc 'hiera', 'Dump Hiera data'
+  option :profile, type: :array, required: true
+  def hiera
+    data = ComplianceEngine::Data.new(*options[:module], facts: facts, enforcement_tolerance: options[:enforcement_tolerance])
+    require 'yaml'
+    puts data.hiera(options[:profile]).to_yaml
+  end
+
+  desc 'lookup KEY', 'Look up a Hiera key'
+  option :profile, type: :array, required: true
+  def lookup(key)
+    data = ComplianceEngine::Data.new(*options[:module], facts: facts, enforcement_tolerance: options[:enforcement_tolerance])
+    require 'yaml'
+    puts data.hiera(options[:profile]).select { |k, _| k == key }.to_yaml
+  end
+
+  desc 'dump', 'Dump all compliance data'
+  def dump
+    data = ComplianceEngine::Data.new(*options[:module], facts: facts, enforcement_tolerance: options[:enforcement_tolerance])
+    require 'yaml'
+    data.files.each do |file|
+      puts({ file => data.get(file) }.to_yaml)
+    end
+  end
+
+  desc 'inspect', 'Start an interactive shell'
+  def inspect
+    # Run the CLI with `data` as the object containing the compliance data.
+    data = ComplianceEngine::Data.new(*options[:module], facts: facts, enforcement_tolerance: options[:enforcement_tolerance])
+
     require 'irb'
     # rubocop:disable Lint/Debugger
     binding.irb
@@ -21,39 +47,12 @@ class ComplianceEngine::CLI
 
   private
 
-  def usage
-    "Usage: #{File.basename($PROGRAM_NAME)} [options] path [path ...]"
-  end
+  def facts
+    return nil unless options[:facts]
+    return @facts unless @facts.nil?
 
-  def parse_options(args)
-    o = {}
+    require 'json'
 
-    opts = OptionParser.new do |opt|
-      opt.banner = usage
-
-      opt.on('-h', '--help', 'Prints this help') do
-        puts opt
-        return 0
-      end
-
-      opt.on('-v', '--version', 'Prints the version') do
-        puts ComplianceEngine::VERSION
-        return 0
-      end
-    end
-
-    begin
-      opts.parse!(args)
-    rescue OptionParser::ParseError => e
-      warn e
-      warn opts
-      return 1
-    end
-
-    o
-  end
-
-  def options(args)
-    @options ||= parse_options(args)
+    @facts = JSON.parse(options[:facts])
   end
 end

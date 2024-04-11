@@ -157,11 +157,9 @@ class ComplianceEngine::Component
         unless facts.nil?
           fact = facts.dig(*k.split('.'))
           if fact.nil?
-            warn "Fact #{k} not found for #{fragment}"
             return true
           end
           unless fact_match?(fact, v)
-            warn "Fact #{k} #{fact} does not match #{v} for #{fragment}"
             return true
           end
         end
