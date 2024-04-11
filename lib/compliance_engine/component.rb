@@ -10,26 +10,20 @@ class ComplianceEngine::Component
   # @param [String] component The component key
   # @param [ComplianceEngine::Data, ComplianceEngine::Collection, NilClass] data The data to initialize the object with
   def initialize(name, data: nil)
-    unless data.nil?
-      @facts = data.facts
-      @enforcement_tolerance = data.enforcement_tolerance
-      @environment_data = data.environment_data
-    end
+    context_variables.each { |var| instance_variable_set(var, data&.instance_variable_get(var)) }
     @component ||= { key: name, fragments: {} }
   end
 
   attr_accessor :component, :facts, :enforcement_tolerance, :environment_data
 
-  # Invalidate all cached data
+  # Invalidate the cache of computed data
   #
   # @param data [ComplianceEngine::Data, ComplianceEngine::Collection, NilClass] the data to initialize the object with
   # @return [NilClass]
   def invalidate_cache(data = nil)
-    @facts = data&.facts
-    @enforcement_tolerance = data&.enforcement_tolerance
-    @environment_data = data&.environment_data
-    @fragments = nil
-    @element = nil
+    context_variables.each { |var| instance_variable_set(var, data&.instance_variable_get(var)) }
+    cache_variables.each { |var| instance_variable_set(var, nil) }
+    nil
   end
 
   # Adds a value to the fragments array of the component.
@@ -105,6 +99,20 @@ class ComplianceEngine::Component
   end
 
   private
+
+  # Get the context variables
+  #
+  # @return [Array<Symbol>]
+  def context_variables
+    [:@enforcement_tolerance, :@environment_data, :@facts]
+  end
+
+  # Get the cache variables
+  #
+  # @return [Array<Symbol>]
+  def cache_variables
+    instance_variables - (context_variables + [:@component])
+  end
 
   # Compare a fact value against a confine value
   #
