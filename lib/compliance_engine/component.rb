@@ -34,18 +34,26 @@ class ComplianceEngine::Component
     component[:fragments][filename] = value
   end
 
-  # Returns an array of fragments from the component.
+  # Returns an array of fragments from the component
   #
   # @return [Array] an array of fragments
   def to_a
     component[:fragments].values
   end
 
-  # Returns an array of fragments from the component.
+  # Returns the merged data from the component
   #
-  # @return [Array] an array of fragments
+  # @return [Hash] merged data
   def to_h
-    # TODO: Return confined & deep-merged data
+    return @to_h unless @to_h.nil?
+
+    @to_h ||= {}
+
+    fragments.each_value do |v|
+      @to_h = @to_h.deep_merge!(v)
+    end
+
+    @to_h
   end
 
   # Returns the key of the component
@@ -145,10 +153,18 @@ class ComplianceEngine::Component
 
     fragment['confine'].each do |k, v|
       if k == 'module_name'
-        # TODO: Implement confinement based on Puppet environment data
         unless environment_data.nil?
-          # FIXME: Puppet environment data is not yet supported
-          # module_version = fragment['confine']['module_version']
+          return true unless environment_data.key?(v)
+          module_version = fragment['confine']['module_version']
+          unless module_version.nil?
+            require 'semantic_puppet'
+            begin
+              return true unless SemanticPuppet::VersionRange.parse(module_version).include?(SemanticPuppet::Version.parse(environment_data[v]))
+            rescue => e
+              warn "Failed to compare #{v} #{environment_data[v]} with version confinement #{module_version}: #{e.message}"
+              return true
+            end
+          end
         end
       elsif k == 'module_version'
         warn "Missing module name for #{fragment}" unless fragment['confine'].key?('module_name')

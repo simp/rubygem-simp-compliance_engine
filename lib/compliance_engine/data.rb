@@ -14,6 +14,7 @@ require 'compliance_engine/controls'
 require 'compliance_engine/profiles'
 
 require 'deep_merge'
+require 'json'
 
 # Work with compliance data
 class ComplianceEngine::Data
@@ -76,8 +77,18 @@ class ComplianceEngine::Data
   #
   # @param [Array<String>] paths The paths to the compliance data files
   def open(*paths)
+    modules = {}
     paths.each do |path|
       if File.directory?(path)
+        # Read the Puppet module's metadata.json
+        if File.exist?("#{path}/metadata.json")
+          begin
+            metadata = JSON.parse(File.read("#{path}/metadata.json"))
+            modules[metadata['name']] = metadata['version']
+          rescue => e
+            warn "Could not parse #{path}/metadata.json: #{e.message}"
+          end
+        end
         # In this directory, we want to look for all yaml and json files
         # under SIMP/compliance_profiles and simp/compliance_profiles.
         globs = ['SIMP/compliance_profiles', 'simp/compliance_profiles']
@@ -96,6 +107,8 @@ class ComplianceEngine::Data
         raise ComplianceEngine::Error, "Could not find path '#{path}'"
       end
     end
+    self.environment_data ||= {}
+    self.environment_data = self.environment_data.merge(modules)
   end
 
   # Update the data for a given file
@@ -329,7 +342,6 @@ class ComplianceEngine::Data
   # @return [Hash]
   def parse(file)
     contents = if File.extname(file) == '.json'
-                 require 'json'
                  JSON.parse(File.read(file))
                else
                  require 'yaml'
