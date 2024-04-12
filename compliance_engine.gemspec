@@ -31,4 +31,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'deep_merge', '~> 1.2'
   spec.add_dependency 'thor', '~> 1.3'
+  spec.add_dependency 'semantic_puppet', '~> 1.1'
 end
