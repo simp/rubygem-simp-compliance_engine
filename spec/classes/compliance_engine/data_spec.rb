@@ -384,6 +384,230 @@ RSpec.describe ComplianceEngine::Data do
     end
   end
 
+  context 'with complex confines' do
+    def test_data
+      {
+        'test_module_00' => {
+          'a/file.yaml' => <<~A_YAML,
+            ---
+            version: 2.0.0
+            profiles:
+              custom_profile_1:
+                ces:
+                  enable_widget_spinner_audit_logging.el7: true
+                confine:
+                  os.release.major:
+                    - '7'
+                  os.name:
+                    - CentOS
+                    - OracleLinux
+                    - RedHat
+            ce:
+              enable_widget_spinner_audit_logging.el7:
+                controls:
+                  nist_800_53:rev4:AU-2: true
+                title: 'Ensure logging is enabled for Widget Spinner'
+                description: 'This setting enables usage and security logging for the Widget Spinner application.'
+                confine:
+                  os.release.major:
+                    - '7'
+                  os.name:
+                    - CentOS
+                    - OracleLinux
+                    - RedHat
+            checks:
+              widget_spinner_audit_logging_no:
+                type: 'puppet-class-parameter'
+                settings:
+                  parameter: 'widget_spinner::audit_logging'
+                  value: ['no']
+                ces:
+                  - enable_widget_spinner_audit_logging.el7
+            A_YAML
+          'b/file.yaml' => <<~B_YAML,
+            ---
+            version: 2.0.0
+            profiles:
+              custom_profile_1:
+                ces:
+                  enable_widget_spinner_audit_logging.el8: true
+                confine:
+                  os.release.major:
+                    - '8'
+                  os.name:
+                    - CentOS
+                    - OracleLinux
+                    - RedHat
+            ce:
+              enable_widget_spinner_audit_logging.el8:
+                controls:
+                  nist_800_53:rev4:AU-2: true
+                title: 'Ensure logging is enabled for Widget Spinner'
+                description: 'This setting enables usage and security logging for the Widget Spinner application.'
+                confine:
+                  os.release.major:
+                    - '8'
+                  os.name:
+                    - CentOS
+                    - OracleLinux
+                    - RedHat
+            checks:
+              widget_spinner_audit_logging_yes:
+                type: 'puppet-class-parameter'
+                settings:
+                  parameter: 'widget_spinner::audit_logging'
+                  value: ['yes']
+                ces:
+                  - enable_widget_spinner_audit_logging.el8
+            B_YAML
+          'c/file.yaml' => <<~C_YAML,
+            ---
+            version: 2.0.0
+            profiles:
+              custom_profile_1:
+                ces:
+                  enable_widget_spinner_audit_logging.el9: true
+                confine:
+                  os.release.major:
+                    - '9'
+                  os.name:
+                    - CentOS
+                    - OracleLinux
+                    - RedHat
+            ce:
+              enable_widget_spinner_audit_logging.el9:
+                controls:
+                  nist_800_53:rev4:AU-2: true
+                title: 'Ensure logging is enabled for Widget Spinner'
+                description: 'This setting enables usage and security logging for the Widget Spinner application.'
+                confine:
+                  os.release.major:
+                    - '9'
+                  os.name:
+                    - CentOS
+                    - OracleLinux
+                    - RedHat
+            checks:
+              widget_spinner_audit_logging_maybe:
+                type: 'puppet-class-parameter'
+                settings:
+                  parameter: 'widget_spinner::audit_logging'
+                  value: ['maybe']
+                ces:
+                  - enable_widget_spinner_audit_logging.el9
+            C_YAML
+        },
+      }
+    end
+
+    subject(:compliance_engine) { described_class.new(*test_data.keys) }
+
+    before(:each) do
+      test_data.each do |module_path, file_data|
+        allow(File).to receive(:directory?).with(module_path).and_return(true)
+        allow(Dir).to receive(:exist?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
+        allow(Dir).to receive(:exist?).with("#{module_path}/simp/compliance_profiles").and_return(false)
+        allow(Dir).to receive(:glob).with(
+          [
+            "#{module_path}/SIMP/compliance_profiles/**/*.yaml",
+            "#{module_path}/SIMP/compliance_profiles/**/*.json",
+          ],
+        ).and_return(
+          file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+        )
+
+        file_data.each do |name, contents|
+          filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
+          allow(File).to receive(:size).with(filename).and_return(contents.length)
+          allow(File).to receive(:mtime).with(filename).and_return(Time.now)
+          allow(File).to receive(:read).with(filename).and_return(contents)
+        end
+      end
+    end
+
+    it 'initializes' do
+      expect(compliance_engine).not_to be_nil
+      expect(compliance_engine).to be_instance_of(described_class)
+    end
+
+    it 'returns a list of files' do
+      expect(compliance_engine.files).to eq(test_data.map { |module_path, files| files.map { |name, _| "#{module_path}/SIMP/compliance_profiles/#{name}" } }.flatten)
+    end
+
+    it 'returns a list of profiles' do
+      profiles = compliance_engine.profiles
+      expect(profiles).to be_instance_of(ComplianceEngine::Profiles)
+      expect(profiles.keys).to eq(['custom_profile_1'])
+    end
+
+    it 'returns a list of ces' do
+      ces = compliance_engine.ces
+      expect(ces).to be_instance_of(ComplianceEngine::Ces)
+      expect(ces.keys).to eq(['enable_widget_spinner_audit_logging.el7', 'enable_widget_spinner_audit_logging.el8', 'enable_widget_spinner_audit_logging.el9'])
+    end
+
+    it 'returns a hash of confines' do
+      confines = compliance_engine.confines
+      expect(confines).to be_instance_of(Hash)
+      expect(confines.keys).to eq(['os.release.major', 'os.name'])
+    end
+
+    it 'returns no hiera data when there are no profiles' do
+      hiera = compliance_engine.hiera
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({})
+    end
+
+    it 'returns no hiera data when there are no valid profiles' do
+      hiera = compliance_engine.hiera(['invalid_profile'])
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({})
+    end
+
+    it 'returns confined hiera data' do
+      compliance_engine.facts = { 'os' => { 'release' => { 'major' => '7' }, 'name' => 'CentOS' } }
+      hiera = compliance_engine.hiera(['custom_profile_1'])
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({ 'widget_spinner::audit_logging' => ['no'] })
+    end
+
+    it 'skips hiera data when there is no match' do
+      compliance_engine.facts = { 'os' => { 'release' => { 'major' => '12' }, 'name' => 'Debian' } }
+      hiera = compliance_engine.hiera(['custom_profile_1'])
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({})
+    end
+
+    it 'returns unconfined hiera data' do
+      compliance_engine.facts = nil
+      hiera = compliance_engine.hiera(['custom_profile_1'])
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({ 'widget_spinner::audit_logging' => ['no', 'yes', 'maybe'] })
+    end
+
+    it 'correctly invalidates cached data' do
+      compliance_engine.facts = { 'os' => { 'release' => { 'major' => '7' }, 'name' => 'CentOS' } }
+      hiera = compliance_engine.hiera(['custom_profile_1'])
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({ 'widget_spinner::audit_logging' => ['no'] })
+
+      compliance_engine.facts = { 'os' => { 'release' => { 'major' => '8' }, 'name' => 'RedHat' } }
+      hiera = compliance_engine.hiera(['custom_profile_1'])
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({ 'widget_spinner::audit_logging' => ['yes'] })
+
+      compliance_engine.facts = nil
+      hiera = compliance_engine.hiera(['custom_profile_1'])
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({ 'widget_spinner::audit_logging' => ['no', 'yes', 'maybe'] })
+
+      compliance_engine.facts = { 'os' => { 'release' => { 'major' => '9' }, 'name' => 'RedHat' } }
+      hiera = compliance_engine.hiera(['custom_profile_1'])
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({ 'widget_spinner::audit_logging' => ['maybe'] })
+    end
+  end
+
   context 'with mapping based on ce' do
     def test_data
       {
