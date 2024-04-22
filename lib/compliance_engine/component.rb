@@ -45,15 +45,7 @@ class ComplianceEngine::Component
   #
   # @return [Hash] merged data
   def to_h
-    return @to_h unless @to_h.nil?
-
-    @to_h ||= {}
-
-    fragments.each_value do |v|
-      @to_h = @to_h.deep_merge!(v)
-    end
-
-    @to_h
+    element
   end
 
   # Returns the key of the component
@@ -104,6 +96,14 @@ class ComplianceEngine::Component
   # @note This returns an Array for checks and a Hash for other components
   def ces
     element['ces']
+  end
+
+  # Return a single key from the component
+  #
+  # @param key [String] the key of the value to return
+  # @return [Object] the value of the key
+  def [](key)
+    element[key]
   end
 
   private
@@ -240,15 +240,12 @@ class ComplianceEngine::Component
   def element
     return @element unless @element.nil?
 
+    @element = {}
+
     fragments.each_value do |fragment|
-      @element = if @element.nil?
-                   fragment
-                 else
-                   @element.deep_merge!(fragment)
-                 end
+      @element = @element.deep_merge!(fragment)
     end
 
-    @element = {} if @element.nil?
     @element
   end
 end
