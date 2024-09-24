@@ -8,11 +8,12 @@ class ComplianceEngine::CLI < Thor
   class_option :facts, type: :string
   class_option :enforcement_tolerance, type: :numeric
   class_option :module, type: :array, default: []
+  class_option :modulepath, type: :array
+  class_option :modulezip, type: :string
 
   desc 'hiera', 'Dump Hiera data'
   option :profile, type: :array, required: true
   def hiera
-    data = ComplianceEngine::Data.new(*options[:module], facts: facts, enforcement_tolerance: options[:enforcement_tolerance])
     require 'yaml'
     puts data.hiera(options[:profile]).to_yaml
   end
@@ -20,14 +21,12 @@ class ComplianceEngine::CLI < Thor
   desc 'lookup KEY', 'Look up a Hiera key'
   option :profile, type: :array, required: true
   def lookup(key)
-    data = ComplianceEngine::Data.new(*options[:module], facts: facts, enforcement_tolerance: options[:enforcement_tolerance])
     require 'yaml'
     puts data.hiera(options[:profile]).select { |k, _| k == key }.to_yaml
   end
 
   desc 'dump', 'Dump all compliance data'
   def dump
-    data = ComplianceEngine::Data.new(*options[:module], facts: facts, enforcement_tolerance: options[:enforcement_tolerance])
     require 'yaml'
     data.files.each do |file|
       puts({ file => data.get(file) }.to_yaml)
@@ -36,7 +35,6 @@ class ComplianceEngine::CLI < Thor
 
   desc 'profiles', 'List available profiles'
   def profiles
-    data = ComplianceEngine::Data.new(*options[:module], facts: facts, enforcement_tolerance: options[:enforcement_tolerance])
     require 'yaml'
     puts data.profiles.select { |_, value| value.ces&.count&.positive? || value.controls&.count&.positive? }.keys.to_yaml
   end
@@ -44,8 +42,6 @@ class ComplianceEngine::CLI < Thor
   desc 'inspect', 'Start an interactive shell'
   def inspect
     # Run the CLI with `data` as the object containing the compliance data.
-    data = ComplianceEngine::Data.new(*options[:module], facts: facts, enforcement_tolerance: options[:enforcement_tolerance])
-
     require 'irb'
     # rubocop:disable Lint/Debugger
     binding.irb
@@ -53,6 +49,21 @@ class ComplianceEngine::CLI < Thor
   end
 
   private
+
+  def data
+    return @data unless @data.nil?
+
+    @data = ComplianceEngine::Data.new(facts: facts, enforcement_tolerance: options[:enforcement_tolerance])
+    if options[:modulezip]
+      @data.open_environment_zip(options[:modulezip])
+    elsif options[:modulepath]
+      @data.open_environment(*options[:modulepath])
+    else
+      @data.open(*options[:module])
+    end
+
+    @data
+  end
 
   def facts
     return nil unless options[:facts]

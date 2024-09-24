@@ -1,0 +1,12 @@
+---
+version: '2.0.0'
+profiles:
+  test_profile_00:
+    ces:
+      ce_00: true
+  test_profile_01:
+    ces:
+      ce_01: true
+ce:
+  ce_00: {}
+  ce_01: {}
