@@ -19,15 +19,17 @@ require 'json'
 # Work with compliance data
 class ComplianceEngine::Data
   # @param [Array<String>] paths The paths to the compliance data files
+  # @param [Hash] facts The facts to use while evaluating the data
+  # @param [Integer] enforcement_tolerance The tolerance to use while evaluating the data
   def initialize(*paths, facts: nil, enforcement_tolerance: nil)
     @data ||= {}
-    open(*paths) unless paths.nil? || paths.empty?
     @facts = facts
     @enforcement_tolerance = enforcement_tolerance
+    open(*paths) unless paths.nil? || paths.empty?
   end
 
   # Setting any of these should all invalidate any cached data
-  attr_reader :data, :facts, :enforcement_tolerance, :environment_data
+  attr_reader :data, :facts, :enforcement_tolerance, :environment_data, :modulepath
 
   # Set the object data
   # @param [Hash] data The data to initialize the object with
@@ -57,6 +59,13 @@ class ComplianceEngine::Data
     invalidate_cache
   end
 
+  # Set the modulepath
+  # @param [Array<String>] modulepath The Puppet modulepath
+  def modulepath=(value)
+    @modulepath = value
+    invalidate_cache
+  end
+
   # Invalidate the cache of computed data
   #
   # @return [NilClass]
@@ -73,17 +82,54 @@ class ComplianceEngine::Data
     (instance_variables - (data_variables + context_variables)).each { |var| instance_variable_set(var, nil) }
   end
 
+  # Scan a Puppet environment from a zip file
+  # @param [String] path The Puppet environment archive file
+  # @return [NilClass]
+  def open_environment_zip(path)
+    require 'zip/filesystem'
+
+    self.modulepath = path
+
+    Zip::File.open(path) do |zipfile|
+      dir = zipfile.dir
+      file = zipfile.file
+
+      modules = dir.entries('/'.dup).select do |entry|
+        file.directory?(entry) && %r{\A[a-z][a-z0-9_]*\Z}.match?(entry.to_s)
+      end
+      open(*modules, fileclass: file, dirclass: dir)
+    end
+  end
+
+  # Scan a Puppet environment
+  # @param [Array<String>] paths The Puppet modulepath components
+  # @return [NilClass]
+  def open_environment(*paths)
+    self.modulepath = paths
+    modules = paths.select { |path| File.directory?(path) }.map { |path|
+      Dir.children(path)
+         .select { |child| File.directory?(File.join(path, child)) }
+         .grep(%r{\A[a-z][a-z0-9_]*\Z})
+         .map { |child| File.join(path, child) }
+    }.flatten
+    open(*modules)
+  end
+
   # Scan paths for compliance data files
   #
   # @param [Array<String>] paths The paths to the compliance data files
-  def open(*paths)
+  # @param [Class] fileclass The class to use for reading files
+  # @param [Class] dirclass The class to use for reading directories
+  # @return [NilClass]
+  def open(*paths, fileclass: File, dirclass: Dir)
     modules = {}
     paths.each do |path|
-      if File.directory?(path)
+      if fileclass.directory?(path)
         # Read the Puppet module's metadata.json
-        if File.exist?("#{path}/metadata.json")
+        metadata_json = File.join(path.to_s, 'metadata.json')
+        if fileclass.exist?(metadata_json)
           begin
-            metadata = JSON.parse(File.read("#{path}/metadata.json"))
+            metadata = JSON.parse(fileclass.read(metadata_json))
             modules[metadata['name']] = metadata['version']
           rescue => e
             warn "Could not parse #{path}/metadata.json: #{e.message}"
@@ -92,46 +138,71 @@ class ComplianceEngine::Data
         # In this directory, we want to look for all yaml and json files
         # under SIMP/compliance_profiles and simp/compliance_profiles.
         globs = ['SIMP/compliance_profiles', 'simp/compliance_profiles']
-                .select { |dir| Dir.exist?("#{path}/#{dir}") }
+                .select { |dir| fileclass.directory?("#{path}/#{dir}") }
                 .map { |dir|
           ['yaml', 'json'].map { |type| "#{path}/#{dir}/**/*.#{type}" }
         }.flatten
         # debug "Globs: #{globs}"
         # Using .each here to make mocking with rspec easier.
-        Dir.glob(globs).each do |file|
-          update(file)
+        globs.each do |glob|
+          dirclass.glob(glob).each do |file|
+            key = if Object.const_defined?(:Zip) && file.is_a?(Zip::Entry)
+                    File.join(file.zipfile.to_s, '.', file.to_s)
+                  else
+                    file.to_s
+                  end
+            update(file.to_s, key: key, fileclass: fileclass)
+          end
         end
-      elsif File.file?(path)
-        update(path)
+      elsif fileclass.file?(path)
+        key = if Object.const_defined?(:Zip) && path.is_a?(Zip::Entry)
+                File.join(path.zipfile.to_s, '.', path.to_s)
+              else
+                path.to_s
+              end
+        update(path, key: key, fileclass: fileclass)
       else
         raise ComplianceEngine::Error, "Could not find path '#{path}'"
       end
     end
     self.environment_data ||= {}
     self.environment_data = self.environment_data.merge(modules)
+
+    nil
   end
 
   # Update the data for a given file
   #
   # @param [String] file The path to the compliance data file
-  def update(file)
+  # @param [String] key The key to use for the data
+  # @param [Class] fileclass The class to use for reading files
+  # @param [Integer] size The size of the file
+  # @param [Time] mtime The modification time of the file
+  # @param [String] filetext The contents of the file
+  # @return [NilClass]
+  def update(
+    filename,
+    key: filename.to_s,
+    fileclass: File,
+    size: fileclass.size(filename.to_s),
+    mtime: fileclass.mtime(filename.to_s),
+    filetext: fileclass.read(filename.to_s)
+  )
     # If we've already scanned this file, and the size and modification
     # time of the file haven't changed, skip it.
-    size = File.size(file)
-    mtime = File.mtime(file)
-    if data.key?(file) && data[file][:size] == size && data[file][:mtime] == mtime
+    if data.key?(key) && data[key][:size] == size && data[key][:mtime] == mtime
       return
     end
 
-    data[file] = begin
-                   parse(file)
-                 rescue => e
-                   warn e.message
-                   {}
-                 end
+    data[key] = begin
+                  parse(filename, filetext: filetext)
+                rescue => e
+                  warn e.message
+                  {}
+                end
 
-    data[file][:size] = size
-    data[file][:mtime] = mtime
+    data[key][:size] = size
+    data[key][:mtime] = mtime
 
     reset_collection
   end
@@ -339,15 +410,17 @@ class ComplianceEngine::Data
   # Parse YAML or JSON files
   #
   # @param [String] file The path to the compliance data file
+  # @param [Class] fileclass The class to use for reading files
+  # @param [String] filetext The contents of the compliance data file
   # @return [Hash]
-  def parse(file)
-    contents = if File.extname(file) == '.json'
-                 JSON.parse(File.read(file))
+  def parse(filename, fileclass: File, filetext: fileclass.read(filename))
+    contents = if File.extname(filename) == '.json'
+                 JSON.parse(filetext)
                else
                  require 'yaml'
-                 YAML.safe_load(File.read(file))
+                 YAML.safe_load(filetext)
                end
-    raise ComplianceEngine::Error, "File must contain a hash, found #{contents.class} in #{file}" unless contents.is_a?(Hash)
+    raise ComplianceEngine::Error, "File must contain a hash, found #{contents.class} in #{filename}" unless contents.is_a?(Hash)
     { version: ComplianceEngine::Version.new(contents['version']), content: contents }
   end
 

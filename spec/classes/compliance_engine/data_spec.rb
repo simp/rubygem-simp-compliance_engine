@@ -11,7 +11,6 @@ RSpec.describe ComplianceEngine::Data do
     allow(File).to receive(:mtime).and_call_original
     allow(File).to receive(:size).and_call_original
 
-    allow(Dir).to receive(:exist?).and_call_original
     allow(Dir).to receive(:glob).and_call_original
   end
 
@@ -211,16 +210,16 @@ RSpec.describe ComplianceEngine::Data do
     before(:each) do
       test_data.each do |module_path, file_data|
         allow(File).to receive(:directory?).with(module_path).and_return(true)
-        allow(Dir).to receive(:exist?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
-        allow(Dir).to receive(:exist?).with("#{module_path}/simp/compliance_profiles").and_return(false)
-        allow(Dir).to receive(:glob).with(
-          [
-            "#{module_path}/SIMP/compliance_profiles/**/*.yaml",
-            "#{module_path}/SIMP/compliance_profiles/**/*.json",
-          ],
-        ).and_return(
-          file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
-        )
+        allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
+        allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
+          .and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+          )
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
+          .and_return([])
 
         file_data.each do |name, contents|
           filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
@@ -303,16 +302,16 @@ RSpec.describe ComplianceEngine::Data do
     before(:each) do
       test_data.each do |module_path, file_data|
         allow(File).to receive(:directory?).with(module_path).and_return(true)
-        allow(Dir).to receive(:exist?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
-        allow(Dir).to receive(:exist?).with("#{module_path}/simp/compliance_profiles").and_return(false)
-        allow(Dir).to receive(:glob).with(
-          [
-            "#{module_path}/SIMP/compliance_profiles/**/*.yaml",
-            "#{module_path}/SIMP/compliance_profiles/**/*.json",
-          ],
-        ).and_return(
-          file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
-        )
+        allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
+        allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
+          .and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+          )
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
+          .and_return([])
 
         file_data.each do |name, contents|
           filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
@@ -505,16 +504,16 @@ RSpec.describe ComplianceEngine::Data do
     before(:each) do
       test_data.each do |module_path, file_data|
         allow(File).to receive(:directory?).with(module_path).and_return(true)
-        allow(Dir).to receive(:exist?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
-        allow(Dir).to receive(:exist?).with("#{module_path}/simp/compliance_profiles").and_return(false)
-        allow(Dir).to receive(:glob).with(
-          [
-            "#{module_path}/SIMP/compliance_profiles/**/*.yaml",
-            "#{module_path}/SIMP/compliance_profiles/**/*.json",
-          ],
-        ).and_return(
-          file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
-        )
+        allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
+        allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
+          .and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+          )
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
+          .and_return([])
 
         file_data.each do |name, contents|
           filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
@@ -659,16 +658,16 @@ RSpec.describe ComplianceEngine::Data do
     before(:each) do
       test_data.each do |module_path, file_data|
         allow(File).to receive(:directory?).with(module_path).and_return(true)
-        allow(Dir).to receive(:exist?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
-        allow(Dir).to receive(:exist?).with("#{module_path}/simp/compliance_profiles").and_return(false)
-        allow(Dir).to receive(:glob).with(
-          [
-            "#{module_path}/SIMP/compliance_profiles/**/*.yaml",
-            "#{module_path}/SIMP/compliance_profiles/**/*.json",
-          ],
-        ).and_return(
-          file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
-        )
+        allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
+        allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
+          .and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+          )
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
+          .and_return([])
 
         file_data.each do |name, contents|
           filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
@@ -758,16 +757,16 @@ RSpec.describe ComplianceEngine::Data do
     before(:each) do
       test_data.each do |module_path, file_data|
         allow(File).to receive(:directory?).with(module_path).and_return(true)
-        allow(Dir).to receive(:exist?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
-        allow(Dir).to receive(:exist?).with("#{module_path}/simp/compliance_profiles").and_return(false)
-        allow(Dir).to receive(:glob).with(
-          [
-            "#{module_path}/SIMP/compliance_profiles/**/*.yaml",
-            "#{module_path}/SIMP/compliance_profiles/**/*.json",
-          ],
-        ).and_return(
-          file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
-        )
+        allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
+        allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
+          .and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+          )
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
+          .and_return([])
 
         file_data.each do |name, contents|
           filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
@@ -845,16 +844,16 @@ RSpec.describe ComplianceEngine::Data do
     before(:each) do
       test_data.each do |module_path, file_data|
         allow(File).to receive(:directory?).with(module_path).and_return(true)
-        allow(Dir).to receive(:exist?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
-        allow(Dir).to receive(:exist?).with("#{module_path}/simp/compliance_profiles").and_return(false)
-        allow(Dir).to receive(:glob).with(
-          [
-            "#{module_path}/SIMP/compliance_profiles/**/*.yaml",
-            "#{module_path}/SIMP/compliance_profiles/**/*.json",
-          ],
-        ).and_return(
-          file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
-        )
+        allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
+        allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
+          .and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+          )
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
+          .and_return([])
 
         file_data.each do |name, contents|
           filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
@@ -918,6 +917,78 @@ RSpec.describe ComplianceEngine::Data do
       keys = checks.values.map { |check| check.key }
       expect(keys).to be_instance_of(Array)
       expect(keys).to eq(['widget_spinner_audit_logging'])
+    end
+  end
+
+  context 'with zip data' do
+    subject(:compliance_engine) { described_class.new }
+
+    let(:test_data) { File.expand_path('../../fixtures/test_environment.zip', __dir__) }
+    let(:test_files) do
+      [
+        'test_module_00/SIMP/compliance_profiles/a/file.yaml',
+        'test_module_00/SIMP/compliance_profiles/b/file.yaml',
+        'test_module_01/SIMP/compliance_profiles/c/file.yaml',
+      ]
+    end
+
+    before(:each) do
+      compliance_engine.open_environment_zip(test_data)
+    end
+
+    it 'initializes' do
+      expect(compliance_engine).not_to be_nil
+      expect(compliance_engine).to be_instance_of(described_class)
+    end
+
+    it 'returns a list of files' do
+      expect(compliance_engine.files).to eq(test_files.map { |file| File.join(test_data, '.', file) })
+    end
+
+    it 'returns a list of profiles' do
+      expect(compliance_engine.profiles).to be_instance_of(ComplianceEngine::Profiles)
+      expect(compliance_engine.profiles.keys).to eq(['test_profile_00', 'test_profile_01', 'test_profile_02'])
+    end
+
+    it 'returns a list of ces' do
+      expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Ces)
+      expect(compliance_engine.ces.keys).to eq(['ce_00', 'ce_01', 'ce_02', 'ce_03'])
+    end
+  end
+
+  context 'with a supplied module path' do
+    subject(:compliance_engine) { described_class.new }
+
+    let(:test_data) { File.expand_path('../../fixtures', __dir__) }
+    let(:test_files) do
+      [
+        'test_module_00/SIMP/compliance_profiles/a/file.yaml',
+        'test_module_00/SIMP/compliance_profiles/b/file.yaml',
+        'test_module_01/SIMP/compliance_profiles/c/file.yaml',
+      ]
+    end
+
+    before(:each) do
+      compliance_engine.open_environment(test_data)
+    end
+
+    it 'initializes' do
+      expect(compliance_engine).not_to be_nil
+      expect(compliance_engine).to be_instance_of(described_class)
+    end
+
+    it 'returns a list of files' do
+      expect(compliance_engine.files).to eq(test_files.map { |file| File.join(test_data, file) })
+    end
+
+    it 'returns a list of profiles' do
+      expect(compliance_engine.profiles).to be_instance_of(ComplianceEngine::Profiles)
+      expect(compliance_engine.profiles.keys).to eq(['test_profile_00', 'test_profile_01', 'test_profile_02'])
+    end
+
+    it 'returns a list of ces' do
+      expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Ces)
+      expect(compliance_engine.ces.keys).to eq(['ce_00', 'ce_01', 'ce_02', 'ce_03'])
     end
   end
 end
