@@ -68,6 +68,13 @@ class ComplianceEngine::Collection
     to_h.each_value(&block)
   end
 
+  # Iterates over keys in the collection
+  #
+  # @param block [Proc] the block to execute
+  def each_key(&block)
+    to_h.each_key(&block)
+  end
+
   # Return true if any of the values in the collection match the block
   #
   # @param block [Proc] the block to execute
