@@ -811,6 +811,87 @@ RSpec.describe ComplianceEngine::Data do
     end
   end
 
+  context 'with direct mapping to checks' do
+    def test_data
+      {
+        'test_module_00' => {
+          'a/file.yaml' => <<~A_YAML,
+            ---
+            version: 2.0.0
+            profiles:
+              00_profile_with_check_reference:
+                checks:
+                  00_check: true
+            checks:
+              00_check:
+                type: puppet-class-parameter
+                settings:
+                  parameter: test_module_00::test_param
+                  value: a string
+            A_YAML
+        },
+      }
+    end
+
+    subject(:compliance_engine) { described_class.new(*test_data.keys) }
+
+    before(:each) do
+      test_data.each do |module_path, file_data|
+        allow(File).to receive(:directory?).with(module_path).and_return(true)
+        allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
+        allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
+          .and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+          )
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
+          .and_return([])
+
+        file_data.each do |name, contents|
+          filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
+          allow(File).to receive(:size).with(filename).and_return(contents.length)
+          allow(File).to receive(:mtime).with(filename).and_return(Time.now)
+          allow(File).to receive(:read).with(filename).and_return(contents)
+        end
+      end
+    end
+
+    it 'initializes' do
+      expect(compliance_engine).not_to be_nil
+      expect(compliance_engine).to be_instance_of(described_class)
+    end
+
+    it 'returns a list of files' do
+      expect(compliance_engine.files).to eq(test_data.map { |module_path, files| files.map { |name, _| "#{module_path}/SIMP/compliance_profiles/#{name}" } }.flatten)
+    end
+
+    it 'returns a list of profiles' do
+      profiles = compliance_engine.profiles
+      expect(profiles).to be_instance_of(ComplianceEngine::Profiles)
+      expect(profiles.keys).to eq(['00_profile_with_check_reference'])
+    end
+
+    it 'returns no hiera data when there are no profiles' do
+      hiera = compliance_engine.hiera
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({})
+    end
+
+    it 'returns no hiera data when there are no valid profiles' do
+      hiera = compliance_engine.hiera(['invalid_profile'])
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({})
+    end
+
+    it 'returns hiera data' do
+      hiera = compliance_engine.hiera(['00_profile_with_check_reference'])
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({ 'test_module_00::test_param' => 'a string' })
+    end
+  end
+
   context 'with mapping based on ce + control' do
     def test_data
       {
