@@ -916,6 +916,26 @@ RSpec.describe ComplianceEngine::Data do
                 controls:
                   nist_800_53:rev4:AU-2: true
             A_YAML
+          'b/file.yaml' => <<~B_YAML,
+            ---
+            version: 2.0.0
+            profiles:
+              00_profile_test:
+                controls:
+                  00_control1: true
+            ce:
+              00_ce1:
+                controls:
+                  00_control1: true
+            checks:
+              00_check1:
+                type: 'puppet-class-parameter'
+                settings:
+                  parameter: 'test_module_00::test_param'
+                  value: 'a string'
+                ces:
+                  - 00_ce1
+            B_YAML
         },
       }
     end
@@ -957,13 +977,13 @@ RSpec.describe ComplianceEngine::Data do
     it 'returns a list of profiles' do
       profiles = compliance_engine.profiles
       expect(profiles).to be_instance_of(ComplianceEngine::Profiles)
-      expect(profiles.keys).to eq(['custom_profile_1'])
+      expect(profiles.keys).to eq(['custom_profile_1', '00_profile_test'])
     end
 
     it 'returns a list of ces' do
       ces = compliance_engine.ces
       expect(ces).to be_instance_of(ComplianceEngine::Ces)
-      expect(ces.keys).to eq(['enable_widget_spinner_audit_logging'])
+      expect(ces.keys).to eq(['enable_widget_spinner_audit_logging', '00_ce1'])
     end
 
     it 'returns no hiera data when there are no profiles' do
@@ -978,13 +998,19 @@ RSpec.describe ComplianceEngine::Data do
       expect(hiera).to eq({})
     end
 
-    it 'returns hiera data' do
+    it 'returns hiera data for custom_profile_1' do
       hiera = compliance_engine.hiera(['custom_profile_1'])
       expect(hiera).to be_instance_of(Hash)
       expect(hiera).to eq({ 'widget_spinner::audit_logging' => true })
     end
 
-    it 'returns checks for a profile' do
+    it 'returns hiera data for 00_profile_test' do
+      hiera = compliance_engine.hiera(['00_profile_test'])
+      expect(hiera).to be_instance_of(Hash)
+      expect(hiera).to eq({ 'test_module_00::test_param' => 'a string' })
+    end
+
+    it 'returns checks for custom_profile_1' do
       checks = compliance_engine.check_mapping(compliance_engine.profiles['custom_profile_1'])
       checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
       keys = checks.values.map { |check| check.key }
@@ -992,12 +1018,28 @@ RSpec.describe ComplianceEngine::Data do
       expect(keys).to eq(['widget_spinner_audit_logging'])
     end
 
-    it 'returns checks for a ce' do
+    it 'returns checks for 00_profile_test' do
+      checks = compliance_engine.check_mapping(compliance_engine.profiles['00_profile_test'])
+      checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
+      keys = checks.values.map { |check| check.key }
+      expect(keys).to be_instance_of(Array)
+      expect(keys).to eq(['00_check1'])
+    end
+
+    it 'returns checks for enable_widget_spinner_audit_logging' do
       checks = compliance_engine.check_mapping(compliance_engine.ces['enable_widget_spinner_audit_logging'])
       checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
       keys = checks.values.map { |check| check.key }
       expect(keys).to be_instance_of(Array)
       expect(keys).to eq(['widget_spinner_audit_logging'])
+    end
+
+    it 'returns checks for 00_ce1' do
+      checks = compliance_engine.check_mapping(compliance_engine.ces['00_ce1'])
+      checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
+      keys = checks.values.map { |check| check.key }
+      expect(keys).to be_instance_of(Array)
+      expect(keys).to eq(['00_check1'])
     end
   end
 

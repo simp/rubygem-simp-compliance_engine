@@ -374,23 +374,27 @@ class ComplianceEngine::Data
     cache_key = [check.key, "#{profile_or_ce.class}:#{profile_or_ce.key}"].to_s
     return @mapping[cache_key] if @mapping.key?(cache_key)
 
-    # Correlate based on CEs
-    if profile_or_ce.is_a?(ComplianceEngine::Profile) && correlate(check.ces, profile_or_ce.ces)
-      return @mapping[cache_key] = true
-    elsif check.ces&.include?(profile_or_ce.key)
-      return @mapping[cache_key] = true
-    end
-
     # Correlate based on controls
     controls = check.controls&.select { |_, v| v }&.map { |k, _| k }
 
     return @mapping[cache_key] = true if correlate(controls, profile_or_ce.controls)
 
+    if profile_or_ce.is_a?(ComplianceEngine::Ce)
+      # Correlate based on CEs
+      return @mapping[cache_key] = true if check.ces&.include?(profile_or_ce.key)
+
+      return @mapping[cache_key] = false
+    end
+
     # Correlate based on direct reference to checks
-    return @mapping[cache_key] = true if profile_or_ce.is_a?(ComplianceEngine::Profile) && profile_or_ce.checks&.dig(check.key)
+    return @mapping[cache_key] = true if profile_or_ce.checks&.dig(check.key)
+
+    # Correlate based on CEs
+    return @mapping[cache_key] = true if correlate(check.ces, profile_or_ce.ces)
 
     # Correlate based on CEs and controls
-    return @mapping[cache_key] = true if profile_or_ce.is_a?(ComplianceEngine::Profile) && profile_or_ce.ces&.any? { |k, _| correlate(controls, ces[k]&.controls) }
+    return @mapping[cache_key] = true if profile_or_ce.ces&.any? { |k, _| correlate(controls, ces[k]&.controls) }
+    return @mapping[cache_key] = true if check.ces&.any? { |ce| ces[ce]&.controls&.any? { |k, v| v && profile_or_ce.controls&.dig(k) } }
 
     @mapping[cache_key] = false
   end
