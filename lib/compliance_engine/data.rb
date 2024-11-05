@@ -77,7 +77,7 @@ class ComplianceEngine::Data
   # Discard all parsed data other than the top-level data
   #
   # @return [NilClass]
-  def reset_collection(_ = nil)
+  def reset_collection
     # Discard any cached objects
     (instance_variables - (data_variables + context_variables)).each { |var| instance_variable_set(var, nil) }
   end
