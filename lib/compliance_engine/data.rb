@@ -77,7 +77,7 @@ class ComplianceEngine::Data
   # Discard all parsed data other than the top-level data
   #
   # @return [NilClass]
-  def reset_collection
+  def reset_collection(_ = nil)
     # Discard any cached objects
     (instance_variables - (data_variables + context_variables)).each { |var| instance_variable_set(var, nil) }
   end
@@ -184,31 +184,41 @@ class ComplianceEngine::Data
     key: filename.to_s,
     fileclass: File
   )
-    if data.key?(key) && data[key]&.key?(:loader) && data[key][:loader]
-      data[key][:loader].refresh if data[key][:loader].respond_to?(:refresh)
-      return
+    data[key] ||= {}
+
+    if filename.is_a?(String)
+      if data[key]&.key?(:loader) && data[key][:loader]
+        data[key][:loader].refresh if data[key][:loader].respond_to?(:refresh)
+        return
+      end
+
+      loader = if File.extname(filename) == '.json'
+                 require 'compliance_engine/data_loader/json'
+                 ComplianceEngine::DataLoader::Json.new(filename, fileclass: fileclass, key: key)
+               else
+                 require 'compliance_engine/data_loader/yaml'
+                 ComplianceEngine::DataLoader::Yaml.new(filename, fileclass: fileclass, key: key)
+               end
+
+      loader.add_observer(self, :update)
+      data[key] = {
+        loader: loader,
+        version: ComplianceEngine::Version.new(loader.data['version']),
+        content: loader.data,
+      }
+    else
+      # Assume filename is a loader object
+      unless data[filename.key]&.key?(:loader)
+        data[filename.key][:loader] = filename
+        data[filename.key][:loader].add_observer(self, :update)
+      end
+      data[filename.key][:version] = ComplianceEngine::Version.new(loader.data['version'])
+      data[filename.key][:content] = loader.data
     end
 
-    data[key] = begin
-                  loader = if File.extname(filename) == '.json'
-                             require 'compliance_engine/data_loader/json'
-                             ComplianceEngine::DataLoader::Json.new(filename, fileclass: fileclass, key: key)
-                           else
-                             require 'compliance_engine/data_loader/yaml'
-                             ComplianceEngine::DataLoader::Yaml.new(filename, fileclass: fileclass, key: key)
-                           end
-
-                  {
-                    loader: loader,
-                    version: ComplianceEngine::Version.new(loader.data['version']),
-                    content: loader.data,
-                  }
-                rescue => e
-                  warn e.message
-                  {}
-                end
-
     reset_collection
+  rescue => e
+    warn e.message
   end
 
   # Get a list of files with compliance data
