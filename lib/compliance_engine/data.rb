@@ -178,31 +178,35 @@ class ComplianceEngine::Data
   # @param [Class] fileclass The class to use for reading files
   # @param [Integer] size The size of the file
   # @param [Time] mtime The modification time of the file
-  # @param [String] filetext The contents of the file
   # @return [NilClass]
   def update(
     filename,
     key: filename.to_s,
-    fileclass: File,
-    size: fileclass.size(filename.to_s),
-    mtime: fileclass.mtime(filename.to_s),
-    filetext: fileclass.read(filename.to_s)
+    fileclass: File
   )
-    # If we've already scanned this file, and the size and modification
-    # time of the file haven't changed, skip it.
-    if data.key?(key) && data[key][:size] == size && data[key][:mtime] == mtime
+    if data.key?(key) && data[key]&.key?(:loader) && data[key][:loader]
+      data[key][:loader].refresh if data[key][:loader].respond_to?(:refresh)
       return
     end
 
     data[key] = begin
-                  parse(filename, filetext: filetext)
+                  loader = if File.extname(filename) == '.json'
+                             require 'compliance_engine/data_loader/json'
+                             ComplianceEngine::DataLoader::Json.new(filename, fileclass: fileclass, key: key)
+                           else
+                             require 'compliance_engine/data_loader/yaml'
+                             ComplianceEngine::DataLoader::Yaml.new(filename, fileclass: fileclass, key: key)
+                           end
+
+                  {
+                    loader: loader,
+                    version: ComplianceEngine::Version.new(loader.data['version']),
+                    content: loader.data,
+                  }
                 rescue => e
                   warn e.message
                   {}
                 end
-
-    data[key][:size] = size
-    data[key][:mtime] = mtime
 
     reset_collection
   end
@@ -412,23 +416,6 @@ class ComplianceEngine::Data
     return false if a.empty? || b.empty?
 
     a.any? { |item| b[item] }
-  end
-
-  # Parse YAML or JSON files
-  #
-  # @param [String] file The path to the compliance data file
-  # @param [Class] fileclass The class to use for reading files
-  # @param [String] filetext The contents of the compliance data file
-  # @return [Hash]
-  def parse(filename, fileclass: File, filetext: fileclass.read(filename))
-    contents = if File.extname(filename) == '.json'
-                 JSON.parse(filetext)
-               else
-                 require 'yaml'
-                 YAML.safe_load(filetext)
-               end
-    raise ComplianceEngine::Error, "File must contain a hash, found #{contents.class} in #{filename}" unless contents.is_a?(Hash)
-    { version: ComplianceEngine::Version.new(contents['version']), content: contents }
   end
 
   # Print debugging messages to the console.
