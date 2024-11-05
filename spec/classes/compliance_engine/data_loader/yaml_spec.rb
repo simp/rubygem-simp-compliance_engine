@@ -5,6 +5,8 @@ require 'compliance_engine/data_loader/yaml'
 
 RSpec.describe ComplianceEngine::DataLoader::Yaml do
   before(:each) do
+    allow(File).to receive(:size).and_call_original
+    allow(File).to receive(:mtime).and_call_original
     allow(File).to receive(:read).and_call_original
   end
 
@@ -23,6 +25,9 @@ RSpec.describe ComplianceEngine::DataLoader::Yaml do
 
   shared_examples 'an observable' do
     it 'updates the data' do
+      data_loader.instance_variable_set(:@size, 0)
+      data_loader.instance_variable_set(:@mtime, Time.now)
+      data_loader.data = initial_data
       data_loader.refresh
       expect(data_loader.data).to eq(updated_data)
     end
@@ -39,6 +44,10 @@ RSpec.describe ComplianceEngine::DataLoader::Yaml do
 
         attr_accessor :data
       end
+
+      data_loader.instance_variable_set(:@size, 0)
+      data_loader.instance_variable_set(:@mtime, Time.now)
+      data_loader.data = initial_data
 
       observer = ExampleObserver.new(data_loader)
       data_loader.refresh
@@ -60,6 +69,8 @@ RSpec.describe ComplianceEngine::DataLoader::Yaml do
     end
 
     before(:each) do
+      allow(File).to receive(:size).with(filename).and_return(0)
+      allow(File).to receive(:mtime).with(filename).and_return(Time.now)
       allow(File).to receive(:read).with(filename).and_return(initial_data.to_yaml)
     end
 
@@ -67,6 +78,8 @@ RSpec.describe ComplianceEngine::DataLoader::Yaml do
 
     context 'with updated data' do
       before(:each) do
+        allow(File).to receive(:size).with(filename).and_return(1)
+        allow(File).to receive(:mtime).with(filename).and_return(Time.now + 1)
         allow(File).to receive(:read).with(filename).and_return(updated_data.to_yaml)
       end
 
@@ -87,6 +100,8 @@ RSpec.describe ComplianceEngine::DataLoader::Yaml do
     end
 
     before(:each) do
+      allow(File).to receive(:size).with(filename).and_return(0)
+      allow(File).to receive(:mtime).with(filename).and_return(Time.now)
       allow(File).to receive(:read).with(filename).and_return(initial_data.to_yaml)
     end
 
@@ -94,6 +109,8 @@ RSpec.describe ComplianceEngine::DataLoader::Yaml do
 
     context 'with updated data' do
       before(:each) do
+        allow(File).to receive(:size).with(filename).and_return(1)
+        allow(File).to receive(:mtime).with(filename).and_return(Time.now + 1)
         allow(File).to receive(:read).with(filename).and_return(updated_data.to_yaml)
       end
 
@@ -114,6 +131,8 @@ RSpec.describe ComplianceEngine::DataLoader::Yaml do
     end
 
     before(:each) do
+      allow(File).to receive(:size).with(filename).and_return(0)
+      allow(File).to receive(:mtime).with(filename).and_return(Time.now)
       allow(File).to receive(:read).with(filename).and_return(initial_data.to_yaml)
     end
 
@@ -121,6 +140,8 @@ RSpec.describe ComplianceEngine::DataLoader::Yaml do
 
     context 'with updated data' do
       before(:each) do
+        allow(File).to receive(:size).with(filename).and_return(1)
+        allow(File).to receive(:mtime).with(filename).and_return(Time.now + 1)
         allow(File).to receive(:read).with(filename).and_return(updated_data.to_yaml)
       end
 
@@ -133,6 +154,8 @@ RSpec.describe ComplianceEngine::DataLoader::Yaml do
     let(:data) { 'invalid data' }
 
     before(:each) do
+      allow(File).to receive(:size).with(filename).and_return(0)
+      allow(File).to receive(:mtime).with(filename).and_return(Time.now)
       allow(File).to receive(:read).with(filename).and_return(data.to_yaml)
     end
 
@@ -147,12 +170,16 @@ RSpec.describe ComplianceEngine::DataLoader::Yaml do
     let(:updated_data) { 'invalid data' }
 
     before(:each) do
+      allow(File).to receive(:size).with(filename).and_return(0)
+      allow(File).to receive(:mtime).with(filename).and_return(Time.now)
       allow(File).to receive(:read).with(filename).and_return(initial_data.to_yaml)
     end
 
     it 'does not update the data' do
       loader = described_class.new(filename)
 
+      allow(File).to receive(:size).with(filename).and_return(1)
+      allow(File).to receive(:mtime).with(filename).and_return(Time.now + 1)
       allow(File).to receive(:read).with(filename).and_return(updated_data.to_yaml)
 
       expect { loader.refresh }.to raise_error(ComplianceEngine::Error, 'Data must be a hash')

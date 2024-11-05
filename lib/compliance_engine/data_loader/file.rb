@@ -14,12 +14,12 @@ class ComplianceEngine::DataLoader::File < ComplianceEngine::DataLoader
   end
 
   def refresh
-    size = @fileclass.size(@filename)
-    mtime = @fileclass.mtime(@filename)
-    return if size == @size && mtime == @mtime
+    newsize = @fileclass.size(@filename)
+    newmtime = @fileclass.mtime(@filename)
+    return if newsize == @size && newmtime == @mtime
 
-    @size = size
-    @mtime = mtime
+    @size = newsize
+    @mtime = newmtime
     self.data = parse(@fileclass.read(@filename))
   end
 
