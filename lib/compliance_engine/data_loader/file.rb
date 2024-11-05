@@ -5,6 +5,11 @@ require 'compliance_engine/data_loader'
 
 # Load compliance engine data from a file
 class ComplianceEngine::DataLoader::File < ComplianceEngine::DataLoader
+  # Initialize a new instance of the ComplianceEngine::DataLoader::File class
+  #
+  # @param [String] file The path to the file to be loaded
+  # @param [Class] fileclass The class to use for file operations, defaults to `::File`
+  # @param [String] key The key to use for identifying the data, defaults to the file path
   def initialize(file, fileclass: ::File, key: file)
     @fileclass = fileclass
     @filename = file
@@ -13,6 +18,9 @@ class ComplianceEngine::DataLoader::File < ComplianceEngine::DataLoader
     super(parse(fileclass.read(file)), key: key)
   end
 
+  # Refresh the data from the file if it has changed
+  #
+  # @return [NilClass]
   def refresh
     newsize = @fileclass.size(@filename)
     newmtime = @fileclass.mtime(@filename)
