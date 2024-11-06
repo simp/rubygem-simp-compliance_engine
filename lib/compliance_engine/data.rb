@@ -124,6 +124,11 @@ class ComplianceEngine::Data
   def open(*paths, fileclass: File, dirclass: Dir)
     modules = {}
     paths.each do |path|
+      if path.is_a?(ComplianceEngine::DataLoader)
+        update(path, key: path.key, fileclass: fileclass)
+        next
+      end
+
       if fileclass.directory?(path)
         # Read the Puppet module's metadata.json
         metadata_json = File.join(path.to_s, 'metadata.json')
@@ -212,8 +217,8 @@ class ComplianceEngine::Data
         data[filename.key][:loader] = filename
         data[filename.key][:loader].add_observer(self, :update)
       end
-      data[filename.key][:version] = ComplianceEngine::Version.new(loader.data['version'])
-      data[filename.key][:content] = loader.data
+      data[filename.key][:version] = ComplianceEngine::Version.new(filename.data['version'])
+      data[filename.key][:content] = filename.data
     end
 
     reset_collection

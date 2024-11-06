@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require 'compliance_engine'
+require 'compliance_engine/data_loader'
 
 RSpec.describe ComplianceEngine::Data do
   before(:each) do
@@ -108,6 +109,32 @@ RSpec.describe ComplianceEngine::Data do
 
     it 'get returns a hash' do
       expect(compliance_engine.get('file.json')).to eq({ 'version' => '2.0.0' })
+    end
+  end
+
+  context 'with a ComplianceEngine::DataLoader object' do
+    subject(:compliance_engine) { described_class.new(data_loader) }
+
+    let(:data) do
+      {
+        'version' => '2.0.0',
+      }
+    end
+
+    let(:data_loader) { ComplianceEngine::DataLoader.new(data) }
+
+    it 'initializes' do
+      expect(compliance_engine).not_to be_nil
+      expect(compliance_engine).to be_instance_of(described_class)
+    end
+
+    it 'returns a UUID' do
+      expect(compliance_engine.files.count).to eq(1)
+      expect(compliance_engine.files.first).to match(%r{^Hash:[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$}i)
+    end
+
+    it 'get returns a hash' do
+      expect(compliance_engine.get(compliance_engine.files.first)).to eq(data)
     end
   end
 
