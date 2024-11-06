@@ -40,6 +40,6 @@ class ComplianceEngine::DataLoader
     return @key unless @key.nil?
 
     require 'securerandom'
-    @key = SecureRandom.uuid
+    @key = "#{data.class}:#{SecureRandom.uuid}"
   end
 end
