@@ -58,7 +58,7 @@ RSpec.describe ComplianceEngine::Data do
     end
 
     it 'fails to initialize' do
-      expect { described_class.new('non_existant') }.to raise_error(ComplianceEngine::Error, %r{Could not find path})
+      expect { described_class.new('non_existant') }.to raise_error(ComplianceEngine::Error, %r{Invalid path or object})
     end
   end
 
