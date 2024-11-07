@@ -6,6 +6,11 @@ require 'compliance_engine/data_loader/yaml'
 
 # Load compliance engine data from a Puppet module
 class ComplianceEngine::ModuleLoader
+  # Initialize a ModuleLoader from a Puppet module path
+  #
+  # @param path [String] the path to the Puppet module
+  # @param fileclass [File] the class to use for file operations (default: `File`)
+  # @param dirclass [Dir] the class to use for directory operations (default: `Dir`)
   def initialize(path, fileclass: File, dirclass: Dir)
     raise ComplianceEngine::Error, "#{path} is not a directory" unless fileclass.directory?(path)
 
@@ -28,9 +33,9 @@ class ComplianceEngine::ModuleLoader
     # In this directory, we want to look for all yaml and json files
     # under SIMP/compliance_profiles and simp/compliance_profiles.
     globs = ['SIMP/compliance_profiles', 'simp/compliance_profiles']
-            .select { |dir| fileclass.directory?("#{path}/#{dir}") }
+            .select { |dir| fileclass.directory?(File.join(path, dir)) }
             .map { |dir|
-      ['yaml', 'json'].map { |type| "#{path}/#{dir}/**/*.#{type}" }
+      ['yaml', 'json'].map { |type| File.join(path, dir, '**', "*.#{type}") }
     }.flatten
     # debug "Globs: #{globs}"
     # Using .each here to make mocking with rspec easier.
