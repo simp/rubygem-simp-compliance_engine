@@ -34,6 +34,24 @@ RSpec.describe ComplianceEngine::ModuleLoader do
     end
   end
 
+  context 'with no module data' do
+    subject(:module_loader) { described_class.new(path) }
+
+    let(:path) { '/path/to/module' }
+
+    before(:each) do
+      allow(File).to receive(:directory?).with(path).and_return(true)
+      allow(File).to receive(:exist?).with("#{path}/metadata.json").and_return(false)
+      allow(File).to receive(:directory?).with("#{path}/SIMP/compliance_profiles").and_return(false)
+      allow(File).to receive(:directory?).with("#{path}/simp/compliance_profiles").and_return(false)
+    end
+
+    it 'initializes' do
+      expect(module_loader).not_to be_nil
+      expect(module_loader).to be_instance_of(described_class)
+    end
+  end
+
   context 'with module data' do
     subject(:module_loader) { described_class.new(test_data.keys.first) }
 

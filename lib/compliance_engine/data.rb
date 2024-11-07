@@ -17,6 +17,7 @@ require 'compliance_engine/data_loader'
 require 'compliance_engine/data_loader/json'
 require 'compliance_engine/data_loader/yaml'
 require 'compliance_engine/module_loader'
+require 'compliance_engine/environment_loader'
 
 require 'deep_merge'
 require 'json'
@@ -91,33 +92,18 @@ class ComplianceEngine::Data
   # @param [String] path The Puppet environment archive file
   # @return [NilClass]
   def open_environment_zip(path)
-    require 'zip/filesystem'
-
-    self.modulepath = path
-
-    Zip::File.open(path) do |zipfile|
-      dir = zipfile.dir
-      file = zipfile.file
-
-      modules = dir.entries('/'.dup).select do |entry|
-        file.directory?(entry) && %r{\A[a-z][a-z0-9_]*\Z}.match?(entry.to_s)
-      end
-      open(*modules, fileclass: file, dirclass: dir)
-    end
+    environment = ComplianceEngine::EnvironmentLoader::Zip.new(path)
+    self.modulepath = environment.modulepath
+    open(environment)
   end
 
   # Scan a Puppet environment
   # @param [Array<String>] paths The Puppet modulepath components
   # @return [NilClass]
   def open_environment(*paths)
-    self.modulepath = paths
-    modules = paths.select { |path| File.directory?(path) }.map { |path|
-      Dir.children(path)
-         .select { |child| File.directory?(File.join(path, child)) }
-         .grep(%r{\A[a-z][a-z0-9_]*\Z})
-         .map { |child| File.join(path, child) }
-    }.flatten
-    open(*modules)
+    environment = ComplianceEngine::EnvironmentLoader.new(*paths)
+    self.modulepath = environment.modulepath
+    open(environment)
   end
 
   # Scan paths for compliance data files
@@ -130,6 +116,19 @@ class ComplianceEngine::Data
     modules = {}
 
     paths.each do |path|
+      if path.is_a?(ComplianceEngine::EnvironmentLoader)
+        open(*path.modules)
+        next
+      end
+
+      if path.is_a?(ComplianceEngine::ModuleLoader)
+        modules[path.name] = path.version unless path.name.nil?
+        path.files.each do |file_loader|
+          update(file_loader)
+        end
+        next
+      end
+
       if path.is_a?(ComplianceEngine::DataLoader)
         update(path, key: path.key, fileclass: fileclass)
         next
@@ -146,11 +145,7 @@ class ComplianceEngine::Data
       end
 
       if fileclass.directory?(path)
-        loader = ComplianceEngine::ModuleLoader.new(path, fileclass: fileclass, dirclass: dirclass)
-        modules[loader.name] = loader.version unless loader.name.nil?
-        loader.files.each do |file_loader|
-          update(file_loader)
-        end
+        open(ComplianceEngine::ModuleLoader.new(path, fileclass: fileclass, dirclass: dirclass))
         next
       end
 
