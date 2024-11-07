@@ -13,6 +13,11 @@ require 'compliance_engine/checks'
 require 'compliance_engine/controls'
 require 'compliance_engine/profiles'
 
+require 'compliance_engine/data_loader'
+require 'compliance_engine/data_loader/json'
+require 'compliance_engine/data_loader/yaml'
+require 'compliance_engine/module_loader'
+
 require 'deep_merge'
 require 'json'
 
@@ -123,53 +128,35 @@ class ComplianceEngine::Data
   # @return [NilClass]
   def open(*paths, fileclass: File, dirclass: Dir)
     modules = {}
+
     paths.each do |path|
       if path.is_a?(ComplianceEngine::DataLoader)
         update(path, key: path.key, fileclass: fileclass)
         next
       end
 
-      if fileclass.directory?(path)
-        # Read the Puppet module's metadata.json
-        metadata_json = File.join(path.to_s, 'metadata.json')
-        if fileclass.exist?(metadata_json)
-          begin
-            metadata = JSON.parse(fileclass.read(metadata_json))
-            modules[metadata['name']] = metadata['version']
-          rescue => e
-            warn "Could not parse #{path}/metadata.json: #{e.message}"
-          end
-        end
-        # In this directory, we want to look for all yaml and json files
-        # under SIMP/compliance_profiles and simp/compliance_profiles.
-        globs = ['SIMP/compliance_profiles', 'simp/compliance_profiles']
-                .select { |dir| fileclass.directory?("#{path}/#{dir}") }
-                .map { |dir|
-          ['yaml', 'json'].map { |type| "#{path}/#{dir}/**/*.#{type}" }
-        }.flatten
-        # debug "Globs: #{globs}"
-        # Using .each here to make mocking with rspec easier.
-        globs.each do |glob|
-          dirclass.glob(glob).each do |file|
-            key = if Object.const_defined?(:Zip) && file.is_a?(Zip::Entry)
-                    File.join(file.zipfile.to_s, '.', file.to_s)
-                  else
-                    file.to_s
-                  end
-            update(file.to_s, key: key, fileclass: fileclass)
-          end
-        end
-      elsif fileclass.file?(path)
+      if fileclass.file?(path)
         key = if Object.const_defined?(:Zip) && path.is_a?(Zip::Entry)
                 File.join(path.zipfile.to_s, '.', path.to_s)
               else
                 path.to_s
               end
         update(path, key: key, fileclass: fileclass)
-      else
-        raise ComplianceEngine::Error, "Could not find path '#{path}'"
+        next
       end
+
+      if fileclass.directory?(path)
+        loader = ComplianceEngine::ModuleLoader.new(path, fileclass: fileclass, dirclass: dirclass)
+        modules[loader.name] = loader.version unless loader.name.nil?
+        loader.files.each do |file_loader|
+          update(file_loader)
+        end
+        next
+      end
+
+      raise ComplianceEngine::Error, "Invalid path or object '#{path}'"
     end
+
     self.environment_data ||= {}
     self.environment_data = self.environment_data.merge(modules)
 
@@ -189,19 +176,17 @@ class ComplianceEngine::Data
     key: filename.to_s,
     fileclass: File
   )
-    data[key] ||= {}
-
     if filename.is_a?(String)
+      data[key] ||= {}
+
       if data[key]&.key?(:loader) && data[key][:loader]
         data[key][:loader].refresh if data[key][:loader].respond_to?(:refresh)
         return
       end
 
       loader = if File.extname(filename) == '.json'
-                 require 'compliance_engine/data_loader/json'
                  ComplianceEngine::DataLoader::Json.new(filename, fileclass: fileclass, key: key)
                else
-                 require 'compliance_engine/data_loader/yaml'
                  ComplianceEngine::DataLoader::Yaml.new(filename, fileclass: fileclass, key: key)
                end
 
@@ -212,6 +197,8 @@ class ComplianceEngine::Data
         content: loader.data,
       }
     else
+      data[filename.key] ||= {}
+
       # Assume filename is a loader object
       unless data[filename.key]&.key?(:loader)
         data[filename.key][:loader] = filename
