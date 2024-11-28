@@ -92,6 +92,8 @@ class ComplianceEngine::Data
   # @param [String] path The Puppet environment archive file
   # @return [NilClass]
   def open_environment_zip(path)
+    require 'compliance_engine/environment_loader/zip'
+
     environment = ComplianceEngine::EnvironmentLoader::Zip.new(path)
     self.modulepath = environment.modulepath
     open(environment)
