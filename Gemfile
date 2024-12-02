@@ -16,7 +16,6 @@ group :tests do
 end
 
 group :development do
-  gem 'irb'
   gem 'pry'
   gem 'pry-byebug'
   gem 'ruby-prof'
