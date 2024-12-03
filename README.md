@@ -1,31 +1,47 @@
 # ComplianceEngine
 
-TODO: Delete this and the text below, and describe your gem
+Work with [Sicura](https://sicura.us/) (formerly [SIMP](https://simp-project.com/)) Compliance Engine data.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/compliance_engine`. To experiment with that code, run `bin/console` for an interactive prompt.
+For more information on the Compliance Engine data format and how to use it, see [the SCE documentation](https://simp-project.com/docs/sce/).
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
-
 Install the gem and add to the application's Gemfile by executing:
 
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+    $ bundle add compliance_engine
 
 If bundler is not being used to manage dependencies, install the gem by executing:
 
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+    $ gem install compliance_engine
 
 ## Usage
 
-TODO: Write usage instructions here
+### CLI
 
-## Development
+`compliance_engine` provides a CLI for interacting with Compliance Engine data.
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+```
+Commands:
+  compliance_engine dump                                # Dump all compliance data
+  compliance_engine help [COMMAND]                      # Describe available commands or one specific command
+  compliance_engine hiera --profile=one two three       # Dump Hiera data
+  compliance_engine inspect                             # Start an interactive shell
+  compliance_engine lookup KEY --profile=one two three  # Look up a Hiera key
+  compliance_engine profiles                            # List available profiles
+  compliance_engine version                             # Print the version
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+Options:
+  [--facts=FACTS]
+  [--enforcement-tolerance=N]
+  [--module=one two three]
+  [--modulepath=one two three]
+  [--modulezip=MODULEZIP]
+```
+
+### Library
+
+See the [`ComplianceEngine::Data`](https://rubydoc.info/gems/compliance_engine/ComplianceEngine/Data) class for details.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/compliance_engine.
+Bug reports and pull requests are welcome on GitHub at https://github.com/simp/rubygem-simp-compliance_engine.

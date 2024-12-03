@@ -11,6 +11,11 @@ class ComplianceEngine::CLI < Thor
   class_option :modulepath, type: :array
   class_option :modulezip, type: :string
 
+  desc 'version', 'Print the version'
+  def version
+    puts ComplianceEngine::VERSION
+  end
+
   desc 'hiera', 'Dump Hiera data'
   option :profile, type: :array, required: true
   def hiera
