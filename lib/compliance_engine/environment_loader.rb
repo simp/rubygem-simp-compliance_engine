@@ -8,18 +8,16 @@ class ComplianceEngine::EnvironmentLoader
   # Initialize an EnvironmentLoader from the components of a Puppet `modulepath`
   #
   # @param paths [Array] the paths to search for Puppet modules
-  # @param root [String] the root directory to search for Puppet modules
   # @param fileclass [File] the class to use for file operations (default: `File`)
   # @param dirclass [Dir] the class to use for directory operations (default: `Dir`)
-  def initialize(*paths, root: nil, fileclass: File, dirclass: Dir)
+  def initialize(*paths, fileclass: File, dirclass: Dir)
     raise ArgumentError, 'No paths specified' if paths.empty?
     @modulepath ||= paths
     modules = paths.map do |path|
-      root ||= path
-      dirclass.entries(root)
+      dirclass.entries(path)
               .grep(%r{\A[a-z][a-z0-9_]*\Z})
-              .select { |child| fileclass.directory?(File.join(root, child)) }
-              .map { |child| File.join(root, child) }
+              .select { |child| fileclass.directory?(File.join(path, child)) }
+              .map { |child| File.join(path, child) }
     rescue
       []
     end

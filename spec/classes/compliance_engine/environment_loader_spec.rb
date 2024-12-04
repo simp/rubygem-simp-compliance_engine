@@ -42,7 +42,7 @@ RSpec.describe ComplianceEngine::EnvironmentLoader do
       allow(Dir).to receive(:entries).with('/path1').and_return(['.', '..', 'a'])
       allow(Dir).to receive(:entries).with('/path2').and_return(['.', '..', 'b'])
       allow(File).to receive(:directory?).with('/path1/a').and_return(true)
-      allow(File).to receive(:directory?).with('/path1/b').and_return(true)
+      allow(File).to receive(:directory?).with('/path2/b').and_return(true)
       allow(ComplianceEngine::ModuleLoader).to receive(:new).and_return(instance_double(ComplianceEngine::ModuleLoader))
     end
 
