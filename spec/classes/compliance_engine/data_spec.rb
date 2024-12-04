@@ -1091,6 +1091,10 @@ RSpec.describe ComplianceEngine::Data do
       expect(compliance_engine).to be_instance_of(described_class)
     end
 
+    it 'returns the modulepath' do
+      expect(compliance_engine.modulepath).to eq(test_data)
+    end
+
     it 'returns a list of files' do
       expect(compliance_engine.files).to eq(test_files.map { |file| File.join(test_data, '.', file) })
     end
@@ -1125,6 +1129,10 @@ RSpec.describe ComplianceEngine::Data do
     it 'initializes' do
       expect(compliance_engine).not_to be_nil
       expect(compliance_engine).to be_instance_of(described_class)
+    end
+
+    it 'returns the modulepath' do
+      expect(compliance_engine.modulepath).to eq([test_data])
     end
 
     it 'returns a list of files' do

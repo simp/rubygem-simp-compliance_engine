@@ -355,7 +355,7 @@ class ComplianceEngine::Data
   #
   # @return [Array<Symbol>]
   def context_variables
-    [:@enforcement_tolerance, :@environment_data, :@facts]
+    [:@enforcement_tolerance, :@environment_data, :@facts, :@modulepath]
   end
 
   # Get the cache variables
