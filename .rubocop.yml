@@ -8,6 +8,9 @@ AllCops:
   TargetRubyVersion: "2.7"
   Include:
     - "**/*.rb"
+    - Gemfile
+    - Rakefile
+    - "*.gemspec"
   Exclude:
     - ".vendor/**/*"
     - pkg/**/*
