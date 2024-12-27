@@ -1,35 +1,37 @@
 ---
 require:
-- rubocop-performance
-- rubocop-rspec
-- rubocop-rake
+  - rubocop-performance
+  - rubocop-rspec
+  - rubocop-rake
 AllCops:
   DisplayCopNames: true
-  TargetRubyVersion: '2.7'
+  TargetRubyVersion: "2.7"
   Include:
-  - "**/*.rb"
+    - "**/*.rb"
   Exclude:
-  - ".vendor/**/*"
-  - pkg/**/*
-  - spec/fixtures/**/*
-  - vendor/**/*
-  - dist/**/*
+    - ".vendor/**/*"
+    - pkg/**/*
+    - spec/fixtures/**/*
+    - vendor/**/*
+    - dist/**/*
 Layout/LineLength:
   Description: People have wide screens, use them.
   Max: 200
 RSpec/BeforeAfterAll:
-  Description: Beware of using after(:all) as it may cause state to leak between tests.
+  Description:
+    Beware of using after(:all) as it may cause state to leak between tests.
     A necessary evil in acceptance testing.
   Exclude:
-  - spec/acceptance/**/*.rb
+    - spec/acceptance/**/*.rb
 RSpec/HookArgument:
   Description: Prefer explicit :each argument, matching existing module's style
   EnforcedStyle: each
 RSpec/DescribeSymbol:
   Exclude:
-  - spec/unit/facter/**/*.rb
+    - spec/unit/facter/**/*.rb
 Style/BlockDelimiters:
-  Description: Prefer braces for chaining. Mostly an aesthetical choice. Better to
+  Description:
+    Prefer braces for chaining. Mostly an aesthetical choice. Better to
     be consistent then.
   EnforcedStyle: braces_for_chaining
 Style/ClassAndModuleChildren:
@@ -42,7 +44,8 @@ Style/FormatString:
   Description: Following the main puppet project's style, prefer the % format format.
   EnforcedStyle: percent
 Style/FormatStringToken:
-  Description: Following the main puppet project's style, prefer the simpler template
+  Description:
+    Following the main puppet project's style, prefer the simpler template
     tokens over annotated ones.
   EnforcedStyle: template
 Style/Lambda:
@@ -52,16 +55,19 @@ Style/RegexpLiteral:
   Description: Community preference. See https://github.com/voxpupuli/modulesync_config/issues/168
   EnforcedStyle: percent_r
 Style/TernaryParentheses:
-  Description: Checks for use of parentheses around ternary conditions. Enforce parentheses
+  Description:
+    Checks for use of parentheses around ternary conditions. Enforce parentheses
     on complex expressions for better readability, but seriously consider breaking
     it up.
   EnforcedStyle: require_parentheses_when_complex
 Style/TrailingCommaInArguments:
-  Description: Prefer always trailing comma on multiline argument lists. This makes
+  Description:
+    Prefer always trailing comma on multiline argument lists. This makes
     diffs, and re-ordering nicer.
   EnforcedStyleForMultiline: comma
 Style/TrailingCommaInArrayLiteral:
-  Description: Prefer always trailing comma on multiline literals. This makes diffs,
+  Description:
+    Prefer always trailing comma on multiline literals. This makes diffs,
     and re-ordering nicer.
   EnforcedStyleForMultiline: comma
 Style/SymbolArray:
@@ -71,8 +77,8 @@ RSpec/MessageSpies:
   EnforcedStyle: receive
 Style/Documentation:
   Exclude:
-  - lib/puppet/parser/functions/**/*
-  - spec/**/*
+    - lib/puppet/parser/functions/**/*
+    - spec/**/*
 Style/WordArray:
   EnforcedStyle: brackets
 Performance/AncestorsInclude:
@@ -283,12 +289,6 @@ Performance/UriDefaultParser:
   Enabled: false
 RSpec/Be:
   Enabled: false
-RSpec/Capybara/CurrentPathExpectation:
-  Enabled: false
-RSpec/Capybara/FeatureMethods:
-  Enabled: false
-RSpec/Capybara/VisibilityMatcher:
-  Enabled: false
 RSpec/ContextMethod:
   Enabled: false
 RSpec/ContextWording:
@@ -310,12 +310,6 @@ RSpec/ExampleWithoutDescription:
 RSpec/ExpectChange:
   Enabled: false
 RSpec/ExpectInHook:
-  Enabled: false
-RSpec/FactoryBot/AttributeDefinedStatically:
-  Enabled: false
-RSpec/FactoryBot/CreateList:
-  Enabled: false
-RSpec/FactoryBot/FactoryClassName:
   Enabled: false
 RSpec/HooksBeforeExamples:
   Enabled: false
@@ -617,7 +611,135 @@ RSpec/SubjectDeclaration:
   Enabled: true
 RSpec/VerifiedDoubleReference:
   Enabled: true
-RSpec/FactoryBot/SyntaxMethods:
-  Enabled: false
-RSpec/Rails/AvoidSetupHook:
-  Enabled: false
+Gemspec/AddRuntimeDependency:
+  Enabled: true
+Gemspec/DeprecatedAttributeAssignment:
+  Enabled: true
+Gemspec/DevelopmentDependencies:
+  Enabled: true
+Layout/LineContinuationLeadingSpace:
+  Enabled: true
+Layout/LineContinuationSpacing:
+  Enabled: true
+Lint/ConstantOverwrittenInRescue:
+  Enabled: true
+Lint/DuplicateMagicComment:
+  Enabled: true
+Lint/DuplicateMatchPattern:
+  Enabled: true
+Lint/DuplicateSetElement:
+  Enabled: true
+Lint/HashNewWithKeywordArgumentsAsDefault:
+  Enabled: true
+Lint/ItWithoutArgumentsInBlock:
+  Enabled: true
+Lint/LiteralAssignmentInCondition:
+  Enabled: true
+Lint/MixedCaseRange:
+  Enabled: true
+Lint/NonAtomicFileOperation:
+  Enabled: true
+Lint/NumericOperationWithConstantResult:
+  Enabled: true
+Lint/RedundantRegexpQuantifiers:
+  Enabled: true
+Lint/RequireRangeParentheses:
+  Enabled: true
+Lint/UnescapedBracketInRegexp:
+  Enabled: true
+Lint/UselessDefined:
+  Enabled: true
+Lint/UselessNumericOperation:
+  Enabled: true
+Lint/UselessRescue:
+  Enabled: true
+Metrics/CollectionLiteralLength:
+  Enabled: true
+Style/AmbiguousEndlessMethodDefinition:
+  Enabled: true
+Style/ArrayIntersect:
+  Enabled: true
+Style/BitwisePredicate:
+  Enabled: true
+Style/CombinableDefined:
+  Enabled: true
+Style/ComparableClamp:
+  Enabled: true
+Style/ConcatArrayLiterals:
+  Enabled: true
+Style/DataInheritance:
+  Enabled: true
+Style/DigChain:
+  Enabled: true
+Style/DirEmpty:
+  Enabled: true
+Style/EmptyHeredoc:
+  Enabled: true
+Style/EnvHome:
+  Enabled: true
+Style/ExactRegexpMatch:
+  Enabled: true
+Style/FileEmpty:
+  Enabled: true
+Style/FileNull:
+  Enabled: true
+Style/FileTouch:
+  Enabled: true
+Style/KeywordArgumentsMerging:
+  Enabled: true
+Style/MagicCommentFormat:
+  Enabled: true
+Style/MapCompactWithConditionalBlock:
+  Enabled: true
+Style/MapIntoArray:
+  Enabled: true
+Style/MapToSet:
+  Enabled: true
+Style/MinMaxComparison:
+  Enabled: true
+Style/OperatorMethodCall:
+  Enabled: true
+Style/RedundantArrayConstructor:
+  Enabled: true
+Style/RedundantConstantBase:
+  Enabled: true
+Style/RedundantCurrentDirectoryInPath:
+  Enabled: true
+Style/RedundantDoubleSplatHashBraces:
+  Enabled: true
+Style/RedundantEach:
+  Enabled: true
+Style/RedundantFilterChain:
+  Enabled: true
+Style/RedundantHeredocDelimiterQuotes:
+  Enabled: true
+Style/RedundantInterpolationUnfreeze:
+  Enabled: true
+Style/RedundantLineContinuation:
+  Enabled: true
+Style/RedundantRegexpArgument:
+  Enabled: true
+Style/RedundantRegexpConstructor:
+  Enabled: true
+Style/RedundantStringEscape:
+  Enabled: true
+Style/ReturnNilInPredicateMethodDefinition:
+  Enabled: true
+Style/SafeNavigationChainLength:
+  Enabled: true
+Style/SendWithLiteralMethodName:
+  Enabled: true
+Style/SingleLineDoEndBlock:
+  Enabled: true
+Style/SuperArguments:
+  Enabled: true
+Style/SuperWithArgsParentheses:
+  Enabled: true
+Style/YAMLFileRead:
+  Enabled: true
+Performance/MapMethodChain:
+  Enabled: true
+Performance/StringBytesize:
+  Enabled: true
+RSpec/StringAsInstanceDoubleConstant:
+  Enabled: true
