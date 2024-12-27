@@ -268,7 +268,7 @@ class ComplianceEngine::Data
       collection.each_value do |v|
         v.to_a.each do |component|
           next unless component.key?('confine')
-          @confines = @confines.deep_merge!(component['confine'])
+          @confines = DeepMerge.deep_merge!(component['confine'], @confines)
         end
       end
     end
@@ -310,7 +310,7 @@ class ComplianceEngine::Data
 
     valid_profiles.reverse_each do |profile|
       check_mapping(profile).each_value do |check|
-        parameters = parameters.deep_merge!(check.hiera)
+        parameters = DeepMerge.deep_merge!(check.hiera, parameters)
       end
     end
 
