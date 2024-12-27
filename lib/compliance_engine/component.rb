@@ -243,7 +243,7 @@ class ComplianceEngine::Component
     @element = {}
 
     fragments.each_value do |fragment|
-      @element = @element.deep_merge!(fragment)
+      @element = DeepMerge.deep_merge!(fragment, @element)
     end
 
     @element
