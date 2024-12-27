@@ -21,7 +21,7 @@ RSpec.describe ComplianceEngine::EnvironmentLoader::Zip do
     let(:path) { '/path/to/module.zip' }
 
     before(:each) do
-      allow(::Zip::File).to receive(:open).with(path).and_raise(Zip::Error)
+      allow(Zip::File).to receive(:open).with(path).and_raise(Zip::Error)
     end
 
     it 'does not initialize' do
