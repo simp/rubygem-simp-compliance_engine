@@ -7,7 +7,7 @@ module ComplianceEngine
   class Version
     # Verify that the version is supported
     #
-    # @param [String] version The version to verify
+    # @param version [String] The version to verify
     def initialize(version)
       raise 'Missing version' if version.nil?
       raise "Unsupported version '#{version}'" unless version == '2.0.0'

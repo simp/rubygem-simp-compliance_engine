@@ -7,8 +7,8 @@ require 'deep_merge'
 class ComplianceEngine::Component
   # A generic compliance engine data component
   #
-  # @param [String] component The component key
-  # @param [ComplianceEngine::Data, ComplianceEngine::Collection, NilClass] data The data to initialize the object with
+  # @param component [String] The component key
+  # @param data [ComplianceEngine::Data, ComplianceEngine::Collection, NilClass] The data to initialize the object with
   def initialize(name, data: nil)
     context_variables.each { |var| instance_variable_set(var, data&.instance_variable_get(var)) }
     @component ||= { key: name, fragments: {} }
@@ -124,9 +124,9 @@ class ComplianceEngine::Component
 
   # Compare a fact value against a confine value
   #
-  # @param [Object] fact The fact value
-  # @param [Object] confine The confine value
-  # @param [Integer] depth The depth of the recursion
+  # @param fact [Object] The fact value
+  # @param confine [Object] The confine value
+  # @param depth [Integer] The depth of the recursion
   # @return [TrueClass, FalseClass] true if the fact value matches the confine value
   def fact_match?(fact, confine, depth = 0)
     if confine.is_a?(String)
@@ -146,7 +146,7 @@ class ComplianceEngine::Component
 
   # Check if a fragment is confined
   #
-  # @param [Hash] fragment The fragment to check
+  # @param fragment [Hash] The fragment to check
   # @return [TrueClass, FalseClass] true if the fragment should be dropped
   def confine_away?(fragment)
     return false unless fragment.key?('confine')
