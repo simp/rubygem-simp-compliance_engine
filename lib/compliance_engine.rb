@@ -10,7 +10,7 @@ module ComplianceEngine
 
   # Open compliance data
   #
-  # @param [Array<String>] paths The paths to the compliance data files
+  # @param paths [Array<String>] The paths to the compliance data files
   # @return [ComplianceEngine::Data]
   def self.open(*paths)
     Data.new(*paths)
@@ -18,7 +18,7 @@ module ComplianceEngine
 
   # Open compliance data
   #
-  # @param [Array<String>] paths The paths to the compliance data files
+  # @param paths [Array<String>] The paths to the compliance data files
   # @return [ComplianceEngine::Data]
   def self.new(*paths)
     Data.new(*paths)

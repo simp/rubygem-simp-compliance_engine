@@ -10,7 +10,7 @@ class ComplianceEngine::DataLoader
   # Initialize a new instance of the ComplianceEngine::DataLoader::File class
   #
   # @param value [Hash] The data to initialize the object with
-  # @param [String] key The key to use for identifying the data
+  # @param key [String] The key to use for identifying the data
   def initialize(value = {}, key: nil)
     self.data = value
     @key = key

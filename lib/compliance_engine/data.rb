@@ -24,9 +24,9 @@ require 'json'
 
 # Work with compliance data
 class ComplianceEngine::Data
-  # @param [Array<String>] paths The paths to the compliance data files
-  # @param [Hash] facts The facts to use while evaluating the data
-  # @param [Integer] enforcement_tolerance The tolerance to use while evaluating the data
+  # @param paths [Array<String>] The paths to the compliance data files
+  # @param facts [Hash] The facts to use while evaluating the data
+  # @param enforcement_tolerance [Integer] The tolerance to use while evaluating the data
   def initialize(*paths, facts: nil, enforcement_tolerance: nil)
     @data ||= {}
     @facts = facts
@@ -38,35 +38,35 @@ class ComplianceEngine::Data
   attr_reader :data, :facts, :enforcement_tolerance, :environment_data, :modulepath
 
   # Set the object data
-  # @param [Hash] data The data to initialize the object with
+  # @param data [Hash] The data to initialize the object with
   def data=(value)
     @data = value
     invalidate_cache
   end
 
   # Set the facts
-  # @param [Hash] facts The facts to initialize the object with
+  # @param facts [Hash] The facts to initialize the object with
   def facts=(value)
     @facts = value
     invalidate_cache
   end
 
   # Set the enforcement tolerance
-  # @param [Hash] enforcement_tolerance The enforcement tolerance to initialize
+  # @param enforcement_tolerance [Hash] The enforcement tolerance to initialize
   def enforcement_tolerance=(value)
     @enforcement_tolerance = value
     invalidate_cache
   end
 
   # Set the environment data
-  # @param [Hash] environment_data The environment data to initialize the object with
+  # @param environment_data [Hash] The environment data to initialize the object with
   def environment_data=(value)
     @environment_data = value
     invalidate_cache
   end
 
   # Set the modulepath
-  # @param [Array<String>] modulepath The Puppet modulepath
+  # @param modulepath [Array<String>] The Puppet modulepath
   def modulepath=(value)
     @modulepath = value
     invalidate_cache
@@ -89,7 +89,7 @@ class ComplianceEngine::Data
   end
 
   # Scan a Puppet environment from a zip file
-  # @param [String] path The Puppet environment archive file
+  # @param path [String] The Puppet environment archive file
   # @return [NilClass]
   def open_environment_zip(path)
     require 'compliance_engine/environment_loader/zip'
@@ -100,7 +100,7 @@ class ComplianceEngine::Data
   end
 
   # Scan a Puppet environment
-  # @param [Array<String>] paths The Puppet modulepath components
+  # @param paths [Array<String>] The Puppet modulepath components
   # @return [NilClass]
   def open_environment(*paths)
     environment = ComplianceEngine::EnvironmentLoader.new(*paths)
@@ -110,9 +110,9 @@ class ComplianceEngine::Data
 
   # Scan paths for compliance data files
   #
-  # @param [Array<String>] paths The paths to the compliance data files
-  # @param [Class] fileclass The class to use for reading files
-  # @param [Class] dirclass The class to use for reading directories
+  # @param paths [Array<String>] The paths to the compliance data files
+  # @param fileclass [Class] The class to use for reading files
+  # @param dirclass [Class] The class to use for reading directories
   # @return [NilClass]
   def open(*paths, fileclass: File, dirclass: Dir)
     modules = {}
@@ -162,11 +162,11 @@ class ComplianceEngine::Data
 
   # Update the data for a given file
   #
-  # @param [String] file The path to the compliance data file
-  # @param [String] key The key to use for the data
-  # @param [Class] fileclass The class to use for reading files
-  # @param [Integer] size The size of the file
-  # @param [Time] mtime The modification time of the file
+  # @param file [String] The path to the compliance data file
+  # @param key [String] The key to use for the data
+  # @param fileclass [Class] The class to use for reading files
+  # @param size [Integer] The size of the file
+  # @param mtime [Time] The modification time of the file
   # @return [NilClass]
   def update(
     filename,
@@ -220,7 +220,7 @@ class ComplianceEngine::Data
 
   # Get the compliance data for a given file
   #
-  # @param [String] file The path to the compliance data file
+  # @param file [String] The path to the compliance data file
   # @return [Hash]
   def get(file)
     data[file][:content]
@@ -278,7 +278,7 @@ class ComplianceEngine::Data
 
   # Return all Hiera data from checks that map to the requested profiles
   #
-  # @param [Array<String>] requested_profiles The requested profiles
+  # @param requested_profiles [Array<String>] The requested profiles
   # @return [Hash]
   def hiera(requested_profiles = [])
     # If we have no valid profiles, we won't have any hiera data.
@@ -319,7 +319,7 @@ class ComplianceEngine::Data
 
   # Return all checks that map to the requested profile or CE
   #
-  # @param [ComplianceEngine::Profile, ComplianceEngine::Ce] profile_or_ce The requested profile or CE
+  # @param profile_or_ce [ComplianceEngine::Profile, ComplianceEngine::Ce] The requested profile or CE
   # @return [Hash]
   def check_mapping(profile_or_ce)
     raise ArgumentError, 'Argument must be a ComplianceEngine::Profile object' unless profile_or_ce.is_a?(ComplianceEngine::Profile) || profile_or_ce.is_a?(ComplianceEngine::Ce)
@@ -367,8 +367,8 @@ class ComplianceEngine::Data
 
   # Return true if the check is mapped to the profile or CE
   #
-  # @param [ComplianceEngine::Check] check The check
-  # @param [ComplianceEngine::Profile, ComplianceEngine::Ce] profile_or_ce The profile or CE
+  # @param check [ComplianceEngine::Check] The check
+  # @param profile_or_ce [ComplianceEngine::Profile, ComplianceEngine::Ce] The profile or CE
   # @return [TrueClass, FalseClass]
   def mapping?(check, profile_or_ce)
     raise ArgumentError, 'Argument must be a ComplianceEngine::Profile object' unless profile_or_ce.is_a?(ComplianceEngine::Profile) || profile_or_ce.is_a?(ComplianceEngine::Ce)
@@ -404,8 +404,8 @@ class ComplianceEngine::Data
 
   # Correlate between arrays and hashes
   #
-  # @param [Array] a An array
-  # @param [Hash] b A hash
+  # @param a [Array] An array
+  # @param b [Hash] A hash
   # @return [TrueClass, FalseClass]
   def correlate(a, b)
     return false if a.nil? || b.nil?
