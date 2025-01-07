@@ -1,0 +1,4 @@
+---
+compliance_engine::enforcement:
+  #   - test_profile
+  - "%{facts.target_compliance_profile}"

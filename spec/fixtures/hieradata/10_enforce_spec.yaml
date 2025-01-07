@@ -1,0 +1,32 @@
+---
+compliance_engine::enforcement:
+- disa_stig
+compliance_engine::compliance_map:
+  version: 2.0.0
+  checks:
+    oval:com.puppet.test.disa.useradd_shells:
+      type: puppet-class-parameter
+      controls:
+        disa_stig: true
+      identifiers:
+        FOO2:
+        - FOO2
+        BAR2:
+        - BAR2
+      settings:
+        parameter: useradd::shells
+        value:
+        - "/bin/disa"
+    oval:com.puppet.test.nist.useradd_shells:
+      type: puppet-class-parameter
+      controls:
+        nist_800_53:rev4: true
+      identifiers:
+        FOO2:
+        - FOO2
+        BAR2:
+        - BAR2
+      settings:
+        parameter: useradd::shells
+        value:
+        - "/bin/nist"

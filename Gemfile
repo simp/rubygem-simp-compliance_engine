@@ -8,11 +8,16 @@ gemspec
 gem 'rake', '~> 13.3.0'
 
 group :tests do
+  gem 'puppet', ENV.fetch('PUPPET_VERSION', '~> 8.0')
+  gem 'puppetlabs_spec_helper', '~> 8.0'
   gem 'rspec', '~> 3.12'
+  gem 'rspec-puppet', '~> 5.0.0'
+  gem 'rspec-puppet-facts', '~> 3.0'
   gem 'rubocop', '~> 1.81.0'
   gem 'rubocop-performance', '~> 1.26.0'
   gem 'rubocop-rake', '~> 0.7.0'
   gem 'rubocop-rspec', '~> 3.9.0'
+  gem 'syslog', require: false
 end
 
 group :development do

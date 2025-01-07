@@ -40,14 +40,14 @@ RUN useradd -ms /bin/bash vscode \
 USER vscode
 
 # Set up bash-git-prompt
-RUN git clone https://github.com/magicmonty/bash-git-prompt.git /home/vscode/.bash-git-prompt --depth 1 \
-    && cat >> /home/vscode/.bashrc <<EOF
+# RUN git clone https://github.com/magicmonty/bash-git-prompt.git /home/vscode/.bash-git-prompt --depth 1 \
+#     && cat >> /home/vscode/.bashrc <<EOF
 
-if [ -f ~/.bash-git-prompt/gitprompt.sh ]; then
-    GIT_PROMPT_ONLY_IN_REPO=1
-    . ~/.bash-git-prompt/gitprompt.sh
-fi
-EOF
+# if [ -f ~/.bash-git-prompt/gitprompt.sh ]; then
+#     GIT_PROMPT_ONLY_IN_REPO=1
+#     . ~/.bash-git-prompt/gitprompt.sh
+# fi
+# EOF
 
 # Set the working directory
 WORKDIR /workspace
