@@ -207,7 +207,7 @@ class ComplianceEngine::Data
 
     reset_collection
   rescue => e
-    warn e.message
+    ComplianceEngine.log.error e.message
   end
 
   # Get a list of files with compliance data
@@ -293,7 +293,7 @@ class ComplianceEngine::Data
     valid_profiles = []
     requested_profiles.each do |profile|
       if profiles[profile].nil?
-        warn "Requested profile '#{profile}' not defined"
+        ComplianceEngine.log.error "Requested profile '#{profile}' not defined"
         next
       end
 
@@ -415,12 +415,5 @@ class ComplianceEngine::Data
     return false if a.empty? || b.empty?
 
     a.any? { |item| b[item] }
-  end
-
-  # Print debugging messages to the console.
-  #
-  # @param [String] msg The message to print
-  def debug(msg)
-    warn msg
   end
 end

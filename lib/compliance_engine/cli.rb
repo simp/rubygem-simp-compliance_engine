@@ -10,6 +10,8 @@ class ComplianceEngine::CLI < Thor
   class_option :module, type: :array, default: []
   class_option :modulepath, type: :array
   class_option :modulezip, type: :string
+  class_option :verbose, type: :boolean
+  class_option :debug, type: :boolean
 
   desc 'version', 'Print the version'
   def version
@@ -58,7 +60,14 @@ class ComplianceEngine::CLI < Thor
   def data
     return @data unless @data.nil?
 
-    @data = ComplianceEngine::Data.new(facts: facts, enforcement_tolerance: options[:enforcement_tolerance])
+    if options[:debug]
+      ComplianceEngine.log.level = Logger::DEBUG
+    elsif options[:verbose]
+      ComplianceEngine.log.level = Logger::INFO
+    end
+    @data = ComplianceEngine::Data.new
+    @data.facts = facts
+    @data.enforcement_tolerance = options[:enforcement_tolerance]
     if options[:modulezip]
       @data.open_environment_zip(options[:modulezip])
     elsif options[:modulepath]
