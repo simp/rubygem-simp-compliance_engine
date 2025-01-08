@@ -26,7 +26,7 @@ class ComplianceEngine::ModuleLoader
         @name = metadata.data['name']
         @version = metadata.data['version']
       rescue => e
-        warn "Could not parse #{metadata_json}: #{e.message}"
+        ComplianceEngine.log.warn "Could not parse #{metadata_json}: #{e.message}"
       end
     end
 
@@ -37,7 +37,6 @@ class ComplianceEngine::ModuleLoader
             .map { |dir|
       ['yaml', 'json'].map { |type| File.join(path, dir, '**', "*.#{type}") }
     }.flatten
-    # debug "Globs: #{globs}"
     # Using .each here to make mocking with rspec easier.
     globs.each do |glob|
       dirclass.glob(glob).each do |file|
@@ -53,7 +52,7 @@ class ComplianceEngine::ModuleLoader
                  end
         @files << loader
       rescue => e
-        warn "Could not load #{file}: #{e.message}"
+        ComplianceEngine.log.warn "Could not load #{file}: #{e.message}"
       end
     end
   end

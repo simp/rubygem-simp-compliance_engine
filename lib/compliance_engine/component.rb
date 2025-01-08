@@ -161,13 +161,13 @@ class ComplianceEngine::Component
             begin
               return true unless SemanticPuppet::VersionRange.parse(module_version).include?(SemanticPuppet::Version.parse(environment_data[v]))
             rescue => e
-              warn "Failed to compare #{v} #{environment_data[v]} with version confinement #{module_version}: #{e.message}"
+              ComplianceEngine.log.error "Failed to compare #{v} #{environment_data[v]} with version confinement #{module_version}: #{e.message}"
               return true
             end
           end
         end
       elsif k == 'module_version'
-        warn "Missing module name for #{fragment}" unless fragment['confine'].key?('module_name')
+        ComplianceEngine.log.error "Missing module name for #{fragment}" unless fragment['confine'].key?('module_name')
       else
         # Confinement based on Puppet facts
         unless facts.nil?
@@ -215,14 +215,14 @@ class ComplianceEngine::Component
           message = "Remediation disabled for #{fragment}"
           reason = fragment['remediation']['disabled']&.map { |value| value['reason'] }&.reject { |value| value.nil? }&.join("\n")
           message += "\n#{reason}" unless reason.nil?
-          warn message
+          ComplianceEngine.log.info message
           next
         end
 
         if fragment['remediation'].key?('risk')
           risk_level = fragment['remediation']['risk']&.map { |value| value['level'] }&.select { |value| value.is_a?(Integer) }&.max
           if risk_level.is_a?(Integer) && risk_level >= enforcement_tolerance
-            warn "Remediation risk #{risk_level} exceeds enforcement tolerance #{enforcement_tolerance} for #{fragment}"
+            ComplianceEngine.log.info "Remediation risk #{risk_level} exceeds enforcement tolerance #{enforcement_tolerance} for #{fragment}"
             next
           end
         end
