@@ -28,11 +28,7 @@ Puppet::Functions.create_function(:'compliance_engine::enforcement') do
     return context.not_found if profiles.empty?
 
     data = ComplianceEngine::Data.new
-    # data.facts = closure_scope.lookupvar('facts')
-    data.facts = Marshal.load(Marshal.dump(closure_scope.lookupvar('facts')))
-    # Pretend we're RHEL 9 for testing.
-    data.facts['os']['name'] = 'RedHat'
-    data.facts['os']['release']['major'] = '9'
+    data.facts = closure_scope.lookupvar('facts')
     data.enforcement_tolerance = enforcement_tolerance || options['enforcement_tolerance']
     data.open(ComplianceEngine::EnvironmentLoader.new(*closure_scope.environment.full_modulepath.select { |path| File.directory?(path) }))
 
