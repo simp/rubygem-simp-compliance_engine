@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.metadata['bug_tracker_uri'] = 'https://github.com/simp/rubygem-simp-compliance_engine/issues'
 
   # Specify which files should be added to the gem when it is released.
-  spec.files = Dir.glob(['*.gemspec', '*.md', 'LICENSE', 'exe/*', 'lib/**/*.rb'])
+  spec.files = Dir.glob(['*.gemspec', '*.md', 'LICENSE', 'exe/*', 'lib/**/*.rb']).reject { |f| f.start_with?('lib/puppet/') }
   spec.bindir = 'exe'
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
