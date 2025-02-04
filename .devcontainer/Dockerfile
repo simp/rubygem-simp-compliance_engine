@@ -2,16 +2,15 @@ FROM almalinux:9
 
 RUN dnf -y update \
   && dnf -y install \
-    https://yum.overlookinfratech.com/puppet8-community-release-el-9.noarch.rpm \
-    https://yum.puppet.com/puppet8-release-el-9.noarch.rpm \
+    https://yum.overlookinfratech.com/openvox8-release-el-9.noarch.rpm \
     epel-release \
     yum-utils \
   && yum-config-manager --set-enabled crb \
   && dnf -y module enable ruby:3.3 \
   && dnf -y install \
     git \
-    puppet-agent \
-    puppetserver \
+    openvox-agent \
+    openvox-server \
     ruby \
     ruby-devel \
     rubygem-rake \
