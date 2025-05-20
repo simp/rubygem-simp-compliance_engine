@@ -17,7 +17,7 @@ jobs:
       - name: "Install Ruby"
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.3
+          ruby-version: 3.4
           bundler-cache: true
       - run: bundle exec rake rubocop
 
@@ -29,7 +29,8 @@ jobs:
         ruby:
           - '2.7'  # Puppet 7
           - '3.2'  # Puppet 8
-          - '3.3'  # Latest
+          - '3.3'
+          - '3.4'  # Latest
 
     steps:
       - uses: actions/checkout@v3
