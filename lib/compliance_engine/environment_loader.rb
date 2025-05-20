@@ -18,6 +18,7 @@ class ComplianceEngine::EnvironmentLoader
               .grep(%r{\A[a-z][a-z0-9_]*\Z})
               .select { |child| fileclass.directory?(File.join(path, child)) }
               .map { |child| File.join(path, child) }
+              .sort
     rescue
       []
     end
