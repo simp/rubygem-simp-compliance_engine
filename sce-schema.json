@@ -114,6 +114,7 @@
                 }
               ]
             }
+          },
           "examples": [
             {
               "title": "Level 1 - Server",
@@ -190,14 +191,11 @@
             "oval-ids": {
               "type": "array",
               "default": [],
-              "title": "The oval-ids Schema",
+              "title": "OVAL identifiers for this compliance control",
               "items": {
                 "type": "string",
                 "default": "",
-                "title": "A Schema",
-                "examples": [
-                  "xccdf_org.cisecurity.benchmarks_rule_1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled"
-                ]
+                "title": "OVAL identifier"
               },
               "examples": [
                 [
@@ -208,7 +206,7 @@
             "title": {
               "type": "string",
               "default": "",
-              "title": "The title Schema",
+              "title": "Title of the compliance control",
               "examples": [
                 "Ensure address space layout randomization (ASLR) is enabled"
               ]
@@ -216,7 +214,7 @@
             "description": {
               "type": "string",
               "default": "",
-              "title": "The description Schema",
+              "title": "Description of the compliance control",
               "examples": [
                 "Address space layout randomization (ASLR) is an exploit mitigation technique which randomly arranges the address space of key data areas of a process."
               ]
@@ -224,20 +222,18 @@
             "imported_data": {
               "type": "object",
               "default": {},
-              "title": "The imported_data Schema",
-              "required": [
-                "fixtext"
-              ],
+              "title": "Data imported from external sources",
               "properties": {
                 "fixtext": {
                   "type": "string",
                   "default": "",
-                  "title": "The fixtext Schema",
+                  "title": "Text describing how to fix compliance issues",
                   "examples": [
                     "Set the following parameter in /etc/sysctl.conf or a /etc/sysctl.d/* file: kernel.randomize_va_space = 2 Run the following command to set the active kernel parameter: # sysctl -w kernel.randomize_va_space=2"
                   ]
                 }
               },
+              "additionalProperties": true,
               "examples": [
                 {
                   "fixtext": "Set the following parameter in /etc/sysctl.conf or a /etc/sysctl.d/* file: kernel.randomize_va_space = 2 Run the following command to set the active kernel parameter: # sysctl -w kernel.randomize_va_space=2"
@@ -247,47 +243,13 @@
             "confine": {
               "type": "object",
               "default": {},
-              "title": "The confine Schema",
-              "required": [
-                "os.release.major",
-                "os.name"
-              ],
-              "properties": {
-                "os.release.major": {
+              "title": "Conditions that confine this control to specific environments",
+              "patternProperties": {
+                "^\\w(?:[\\.-]\\w+)*$": {
                   "type": "array",
-                  "default": [],
-                  "title": "The os.release.major Schema",
                   "items": {
-                    "type": "string",
-                    "default": "",
-                    "title": "A Schema",
-                    "examples": [
-                      "8"
-                    ]
-                  },
-                  "examples": [
-                    [
-                      "8"
-                    ]
-                  ]
-                },
-                "os.name": {
-                  "type": "array",
-                  "default": [],
-                  "title": "The os.name Schema",
-                  "items": {
-                    "type": "string",
-                    "default": "",
-                    "title": "A Schema",
-                    "examples": [
-                      "RedHat"
-                    ]
-                  },
-                  "examples": [
-                    [
-                      "RedHat"
-                    ]
-                  ]
+                    "type": "string"
+                  }
                 }
               },
               "examples": [
@@ -362,42 +324,32 @@
     "checks": {
       "type": "object",
       "default": {},
-      "title": "The checks Schema",
-      "required": [
-        "oval:com.puppet.forge.simp.cis.simp.sysctl.kernel__randomize_va_space"
-      ],
-      "properties": {
-        "oval:com.puppet.forge.simp.cis.simp.sysctl.kernel__randomize_va_space": {
+      "title": "Collection of compliance checks",
+      "patternProperties": {
+        "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
           "type": "object",
           "default": {},
-          "title": "The oval:com.puppet.forge.simp.cis.simp.sysctl.kernel__randomize_va_space Schema",
+          "title": "A compliance check",
           "required": [
-            "settings",
-            "type",
-            "ces"
+            "type"
           ],
           "properties": {
             "settings": {
               "type": "object",
               "default": {},
-              "title": "The settings Schema",
-              "required": [
-                "parameter",
-                "value"
-              ],
+              "title": "Settings for the compliance check",
               "properties": {
                 "parameter": {
                   "type": "string",
                   "default": "",
-                  "title": "The parameter Schema",
+                  "title": "The parameter to check",
                   "examples": [
                     "simp::sysctl::kernel__randomize_va_space"
                   ]
                 },
                 "value": {
-                  "type": "integer",
-                  "default": 0,
-                  "title": "The value Schema",
+                  "type": ["integer", "string", "boolean", "array"],
+                  "title": "The expected value of the parameter",
                   "examples": [
                     2
                   ]
@@ -413,7 +365,7 @@
             "type": {
               "type": "string",
               "default": "",
-              "title": "The type Schema",
+              "title": "The type of check",
               "examples": [
                 "puppet-class-parameter"
               ]
@@ -421,19 +373,32 @@
             "ces": {
               "type": "array",
               "default": [],
-              "title": "The ces Schema",
+              "title": "References to compliance engine entries",
               "items": {
                 "type": "string",
-                "default": "",
-                "title": "A Schema",
-                "examples": [
-                  "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1"
-                ]
+                "title": "Reference to a CE entry"
               },
               "examples": [
                 [
                   "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1"
                 ]
+              ]
+            },
+            "controls": {
+              "type": "object",
+              "default": {},
+              "title": "References to controls related to this check",
+              "patternProperties": {
+                "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+                  "type": "boolean",
+                  "default": false,
+                  "title": "Control reference"
+                }
+              },
+              "examples": [
+                {
+                  "nist_800_53:rev4:AU-2": true
+                }
               ]
             }
           },
