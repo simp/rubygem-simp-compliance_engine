@@ -56,11 +56,64 @@
                   "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1": true
                 }
               ]
+            },
+            "controls": {
+              "type": "object",
+              "default": {},
+              "title": "Key is a reference to an entry in the top-level control hash. Enforced if value is true.",
+              "patternProperties": {
+                "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+                  "type": "boolean",
+                  "default": false,
+                  "title": "Entry in the top-level control hash"
+                }
+              },
+              "examples": [
+                {
+                  "nist_800_53:rev4:AU-2": true
+                }
+              ]
+            },
+            "checks": {
+              "type": "object",
+              "default": {},
+              "title": "Key is a reference to an entry in the top-level checks hash. Enforced if value is true.",
+              "patternProperties": {
+                "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+                  "type": "boolean",
+                  "default": false,
+                  "title": "Entry in the top-level checks hash"
+                }
+              },
+              "examples": [
+                {
+                  "widget_spinner_audit_logging": true
+                }
+              ]
+            },
+            "confine": {
+              "type": "object",
+              "default": {},
+              "title": "Conditions that confine this profile to specific environments",
+              "patternProperties": {
+                "^\\w(?:[\\.-]\\w+)*$": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "examples": [
+                {
+                  "os.release.major": [
+                    "8"
+                  ],
+                  "os.name": [
+                    "RedHat"
+                  ]
+                }
+              ]
             }
-          },
-          "controls": {},
-          "checks": {},
-          "confine": {},
           "examples": [
             {
               "title": "Level 1 - Server",
@@ -87,40 +140,27 @@
     "ce": {
       "type": "object",
       "default": {},
-      "title": "The ce Schema",
-      "required": [
-        "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1"
-      ],
-      "properties": {
-        "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1": {
+      "title": "Collection of compliance engine entries",
+      "patternProperties": {
+        "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
           "type": "object",
           "default": {},
-          "title": "The oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1 Schema",
+          "title": "A compliance engine entry",
           "required": [
             "controls",
-            "identifiers",
-            "oval-ids",
             "title",
-            "description",
-            "imported_data",
-            "confine"
+            "description"
           ],
           "properties": {
             "controls": {
               "type": "object",
               "default": {},
-              "title": "The controls Schema",
-              "required": [
-                "cis:el8:v1.0.0.1"
-              ],
-              "properties": {
-                "cis:el8:v1.0.0.1": {
+              "title": "References to controls related to this CE",
+              "patternProperties": {
+                "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
                   "type": "boolean",
                   "default": false,
-                  "title": "The cis:el8:v1.0.0.1 Schema",
-                  "examples": [
-                    true
-                  ]
+                  "title": "Control reference"
                 }
               },
               "examples": [
@@ -132,19 +172,13 @@
             "identifiers": {
               "type": "object",
               "default": {},
-              "title": "The identifiers Schema",
-              "required": [
-                "cis"
-              ],
-              "properties": {
-                "cis": {
+              "title": "External identifiers for this compliance control",
+              "patternProperties": {
+                "^\\w+$": {
                   "type": "array",
-                  "default": [],
-                  "title": "The cis Schema",
-                  "items": {},
-                  "examples": [
-                    []
-                  ]
+                  "items": {
+                    "type": ["string", "number"]
+                  }
                 }
               },
               "examples": [
