@@ -1,0 +1,488 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://simp-project.com/docs/sce/schema.json",
+  "type": "object",
+  "default": {},
+  "title": "Compliance Engine data",
+  "description": "Data for the Sicura Compliance Engine",
+  "required": [
+    "version"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "2.0.0",
+      "title": "The SCE data version"
+    },
+    "profiles": {
+      "type": "object",
+      "default": {},
+      "title": "A checklist of the Checks, CEs, and Controls to add (or remove) from the profile.",
+      "patternProperties": {
+        "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+          "type": "object",
+          "default": {},
+          "title": "An SCE profile",
+          "properties": {
+            "title": {
+              "type": "string",
+              "default": "",
+              "title": "Optional. Short description of the profile.",
+              "examples": [
+                "Level 1 - Server"
+              ]
+            },
+            "description": {
+              "type": "string",
+              "default": "",
+              "title": "Optional. Longer description of the profile.",
+              "examples": [
+                "Items in this profile intend to: be practical and prudent; provide a clear security benefit; and not inhibit the utility of the technology beyond acceptable means. This profile is intended for servers."
+              ]
+            },
+            "ces": {
+              "type": "object",
+              "default": {},
+              "title": "Key is a reference to an entry in the top-level ce hash. Enforced if value is true.",
+              "patternProperties": {
+                "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+                  "type": "boolean",
+                  "default": false,
+                  "title": "Entry in the top-level ce hash"
+                }
+              },
+              "examples": [
+                {
+                  "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1": true
+                }
+              ]
+            }
+          },
+          "controls": {},
+          "checks": {},
+          "confine": {},
+          "examples": [
+            {
+              "title": "Level 1 - Server",
+              "description": "Items in this profile intend to: be practical and prudent; provide a clear security benefit; and not inhibit the utility of the technology beyond acceptable means. This profile is intended for servers.",
+              "ces": {
+                "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1": true
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "cis:level:1:server": {
+            "title": "Level 1 - Server",
+            "description": "Items in this profile intend to: be practical and prudent; provide a clear security benefit; and not inhibit the utility of the technology beyond acceptable means. This profile is intended for servers.",
+            "ces": {
+              "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1": true
+            }
+          }
+        }
+      ]
+    },
+    "ce": {
+      "type": "object",
+      "default": {},
+      "title": "The ce Schema",
+      "required": [
+        "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1"
+      ],
+      "properties": {
+        "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1": {
+          "type": "object",
+          "default": {},
+          "title": "The oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1 Schema",
+          "required": [
+            "controls",
+            "identifiers",
+            "oval-ids",
+            "title",
+            "description",
+            "imported_data",
+            "confine"
+          ],
+          "properties": {
+            "controls": {
+              "type": "object",
+              "default": {},
+              "title": "The controls Schema",
+              "required": [
+                "cis:el8:v1.0.0.1"
+              ],
+              "properties": {
+                "cis:el8:v1.0.0.1": {
+                  "type": "boolean",
+                  "default": false,
+                  "title": "The cis:el8:v1.0.0.1 Schema",
+                  "examples": [
+                    true
+                  ]
+                }
+              },
+              "examples": [
+                {
+                  "cis:el8:v1.0.0.1": true
+                }
+              ]
+            },
+            "identifiers": {
+              "type": "object",
+              "default": {},
+              "title": "The identifiers Schema",
+              "required": [
+                "cis"
+              ],
+              "properties": {
+                "cis": {
+                  "type": "array",
+                  "default": [],
+                  "title": "The cis Schema",
+                  "items": {},
+                  "examples": [
+                    []
+                  ]
+                }
+              },
+              "examples": [
+                {
+                  "cis": []
+                }
+              ]
+            },
+            "oval-ids": {
+              "type": "array",
+              "default": [],
+              "title": "The oval-ids Schema",
+              "items": {
+                "type": "string",
+                "default": "",
+                "title": "A Schema",
+                "examples": [
+                  "xccdf_org.cisecurity.benchmarks_rule_1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled"
+                ]
+              },
+              "examples": [
+                [
+                  "xccdf_org.cisecurity.benchmarks_rule_1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled"
+                ]
+              ]
+            },
+            "title": {
+              "type": "string",
+              "default": "",
+              "title": "The title Schema",
+              "examples": [
+                "Ensure address space layout randomization (ASLR) is enabled"
+              ]
+            },
+            "description": {
+              "type": "string",
+              "default": "",
+              "title": "The description Schema",
+              "examples": [
+                "Address space layout randomization (ASLR) is an exploit mitigation technique which randomly arranges the address space of key data areas of a process."
+              ]
+            },
+            "imported_data": {
+              "type": "object",
+              "default": {},
+              "title": "The imported_data Schema",
+              "required": [
+                "fixtext"
+              ],
+              "properties": {
+                "fixtext": {
+                  "type": "string",
+                  "default": "",
+                  "title": "The fixtext Schema",
+                  "examples": [
+                    "Set the following parameter in /etc/sysctl.conf or a /etc/sysctl.d/* file: kernel.randomize_va_space = 2 Run the following command to set the active kernel parameter: # sysctl -w kernel.randomize_va_space=2"
+                  ]
+                }
+              },
+              "examples": [
+                {
+                  "fixtext": "Set the following parameter in /etc/sysctl.conf or a /etc/sysctl.d/* file: kernel.randomize_va_space = 2 Run the following command to set the active kernel parameter: # sysctl -w kernel.randomize_va_space=2"
+                }
+              ]
+            },
+            "confine": {
+              "type": "object",
+              "default": {},
+              "title": "The confine Schema",
+              "required": [
+                "os.release.major",
+                "os.name"
+              ],
+              "properties": {
+                "os.release.major": {
+                  "type": "array",
+                  "default": [],
+                  "title": "The os.release.major Schema",
+                  "items": {
+                    "type": "string",
+                    "default": "",
+                    "title": "A Schema",
+                    "examples": [
+                      "8"
+                    ]
+                  },
+                  "examples": [
+                    [
+                      "8"
+                    ]
+                  ]
+                },
+                "os.name": {
+                  "type": "array",
+                  "default": [],
+                  "title": "The os.name Schema",
+                  "items": {
+                    "type": "string",
+                    "default": "",
+                    "title": "A Schema",
+                    "examples": [
+                      "RedHat"
+                    ]
+                  },
+                  "examples": [
+                    [
+                      "RedHat"
+                    ]
+                  ]
+                }
+              },
+              "examples": [
+                {
+                  "os.release.major": [
+                    "8"
+                  ],
+                  "os.name": [
+                    "RedHat"
+                  ]
+                }
+              ]
+            }
+          },
+          "examples": [
+            {
+              "controls": {
+                "cis:el8:v1.0.0.1": true
+              },
+              "identifiers": {
+                "cis": []
+              },
+              "oval-ids": [
+                "xccdf_org.cisecurity.benchmarks_rule_1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled"
+              ],
+              "title": "Ensure address space layout randomization (ASLR) is enabled",
+              "description": "Address space layout randomization (ASLR) is an exploit mitigation technique which randomly arranges the address space of key data areas of a process.",
+              "imported_data": {
+                "fixtext": "Set the following parameter in /etc/sysctl.conf or a /etc/sysctl.d/* file: kernel.randomize_va_space = 2 Run the following command to set the active kernel parameter: # sysctl -w kernel.randomize_va_space=2"
+              },
+              "confine": {
+                "os.release.major": [
+                  "8"
+                ],
+                "os.name": [
+                  "RedHat"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1": {
+            "controls": {
+              "cis:el8:v1.0.0.1": true
+            },
+            "identifiers": {
+              "cis": []
+            },
+            "oval-ids": [
+              "xccdf_org.cisecurity.benchmarks_rule_1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled"
+            ],
+            "title": "Ensure address space layout randomization (ASLR) is enabled",
+            "description": "Address space layout randomization (ASLR) is an exploit mitigation technique which randomly arranges the address space of key data areas of a process.",
+            "imported_data": {
+              "fixtext": "Set the following parameter in /etc/sysctl.conf or a /etc/sysctl.d/* file: kernel.randomize_va_space = 2 Run the following command to set the active kernel parameter: # sysctl -w kernel.randomize_va_space=2"
+            },
+            "confine": {
+              "os.release.major": [
+                "8"
+              ],
+              "os.name": [
+                "RedHat"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "checks": {
+      "type": "object",
+      "default": {},
+      "title": "The checks Schema",
+      "required": [
+        "oval:com.puppet.forge.simp.cis.simp.sysctl.kernel__randomize_va_space"
+      ],
+      "properties": {
+        "oval:com.puppet.forge.simp.cis.simp.sysctl.kernel__randomize_va_space": {
+          "type": "object",
+          "default": {},
+          "title": "The oval:com.puppet.forge.simp.cis.simp.sysctl.kernel__randomize_va_space Schema",
+          "required": [
+            "settings",
+            "type",
+            "ces"
+          ],
+          "properties": {
+            "settings": {
+              "type": "object",
+              "default": {},
+              "title": "The settings Schema",
+              "required": [
+                "parameter",
+                "value"
+              ],
+              "properties": {
+                "parameter": {
+                  "type": "string",
+                  "default": "",
+                  "title": "The parameter Schema",
+                  "examples": [
+                    "simp::sysctl::kernel__randomize_va_space"
+                  ]
+                },
+                "value": {
+                  "type": "integer",
+                  "default": 0,
+                  "title": "The value Schema",
+                  "examples": [
+                    2
+                  ]
+                }
+              },
+              "examples": [
+                {
+                  "parameter": "simp::sysctl::kernel__randomize_va_space",
+                  "value": 2
+                }
+              ]
+            },
+            "type": {
+              "type": "string",
+              "default": "",
+              "title": "The type Schema",
+              "examples": [
+                "puppet-class-parameter"
+              ]
+            },
+            "ces": {
+              "type": "array",
+              "default": [],
+              "title": "The ces Schema",
+              "items": {
+                "type": "string",
+                "default": "",
+                "title": "A Schema",
+                "examples": [
+                  "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1"
+                ]
+              },
+              "examples": [
+                [
+                  "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1"
+                ]
+              ]
+            }
+          },
+          "examples": [
+            {
+              "settings": {
+                "parameter": "simp::sysctl::kernel__randomize_va_space",
+                "value": 2
+              },
+              "type": "puppet-class-parameter",
+              "ces": [
+                "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1"
+              ]
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "oval:com.puppet.forge.simp.cis.simp.sysctl.kernel__randomize_va_space": {
+            "settings": {
+              "parameter": "simp::sysctl::kernel__randomize_va_space",
+              "value": 2
+            },
+            "type": "puppet-class-parameter",
+            "ces": [
+              "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "version": "2.0.0",
+      "profiles": {
+        "cis:level:1:server": {
+          "title": "Level 1 - Server",
+          "description": "Items in this profile intend to: be practical and prudent; provide a clear security benefit; and not inhibit the utility of the technology beyond acceptable means. This profile is intended for servers.",
+          "ces": {
+            "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1": true
+          }
+        }
+      },
+      "ce": {
+        "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1": {
+          "controls": {
+            "cis:el8:v1.0.0.1": true
+          },
+          "identifiers": {
+            "cis": []
+          },
+          "oval-ids": [
+            "xccdf_org.cisecurity.benchmarks_rule_1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled"
+          ],
+          "title": "Ensure address space layout randomization (ASLR) is enabled",
+          "description": "Address space layout randomization (ASLR) is an exploit mitigation technique which randomly arranges the address space of key data areas of a process.",
+          "imported_data": {
+            "fixtext": "Set the following parameter in /etc/sysctl.conf or a /etc/sysctl.d/* file: kernel.randomize_va_space = 2 Run the following command to set the active kernel parameter: # sysctl -w kernel.randomize_va_space=2"
+          },
+          "confine": {
+            "os.release.major": [
+              "8"
+            ],
+            "os.name": [
+              "RedHat"
+            ]
+          }
+        }
+      },
+      "checks": {
+        "oval:com.puppet.forge.simp.cis.simp.sysctl.kernel__randomize_va_space": {
+          "settings": {
+            "parameter": "simp::sysctl::kernel__randomize_va_space",
+            "value": 2
+          },
+          "type": "puppet-class-parameter",
+          "ces": [
+            "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1"
+          ]
+        }
+      }
+    }
+  ]
+}
