@@ -39,7 +39,7 @@ class ComplianceEngine::ModuleLoader
     }.flatten
     # Using .each here to make mocking with rspec easier.
     globs.each do |glob|
-      dirclass.glob(glob).each do |file|
+      dirclass.glob(glob).sort.each do |file|
         key = if Object.const_defined?(:Zip) && file.is_a?(Zip::Entry)
                 File.join(file.zipfile.to_s, '.', file.to_s)
               else
