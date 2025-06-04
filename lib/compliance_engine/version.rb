@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module ComplianceEngine
-  VERSION = '0.1.3'
+  VERSION = '0.1.4'
 
   # Handle supported compliance data versions
   class Version
