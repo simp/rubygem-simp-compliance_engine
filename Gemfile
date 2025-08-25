@@ -5,7 +5,7 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in compliance_engine.gemspec
 gemspec
 
-gem 'rake', '~> 13.2.1'
+gem 'rake', '~> 13.3.0'
 
 group :tests do
   gem 'rspec', '~> 3.12'
