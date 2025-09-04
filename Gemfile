@@ -11,7 +11,7 @@ group :tests do
   gem 'rspec', '~> 3.12'
   gem 'rubocop', '~> 1.80.0'
   gem 'rubocop-performance', '~> 1.25.0'
-  gem 'rubocop-rake', '~> 0.6.0'
+  gem 'rubocop-rake', '~> 0.7.0'
   gem 'rubocop-rspec', '~> 3.3.0'
 end
 
