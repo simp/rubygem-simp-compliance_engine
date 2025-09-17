@@ -1,5 +1,5 @@
 ---
-require:
+plugins:
   - rubocop-performance
   - rubocop-rspec
   - rubocop-rake
@@ -744,5 +744,49 @@ Performance/MapMethodChain:
   Enabled: true
 Performance/StringBytesize:
   Enabled: true
-RSpec/StringAsInstanceDoubleConstant:
+Gemspec/AttributeAssignment:
+  Enabled: true
+Layout/EmptyLinesAfterModuleInclusion:
+  Enabled: true
+Lint/ArrayLiteralInRegexp:
+  Enabled: true
+Lint/ConstantReassignment:
+  Enabled: true
+Lint/CopDirectiveSyntax:
+  Enabled: true
+Lint/RedundantTypeConversion:
+  Enabled: true
+Lint/SharedMutableDefault:
+  Enabled: true
+Lint/SuppressedExceptionInNumberConversion:
+  Enabled: true
+Lint/UselessConstantScoping:
+  Enabled: true
+Lint/UselessDefaultValueArgument:
+  Enabled: true
+Lint/UselessOr:
+  Enabled: true
+Naming/PredicateMethod:
+  Enabled: true
+Style/CollectionQuerying:
+  Enabled: true
+Style/ComparableBetween:
+  Enabled: true
+Style/EmptyStringInsideInterpolation:
+  Enabled: true
+Style/HashFetchChain:
+  Enabled: true
+Style/HashSlice:
+  Enabled: true
+Style/ItAssignment:
+  Enabled: true
+Style/ItBlockParameter:
+  Enabled: true
+Style/RedundantArrayFlatten:
+  Enabled: true
+Style/RedundantFormat:
+  Enabled: true
+Performance/ZipWithoutBlock:
+  Enabled: true
+RSpec/IncludeExamples:
   Enabled: true
