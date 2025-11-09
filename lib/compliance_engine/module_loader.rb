@@ -41,7 +41,7 @@ class ComplianceEngine::ModuleLoader
     globs.each do |glob|
       dirclass.glob(glob).sort.each do |file|
         key = if Object.const_defined?(:Zip) && file.is_a?(Zip::Entry)
-                File.join(file.zipfile.to_s, '.', file.to_s)
+                File.join(file.instance_variable_get(:@zipfile).to_s, '.', file.to_s)
               else
                 file.to_s
               end
