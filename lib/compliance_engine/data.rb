@@ -137,12 +137,7 @@ class ComplianceEngine::Data
       end
 
       if fileclass.file?(path)
-        key = if Object.const_defined?(:Zip) && path.is_a?(Zip::Entry)
-                File.join(path.zipfile.to_s, '.', path.to_s)
-              else
-                path.to_s
-              end
-        update(path, key: key, fileclass: fileclass)
+        update(path, key: path.to_s, fileclass: fileclass)
         next
       end
 
