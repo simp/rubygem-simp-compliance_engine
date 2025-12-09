@@ -1,13 +1,11 @@
-FROM almalinux:9
+FROM almalinux:10
 
 RUN dnf -y update \
   && dnf -y install \
-    https://yum.voxpupuli.org/openvox8-release-el-9.noarch.rpm \
-    https://yum.puppet.com/puppet-tools-release-el-9.noarch.rpm \
+    https://yum.voxpupuli.org/openvox8-release-el-10.noarch.rpm \
     epel-release \
     yum-utils \
   && yum-config-manager --set-enabled crb \
-  && dnf -y module enable ruby:3.3 \
   && dnf -y install \
     git \
     openvox-agent \
@@ -18,7 +16,6 @@ RUN dnf -y update \
     libyaml-devel \
     make \
     gcc \
-    yamllint \
     jq \
     which \
     time \
@@ -26,6 +23,10 @@ RUN dnf -y update \
     neovim \
     bash-completion \
     sudo \
+  && { \
+    dnf -y install yamllint \
+    || { dnf -y install python3-pip && pip install yamllint; }; \
+  } \
   && dnf clean all
 
 # Create a non-root user and set permissions
