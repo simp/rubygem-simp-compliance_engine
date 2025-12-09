@@ -28,5 +28,5 @@ class ComplianceEngine::EnvironmentLoader
     @modules = modules.map { |path| ComplianceEngine::ModuleLoader.new(path, fileclass: fileclass, dirclass: dirclass, zipfile_path: @zipfile_path) }
   end
 
-  attr_reader :modulepath, :modules
+  attr_reader :modulepath, :modules, :zipfile_path
 end

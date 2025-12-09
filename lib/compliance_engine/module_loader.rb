@@ -59,5 +59,5 @@ class ComplianceEngine::ModuleLoader
     end
   end
 
-  attr_reader :name, :version, :files
+  attr_reader :name, :version, :files, :zipfile_path
 end
