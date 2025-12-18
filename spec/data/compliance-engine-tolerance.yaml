@@ -1,0 +1,9 @@
+---
+compliance_engine::enforcement:
+  - "%{facts.target_compliance_profile}"
+
+# Note: Hiera interpolation always produces strings, so for testing enforcement
+# tolerance (which requires Integer), use the dedicated hieradata files:
+# - compliance-engine-tolerance-25.yaml
+# - compliance-engine-tolerance-60.yaml  
+# - compliance-engine-tolerance-100.yaml

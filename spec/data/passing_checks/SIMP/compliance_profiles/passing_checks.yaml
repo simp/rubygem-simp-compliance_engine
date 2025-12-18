@@ -1,0 +1,95 @@
+---
+# Some very basic compliance checks designed for the tests
+#
+# These should all pass
+
+version: 2.0.0
+
+profiles:
+  test_profile:
+    controls:
+      test_control: true
+
+controls:
+  test_control: {}
+
+checks:
+  oval:test1:
+    type: puppet-class-parameter
+    settings:
+      parameter: test1::arg1_1
+      value: foo1_1
+    controls:
+      test_control: true
+    identifiers:
+      - 'ID1.1'
+
+  oval:test2:
+    type: puppet-class-parameter
+    settings:
+      parameter: test2::test3::arg3_1
+      value: 're:foo3_.*'
+    controls:
+      test_control: true
+    identifiers:
+      - 'ID1.2'
+
+  oval:test3:
+    type: puppet-class-parameter
+    settings:
+      parameter: test2::test3::ref_miss1
+      value: missing1
+    controls:
+      test_control: true
+    identifiers:
+      - 'MISS1'
+
+  oval:test4:
+    type: puppet-class-parameter
+    settings:
+      parameter: testdef1::defarg1_1
+      value: deffoo1_1
+    controls:
+      test_control: true
+    identifiers:
+      - 'DEF1.1'
+
+  oval:test5:
+    type: puppet-class-parameter
+    settings:
+      parameter: testdef2::defarg1_2
+      value: deffoo1_2
+    controls:
+      test_control: true
+    identifiers:
+      - 'DEF1.2'
+
+  oval:test6:
+    type: puppet-class-parameter
+    settings:
+      parameter: unmapped1::arg1_1
+      value: um1_1
+    controls:
+      test_control: true
+    identifiers:
+      - 'UNK001'
+
+  oval:test7:
+    type: puppet-class-parameter
+    settings:
+      parameter: unmapped1::arg1_2
+      value: um1_2
+    controls:
+      test_control: true
+    identifiers:
+      - 'UNK002'
+
+  oval:test8:
+    type: puppet-class-parameter
+    settings:
+      parameter: unmapped1::subclass::arg1_2
+      value: um1_3
+    controls:
+      test_control: true
+    identifiers:
+      - 'UNK003'
