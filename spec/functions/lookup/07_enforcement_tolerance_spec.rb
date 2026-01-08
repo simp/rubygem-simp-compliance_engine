@@ -137,19 +137,24 @@ RSpec.describe 'lookup' do
     File.write(File.join(compliance_dir, 'checks.yaml'), checks_yaml)
 
     # Mock the Puppet environment's modulepath to include our temp directory
+    # rubocop:disable RSpec/AnyInstance
     allow_any_instance_of(Puppet::Node::Environment).to receive(:full_modulepath).and_return([tmpdir])
+    # rubocop:enable RSpec/AnyInstance
   end
 
   after(:each) do
     # Clean up temporary directory
-    FileUtils.rm_rf(@tmpdir) if @tmpdir && File.exist?(@tmpdir)
-    @tmpdir = nil
+    FileUtils.rm_rf(tmpdir) if tmpdir && File.exist?(tmpdir)
   end
 
   on_supported_os.each do |os, os_facts|
     context "on #{os} with compliance_engine::::enforcement and an existing profile using tolerance above level 21" do
       let(:facts) do
-        os_facts.merge('custom_hiera' => 'compliance_engine', 'target_compliance_profile' => '07_profile_test', 'target_enforcement_tolerance' => '22', 'custom_hiera' => 'compliance_engine')
+        os_facts.merge(
+          'custom_hiera'                 => 'compliance_engine',
+          'target_compliance_profile'    => '07_profile_test',
+          'target_enforcement_tolerance' => '22',
+        )
       end
       let(:hieradata) { 'compliance_engine' }
 

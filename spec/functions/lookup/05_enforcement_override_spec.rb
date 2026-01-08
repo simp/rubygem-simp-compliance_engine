@@ -79,7 +79,9 @@ RSpec.describe 'lookup' do
     File.write(File.join(compliance_dir, 'checks.yaml'), checks_yaml)
 
     # Mock the Puppet environment's modulepath to include our temp directory
+    # rubocop:disable RSpec/AnyInstance
     allow_any_instance_of(Puppet::Node::Environment).to receive(:full_modulepath).and_return([tmpdir])
+    # rubocop:enable RSpec/AnyInstance
   end
 
   after(:each) do
@@ -90,6 +92,7 @@ RSpec.describe 'lookup' do
   on_supported_os.each do |os, os_facts|
     context "on #{os} with compliance data in modules" do
       let(:facts) { os_facts.merge('custom_hiera' => 'profile-merging') }
+      let(:hieradata) { 'profile-merging' }
 
       before(:each) do
         File.open(File.join(hieradata_dir, 'profile-merging.yaml'), 'w') do |fh|
@@ -98,14 +101,13 @@ RSpec.describe 'lookup' do
         end
       end
 
-      let(:hieradata) { 'profile-merging' }
-
       # Test a simple hash.
       it { is_expected.to run.with_params('test_module_05::hash_param').and_return({ 'hash key 1' => 'hash value 1', 'hash key 2' => 'hash value 2' }) }
     end
 
     context "on #{os} with compliance_engine::compliance_map override" do
       let(:facts) { os_facts.merge('custom_hiera' => 'profile-merging') }
+      let(:hieradata) { 'profile-merging' }
 
       before(:each) do
         File.open(File.join(hieradata_dir, 'profile-merging.yaml'), 'w') do |fh|
@@ -125,8 +127,6 @@ RSpec.describe 'lookup' do
           fh.puts test_hiera
         end
       end
-
-      let(:hieradata) { 'profile-merging' }
 
       # Test a simple hash.
       it { is_expected.to run.with_params('test_module_05::hash_param').and_return({ 'hash key 1' => 'hash value 1' }) }

@@ -82,7 +82,9 @@ RSpec.describe 'lookup' do
     File.write(File.join(compliance_dir, 'checks.yaml'), checks_data.to_yaml)
 
     # Mock the Puppet environment's modulepath to include our temp directory
+    # rubocop:disable RSpec/AnyInstance
     allow_any_instance_of(Puppet::Node::Environment).to receive(:full_modulepath).and_return([tmpdir])
+    # rubocop:enable RSpec/AnyInstance
   end
 
   after(:each) do

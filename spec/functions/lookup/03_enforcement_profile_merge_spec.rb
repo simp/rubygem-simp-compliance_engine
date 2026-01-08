@@ -156,7 +156,9 @@ RSpec.describe 'lookup' do
     File.write(File.join(compliance_dir, 'checks.yaml'), checks_yaml)
 
     # Mock the Puppet environment's modulepath to include our temp directory
+    # rubocop:disable RSpec/AnyInstance
     allow_any_instance_of(Puppet::Node::Environment).to receive(:full_modulepath).and_return([tmpdir])
+    # rubocop:enable RSpec/AnyInstance
   end
 
   after(:each) do
@@ -167,6 +169,7 @@ RSpec.describe 'lookup' do
   on_supported_os.each do |os, os_facts|
     context "on #{os} with compliance_engine::enforcement merging profiles" do
       let(:facts) { os_facts.merge('custom_hiera' => 'profile-merging') }
+      let(:hieradata) { 'profile-merging' }
 
       before(:each) do
         File.open(File.join(hieradata_dir, 'profile-merging.yaml'), 'w') do |fh|
@@ -174,8 +177,6 @@ RSpec.describe 'lookup' do
           fh.puts test_hiera
         end
       end
-
-      let(:hieradata) { 'profile-merging' }
 
       # Test a string.
       it { is_expected.to run.with_params('test_module_03::string_param').and_return('string value 1') }
@@ -192,6 +193,7 @@ RSpec.describe 'lookup' do
 
     context "on #{os} with compliance_engine::enforcement merging profiles in reverse order" do
       let(:facts) { os_facts.merge('custom_hiera' => 'profile-merging') }
+      let(:hieradata) { 'profile-merging' }
 
       before(:each) do
         File.open(File.join(hieradata_dir, 'profile-merging.yaml'), 'w') do |fh|
@@ -199,8 +201,6 @@ RSpec.describe 'lookup' do
           fh.puts test_hiera
         end
       end
-
-      let(:hieradata) { 'profile-merging' }
 
       # Test a string.
       it { is_expected.to run.with_params('test_module_03::string_param').and_return('string value 2') }
