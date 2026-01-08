@@ -1,3 +1,6 @@
+### 0.1.6 / 2026-01-08
+* Add Ruby 4.0 support (#77)
+
 ### 0.1.5 / 2026-01-08
 * Add rubyzip 3.x support (#69)
 
