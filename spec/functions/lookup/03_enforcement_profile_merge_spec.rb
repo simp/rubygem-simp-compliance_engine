@@ -1,12 +1,12 @@
 #!/usr/bin/env ruby -S rspec
 
 require 'spec_helper'
-require 'semantic_puppet'
-require 'puppet/pops/lookup/context'
+require 'spec_helper_puppet'
 require 'yaml'
 require 'fileutils'
+require 'tmpdir'
 
-describe 'lookup' do
+RSpec.describe 'lookup' do
   # Generate a fake module with dummy data for lookup().
   let(:profile_yaml) do
     {
@@ -141,29 +141,35 @@ describe 'lookup' do
     }.to_yaml
   end
 
-  let(:fixtures) { File.expand_path('../../fixtures', __dir__) }
-
-  let(:compliance_dir) { File.join(fixtures, 'modules', 'test_module_03', 'SIMP', 'compliance_profiles') }
-  let(:compliance_files) { ['profile.yaml', 'ces.yaml', 'checks.yaml'].map { |f| File.join(compliance_dir, f) } }
+  let(:tmpdir) { Dir.mktmpdir('compliance_engine_test') }
+  let(:test_module_path) { File.join(tmpdir, 'test_module_03') }
+  let(:compliance_dir) { File.join(test_module_path, 'SIMP', 'compliance_profiles') }
+  let(:hieradata_dir) { File.expand_path('../../data', __dir__) }
 
   before(:each) do
-    allow(Dir).to receive(:glob).and_call_original
-    allow(Dir).to receive(:glob).with(%r{\bSIMP/compliance_profiles\b.*/\*\*/\*\.yaml$}, any_args) do |_, &block|
-      compliance_files.each(&block)
-    end
+    # Create the directory structure
+    FileUtils.mkdir_p(compliance_dir)
 
-    allow(File).to receive(:read).and_call_original
-    allow(File).to receive(:read).with(File.join(compliance_dir, 'profile.yaml'), any_args).and_return(profile_yaml)
-    allow(File).to receive(:read).with(File.join(compliance_dir, 'ces.yaml'), any_args).and_return(ces_yaml)
-    allow(File).to receive(:read).with(File.join(compliance_dir, 'checks.yaml'), any_args).and_return(checks_yaml)
+    # Write the test data files
+    File.write(File.join(compliance_dir, 'profiles.yaml'), profile_yaml)
+    File.write(File.join(compliance_dir, 'ces.yaml'), ces_yaml)
+    File.write(File.join(compliance_dir, 'checks.yaml'), checks_yaml)
+
+    # Mock the Puppet environment's modulepath to include our temp directory
+    allow_any_instance_of(Puppet::Node::Environment).to receive(:full_modulepath).and_return([tmpdir])
+  end
+
+  after(:each) do
+    # Clean up temporary directory
+    FileUtils.rm_rf(tmpdir)
   end
 
   on_supported_os.each do |os, os_facts|
-    let(:facts) { os_facts }
-
     context "on #{os} with compliance_engine::enforcement merging profiles" do
+      let(:facts) { os_facts.merge('custom_hiera' => 'profile-merging') }
+
       before(:each) do
-        File.open(File.join(fixtures, 'hieradata', 'profile-merging.yaml'), 'w') do |fh|
+        File.open(File.join(hieradata_dir, 'profile-merging.yaml'), 'w') do |fh|
           test_hiera = { 'compliance_engine::enforcement' => ['profile_test1', 'profile_test2'] }.to_yaml
           fh.puts test_hiera
         end
@@ -178,15 +184,17 @@ describe 'lookup' do
       it { is_expected.to run.with_params('test_module_03::array_param').and_return(['array value 2', 'array value 1']) }
 
       # Test a simple hash.
-      it { is_expected.to run.with_params('test_module_03::hash_param').and_return({ 'hash key 1' => 'hash value 1', 'hash key 2' => '-- hash value 2' }) }
+      it { is_expected.to run.with_params('test_module_03::hash_param').and_return({ 'hash key 1' => 'hash value 1', 'hash key 2' => '\-- hash value 2' }) }
 
       # Test a nested hash.
       it { is_expected.to run.with_params('test_module_03::nested_hash').and_return({ 'key' => { 'key1' => 'value1', 'key2' => 'value2' } }) }
     end
 
     context "on #{os} with compliance_engine::enforcement merging profiles in reverse order" do
+      let(:facts) { os_facts.merge('custom_hiera' => 'profile-merging') }
+
       before(:each) do
-        File.open(File.join(fixtures, 'hieradata', 'profile-merging.yaml'), 'w') do |fh|
+        File.open(File.join(hieradata_dir, 'profile-merging.yaml'), 'w') do |fh|
           test_hiera = { 'compliance_engine::enforcement' => ['profile_test2', 'profile_test1'] }.to_yaml
           fh.puts test_hiera
         end
@@ -201,7 +209,7 @@ describe 'lookup' do
       it { is_expected.to run.with_params('test_module_03::array_param').and_return(['array value 1', 'array value 2']) }
 
       # Test a simple hash.
-      it { is_expected.to run.with_params('test_module_03::hash_param').and_return({ 'hash key 2' => '-- hash value 2', 'hash key 1' => 'hash value 1' }) }
+      it { is_expected.to run.with_params('test_module_03::hash_param').and_return({ 'hash key 2' => '\-- hash value 2', 'hash key 1' => 'hash value 1' }) }
 
       # Test a nested hash.
       it { is_expected.to run.with_params('test_module_03::nested_hash').and_return({ 'key' => { 'key1' => 'value2', 'key2' => 'value2' } }) }

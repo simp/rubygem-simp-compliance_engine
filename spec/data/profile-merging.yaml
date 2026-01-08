@@ -1,0 +1,9 @@
+---
+compliance_engine::enforcement:
+- profile_test1
+compliance_engine::compliance_map:
+  version: 2.0.0
+  profiles:
+    profile_test1:
+      ces:
+        05_profile_test2: false

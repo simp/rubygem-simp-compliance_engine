@@ -1,12 +1,12 @@
 #!/usr/bin/env ruby -S rspec
 
 require 'spec_helper'
-require 'semantic_puppet'
-require 'puppet/pops/lookup/context'
+require 'spec_helper_puppet'
 require 'yaml'
 require 'fileutils'
+require 'tmpdir'
 
-describe 'lookup' do
+RSpec.describe 'lookup' do
   # Generate a fake module with dummy data for lookup().
   # Break it up between multiple files to validate merging.
   let(:files) do
@@ -409,29 +409,35 @@ describe 'lookup' do
     }
   end
 
-  let(:fixtures) { File.expand_path('../../fixtures', __dir__) }
-
-  let(:compliance_dir) { File.join(fixtures, 'modules', 'test_module_04', 'SIMP', 'compliance_profiles') }
-  let(:compliance_files) { files.each_key.map { |f| File.join(compliance_dir, "#{f}.yaml") } }
+  let(:tmpdir) { Dir.mktmpdir('compliance_engine_test') }
+  let(:test_module_path) { File.join(tmpdir, 'test_module_04') }
+  let(:compliance_dir) { File.join(test_module_path, 'SIMP', 'compliance_profiles') }
+  let(:hieradata_dir) { File.expand_path('../../data', __dir__) }
 
   before(:each) do
-    allow(Dir).to receive(:glob).and_call_original
-    allow(Dir).to receive(:glob).with(%r{\bSIMP/compliance_profiles\b.*/\*\*/\*\.yaml$}, any_args) do |_, &block|
-      compliance_files.each(&block)
+    # Create the directory structure
+    FileUtils.mkdir_p(compliance_dir)
+
+    # Write the test data files
+    files.each do |file, data|
+      File.write(File.join(compliance_dir, "#{file}.yaml"), data.to_yaml)
     end
 
-    allow(File).to receive(:read).and_call_original
-    files.each do |file, data|
-      allow(File).to receive(:read).with(File.join(compliance_dir, "#{file}.yaml"), any_args).and_return(data.to_yaml)
-    end
+    # Mock the Puppet environment's modulepath to include our temp directory
+    allow_any_instance_of(Puppet::Node::Environment).to receive(:full_modulepath).and_return([tmpdir])
+  end
+
+  after(:each) do
+    # Clean up temporary directory
+    FileUtils.rm_rf(tmpdir)
   end
 
   on_supported_os.each do |os, os_facts|
-    let(:facts) { os_facts }
-
     context "on #{os} with compliance_engine::enforcement merging profiles" do
+      let(:facts) { os_facts.merge('custom_hiera' => 'profile-merging') }
+
       before(:each) do
-        File.open(File.join(fixtures, 'hieradata', 'profile-merging.yaml'), 'w') do |fh|
+        File.open(File.join(hieradata_dir, 'profile-merging.yaml'), 'w') do |fh|
           test_hiera = { 'compliance_engine::enforcement' => ['profile_test1', 'profile_test2'] }.to_yaml
           fh.puts test_hiera
         end
@@ -453,8 +459,10 @@ describe 'lookup' do
     end
 
     context "on #{os} with compliance_engine::enforcement merging profiles in reverse order" do
+      let(:facts) { os_facts.merge('custom_hiera' => 'profile-merging') }
+
       before(:each) do
-        File.open(File.join(fixtures, 'hieradata', 'profile-merging.yaml'), 'w') do |fh|
+        File.open(File.join(hieradata_dir, 'profile-merging.yaml'), 'w') do |fh|
           test_hiera = { 'compliance_engine::enforcement' => ['profile_test2', 'profile_test1'] }.to_yaml
           fh.puts test_hiera
         end

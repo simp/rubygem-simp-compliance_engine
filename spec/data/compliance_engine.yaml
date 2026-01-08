@@ -16,4 +16,4 @@ compliance_engine::report_types:
 compliance_engine::enforcement:
   - "%{facts.target_compliance_profile}"
 
-compliance_engine::enforcement_tolerance_level: "%{facts.target_enforcement_tolerance}"
+compliance_engine::enforcement_tolerance: "%{facts.target_enforcement_tolerance}"

@@ -2,10 +2,9 @@
 
 require 'spec_helper'
 require 'spec_helper_puppet'
-# require 'semantic_puppet'
-# require 'puppet/pops/lookup/context'
 require 'yaml'
-# require 'fileutils'
+require 'fileutils'
+require 'tmpdir'
 
 RSpec.describe 'lookup' do
   # Generate a fake module with dummy data for lookup().
@@ -68,43 +67,26 @@ RSpec.describe 'lookup' do
     }.to_yaml
   end
 
-  let(:fixtures) { File.expand_path('../../fixtures', __dir__) }
-
-  let(:module_path) { File.join(fixtures, 'modules', 'test_module_00') }
-  let(:compliance_dir) { File.join(module_path, 'SIMP', 'compliance_profiles') }
-  let(:compliance_files) { ['profile.yaml', 'ces.yaml', 'checks.yaml'].map { |f| File.join(compliance_dir, f) } }
+  let(:tmpdir) { Dir.mktmpdir('compliance_engine_test') }
+  let(:test_module_path) { File.join(tmpdir, 'test_module_00') }
+  let(:compliance_dir) { File.join(test_module_path, 'SIMP', 'compliance_profiles') }
 
   before(:each) do
-    allow(Dir).to receive(:glob).and_call_original
-    allow(File).to receive(:directory?).and_call_original
-    allow(File).to receive(:directory?).with(Pathname.new(File.join(fixtures, 'modules'))).and_return(true)
-    allow(File).to receive(:directory?).with(module_path).and_return(true)
-    allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
-    allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
-    allow(Dir).to receive(:glob)
-      .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
-      .and_return(
-        compliance_files,
-      )
-    allow(Dir).to receive(:glob)
-      .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
-      .and_return([])
+    # Create the directory structure
+    FileUtils.mkdir_p(compliance_dir)
 
-    allow(File).to receive(:size).and_call_original
-    allow(File).to receive(:mtime).and_call_original
-    allow(File).to receive(:read).and_call_original
+    # Write the test data files
+    File.write(File.join(compliance_dir, 'profiles.yaml'), profile_yaml)
+    File.write(File.join(compliance_dir, 'ces.yaml'), ces_yaml)
+    File.write(File.join(compliance_dir, 'checks.yaml'), checks_yaml)
 
-    allow(File).to receive(:size).with(File.join(compliance_dir, 'profile.yaml')).and_return(profile_yaml.length)
-    allow(File).to receive(:mtime).with(File.join(compliance_dir, 'profile.yaml')).and_return(Time.now)
-    allow(File).to receive(:read).with(File.join(compliance_dir, 'profile.yaml')).and_return(profile_yaml)
+    # Mock the Puppet environment's modulepath to include our temp directory
+    allow_any_instance_of(Puppet::Node::Environment).to receive(:full_modulepath).and_return([tmpdir])
+  end
 
-    allow(File).to receive(:size).with(File.join(compliance_dir, 'ces.yaml')).and_return(ces_yaml.length)
-    allow(File).to receive(:mtime).with(File.join(compliance_dir, 'ces.yaml')).and_return(Time.now)
-    allow(File).to receive(:read).with(File.join(compliance_dir, 'ces.yaml')).and_return(ces_yaml)
-
-    allow(File).to receive(:size).with(File.join(compliance_dir, 'checks.yaml')).and_return(checks_yaml.length)
-    allow(File).to receive(:mtime).with(File.join(compliance_dir, 'checks.yaml')).and_return(Time.now)
-    allow(File).to receive(:read).with(File.join(compliance_dir, 'checks.yaml')).and_return(checks_yaml)
+  after(:each) do
+    # Clean up temporary directory
+    FileUtils.rm_rf(tmpdir)
   end
 
   on_supported_os.each do |os, os_facts|

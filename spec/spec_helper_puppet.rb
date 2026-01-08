@@ -9,6 +9,9 @@ require 'rspec-puppet-facts'
 
 require 'spec_helper_local' if File.file?(File.join(File.dirname(__FILE__), 'spec_helper_local.rb'))
 
+# Load support files
+Dir[File.join(__dir__, 'support', '**', '*.rb')].sort.each { |f| require f }
+
 include RspecPuppetFacts
 
 default_facts = {

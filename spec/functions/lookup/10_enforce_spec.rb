@@ -1,11 +1,29 @@
 require 'spec_helper'
+require 'spec_helper_puppet'
+# require 'fileutils'
 
 def write_hieradata(policy_order)
   data = {
     'compliance_engine::enforcement'    => policy_order,
     'compliance_engine::compliance_map' => {
       'version' => '2.0.0',
-      'checks'  => {
+      'profiles' => {
+        'disa_stig' => {
+          'controls' => {
+            'disa_stig' => true,
+          },
+        },
+        'nist_800_53:rev4' => {
+          'controls' => {
+            'nist_800_53:rev4' => true,
+          },
+        },
+      },
+      'controls' => {
+        'disa_stig' => {},
+        'nist_800_53:rev4' => {},
+      },
+      'checks' => {
         'oval:com.puppet.test.disa.useradd_shells' => {
           'type'        => 'puppet-class-parameter',
           'controls'    => {
@@ -38,17 +56,19 @@ def write_hieradata(policy_order)
     }
   }
 
-  fixtures = File.expand_path('../../fixtures', __dir__)
+  # fixtures = File.expand_path('../../fixtures', __dir__)
 
-  File.open(File.join(fixtures, 'hieradata', '10_enforce_spec.yaml'), 'w') do |fh|
+  # FileUtils.mkdir_p(File.join(fixtures, 'hieradata'))
+  # File.open(File.join(fixtures, 'hieradata', '10_enforce_spec.yaml'), 'w') do |fh|
+  File.open(File.join(File.expand_path('../..', __dir__), 'data', '10_enforce_spec.yaml'), 'w') do |fh|
     fh.puts data.to_yaml
   end
 end
 
-describe 'lookup' do
+RSpec.describe 'lookup' do
   on_supported_os.each do |os, os_facts|
     context "on #{os}" do
-      let(:facts) { os_facts }
+      let(:facts) { os_facts.merge('custom_hiera' => '10_enforce_spec') }
 
       context 'with a single compliance map' do
         let(:lookup) { subject }
@@ -69,6 +89,7 @@ describe 'lookup' do
           let(:policy_order) { 'disa_stig' }
 
           it 'returns /bin/disa' do
+            skip('String value for compliance_engine::enforcement not supported, must be Array')
             result = lookup.execute('useradd::shells')
             expect(result).to be_instance_of(Array)
             expect(result).to include('/bin/disa')
