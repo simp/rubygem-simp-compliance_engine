@@ -11,12 +11,14 @@ class ComplianceEngine::ModuleLoader
   # @param path [String] the path to the Puppet module
   # @param fileclass [File] the class to use for file operations (default: `File`)
   # @param dirclass [Dir] the class to use for directory operations (default: `Dir`)
-  def initialize(path, fileclass: File, dirclass: Dir)
+  # @param zipfile_path [String, nil] the path to the zip file if loading from a zip archive
+  def initialize(path, fileclass: File, dirclass: Dir, zipfile_path: nil)
     raise ComplianceEngine::Error, "#{path} is not a directory" unless fileclass.directory?(path)
 
     @name = nil
     @version = nil
     @files = []
+    @zipfile_path = zipfile_path
 
     # Read the Puppet module's metadata.json
     metadata_json = File.join(path.to_s, 'metadata.json')
@@ -40,8 +42,8 @@ class ComplianceEngine::ModuleLoader
     # Using .each here to make mocking with rspec easier.
     globs.each do |glob|
       dirclass.glob(glob).sort.each do |file|
-        key = if Object.const_defined?(:Zip) && file.is_a?(Zip::Entry)
-                File.join(file.zipfile.to_s, '.', file.to_s)
+        key = if @zipfile_path
+                File.join(@zipfile_path, '.', file.to_s)
               else
                 file.to_s
               end
@@ -57,5 +59,5 @@ class ComplianceEngine::ModuleLoader
     end
   end
 
-  attr_reader :name, :version, :files
+  attr_reader :name, :version, :files, :zipfile_path
 end

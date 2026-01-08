@@ -10,9 +10,11 @@ class ComplianceEngine::EnvironmentLoader
   # @param paths [Array] the paths to search for Puppet modules
   # @param fileclass [File] the class to use for file operations (default: `File`)
   # @param dirclass [Dir] the class to use for directory operations (default: `Dir`)
-  def initialize(*paths, fileclass: File, dirclass: Dir)
+  # @param zipfile_path [String, nil] the path to the zip file if loading from a zip archive
+  def initialize(*paths, fileclass: File, dirclass: Dir, zipfile_path: nil)
     raise ArgumentError, 'No paths specified' if paths.empty?
     @modulepath ||= paths
+    @zipfile_path = zipfile_path
     modules = paths.map do |path|
       dirclass.entries(path)
               .grep(%r{\A[a-z][a-z0-9_]*\Z})
@@ -23,8 +25,8 @@ class ComplianceEngine::EnvironmentLoader
       []
     end
     modules.flatten!
-    @modules = modules.map { |path| ComplianceEngine::ModuleLoader.new(path, fileclass: fileclass, dirclass: dirclass) }
+    @modules = modules.map { |path| ComplianceEngine::ModuleLoader.new(path, fileclass: fileclass, dirclass: dirclass, zipfile_path: @zipfile_path) }
   end
 
-  attr_reader :modulepath, :modules
+  attr_reader :modulepath, :modules, :zipfile_path
 end

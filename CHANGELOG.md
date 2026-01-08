@@ -1,3 +1,6 @@
+### 0.1.5 / 2026-01-08
+* Add rubyzip 3.x support (#69)
+
 ### 0.1.4 / 2025-06-04
 * Use OpenVox in the dev container (#50)
 * Sort glob entries to avoid more GHA test failures
