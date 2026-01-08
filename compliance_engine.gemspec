@@ -26,6 +26,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'deep_merge', '~> 1.2'
   spec.add_dependency 'irb', '~> 1.14'
+  spec.add_dependency 'logger', '>= 1.4', '< 2.0'
   spec.add_dependency 'observer', '~> 0.1'
   spec.add_dependency 'rubyzip', '>= 2.3', '< 4'
   spec.add_dependency 'semantic_puppet', '~> 1.1'
