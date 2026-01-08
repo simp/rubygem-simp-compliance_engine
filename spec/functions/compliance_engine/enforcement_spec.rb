@@ -519,10 +519,10 @@ RSpec.describe 'lookup' do
       let(:facts) do
         {
           'target_compliance_profile' => 'tolerance_test_profile',
-          'custom_hiera' => 'compliance-engine-tolerance-25',
+          'custom_hiera' => 'compliance_engine-tolerance-25',
         }
       end
-      let(:hieradata) { 'compliance-engine-tolerance-25' }
+      let(:hieradata) { 'compliance_engine-tolerance-25' }
 
       it 'returns value for no-risk check' do
         is_expected.to run.with_params('tolerance_test::no_risk_param').and_return('no_risk_value')
@@ -547,10 +547,10 @@ RSpec.describe 'lookup' do
       let(:facts) do
         {
           'target_compliance_profile' => 'tolerance_test_profile',
-          'custom_hiera' => 'compliance-engine-tolerance-60',
+          'custom_hiera' => 'compliance_engine-tolerance-60',
         }
       end
-      let(:hieradata) { 'compliance-engine-tolerance-60' }
+      let(:hieradata) { 'compliance_engine-tolerance-60' }
 
       it 'returns value for no-risk check' do
         is_expected.to run.with_params('tolerance_test::no_risk_param').and_return('no_risk_value')
@@ -574,10 +574,10 @@ RSpec.describe 'lookup' do
       let(:facts) do
         {
           'target_compliance_profile' => 'tolerance_test_profile',
-          'custom_hiera' => 'compliance-engine-tolerance-100',
+          'custom_hiera' => 'compliance_engine-tolerance-100',
         }
       end
-      let(:hieradata) { 'compliance-engine-tolerance-100' }
+      let(:hieradata) { 'compliance_engine-tolerance-100' }
 
       it 'returns value for all checks including high-risk' do
         is_expected.to run.with_params('tolerance_test::high_risk_param').and_return('high_risk_value')

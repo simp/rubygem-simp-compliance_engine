@@ -6,7 +6,7 @@ require 'yaml'
 require 'fileutils'
 require 'tmpdir'
 
-RSpec.describe 'lookup' do
+RSpec.describe 'lookup', skip: 'Debug features not yet implemented in compliance_engine' do
   # Generate a fake module with dummy data for lookup().
   let(:profile) do
     {
@@ -92,8 +92,6 @@ RSpec.describe 'lookup' do
       end
 
       let(:hieradata) { 'compliance-engine' }
-
-      before(:each) { skip('Debug features not yet implemented in compliance_engine') }
 
       it do
         result = lookup.execute('compliance_engine::debug::hiera_backend_compile_time')
