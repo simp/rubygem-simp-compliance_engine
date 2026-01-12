@@ -8,7 +8,7 @@ gemspec
 gem 'rake', '~> 13.3.0'
 
 group :tests do
-  gem 'puppet', ENV.fetch('PUPPET_VERSION', '~> 8.0')
+  gem 'openvox', ENV.fetch('OPENVOX_VERSION', ENV.fetch('PUPPET_VERSION', '~> 8.0'))
   gem 'puppetlabs_spec_helper', '~> 8.0'
   gem 'rspec', '~> 3.12'
   gem 'rspec-puppet', '~> 5.0.0'
