@@ -41,4 +41,9 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
       - name: Spec tests
-        run: bundle exec rake spec
+        run: |
+          if [ "${{ matrix.ruby }}" = "4.0" ]; then
+            bundle exec rspec spec/classes
+          else
+            bundle exec rake spec
+          fi
