@@ -71,3 +71,6 @@ Style/MixinUsage:
 
 Lint/DuplicateBranch:
   Enabled: false
+
+Gemspec/RequireMFA:
+  Enabled: false
