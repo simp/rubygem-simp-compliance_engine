@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -S rspec
+# frozen_string_literal: true
 
 require 'spec_helper'
 require 'spec_helper_puppet'
@@ -100,8 +101,8 @@ RSpec.describe 'lookup' do
       let(:hieradata) { 'compliance-engine' }
 
       it {
-        is_expected.to run.with_params('test_module_00::test_param')
-                          .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_00::test_param'")
+        is_expected.to run.with_params('test_module_00::test_param').
+          and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_00::test_param'")
       }
     end
 
@@ -126,9 +127,10 @@ RSpec.describe 'lookup' do
 
       # Test unconfined data.
       it {
-        is_expected.to run.with_params('test_module_00::test_param')
-                          .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_00::test_param'")
+        is_expected.to run.with_params('test_module_00::test_param').
+          and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_00::test_param'")
       }
+
       it { is_expected.to run.with_params('test_module_00::test_param2').and_return('another string') }
     end
   end

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -S rspec
+# frozen_string_literal: true
 
 require 'spec_helper'
 require 'spec_helper_puppet'
@@ -31,7 +32,7 @@ RSpec.describe 'lookup' do
           },
         },
       },
-      'ces_00'    => {
+      'ces_00' => {
         'version' => '2.0.0',
         'ce'      => {
           '04_profile_test1' => {
@@ -44,7 +45,7 @@ RSpec.describe 'lookup' do
           },
         },
       },
-      'ces_01'    => {
+      'ces_01' => {
         'version' => '2.0.0',
         'ce'      => {
           '04_profile_test2' => {
@@ -71,7 +72,7 @@ RSpec.describe 'lookup' do
         'version' => '2.0.0',
         'checks'  => {
           '04_string check1' => {
-            'type'     => 'puppet-class-parameter',
+            'type' => 'puppet-class-parameter',
           },
         },
       },
@@ -80,7 +81,7 @@ RSpec.describe 'lookup' do
         'checks'  => {
           '04_string check1' => {
             'settings' => {
-              'value'     => 'string value 1',
+              'value' => 'string value 1',
             },
           },
         },
@@ -110,7 +111,7 @@ RSpec.describe 'lookup' do
         'checks'  => {
           '04_string check2' => {
             'settings' => {
-              'value'     => 'string value 2',
+              'value' => 'string value 2',
             },
             'identifiers' => {
               '04_identifier2' => [],
@@ -122,7 +123,7 @@ RSpec.describe 'lookup' do
         'version' => '2.0.0',
         'checks'  => {
           '04_string check2' => {
-            'type'     => 'puppet-class-parameter',
+            'type' => 'puppet-class-parameter',
           },
         },
       },
@@ -130,7 +131,7 @@ RSpec.describe 'lookup' do
         'version' => '2.0.0',
         'checks'  => {
           '04_string check2' => {
-            'ces'      => [
+            'ces' => [
               '04_profile_test2',
             ],
           },
@@ -140,7 +141,7 @@ RSpec.describe 'lookup' do
         'version' => '2.0.0',
         'checks'  => {
           '04_array check1' => {
-            'type'     => 'puppet-class-parameter',
+            'type' => 'puppet-class-parameter',
           },
         },
       },
@@ -148,7 +149,7 @@ RSpec.describe 'lookup' do
         'version' => '2.0.0',
         'checks'  => {
           '04_array check1' => {
-            'ces'      => [
+            'ces' => [
               '04_profile_test1',
             ],
           },
@@ -184,7 +185,7 @@ RSpec.describe 'lookup' do
         'checks'  => {
           '04_array check2' => {
             'settings' => {
-              'value'     => [
+              'value' => [
                 'array value 2',
               ],
             },
@@ -195,7 +196,7 @@ RSpec.describe 'lookup' do
         'version' => '2.0.0',
         'checks'  => {
           '04_array check2' => {
-            'type'     => 'puppet-class-parameter',
+            'type' => 'puppet-class-parameter',
           },
         },
       },
@@ -203,7 +204,7 @@ RSpec.describe 'lookup' do
         'version' => '2.0.0',
         'checks'  => {
           '04_array check2' => {
-            'ces'      => [
+            'ces' => [
               '04_profile_test2',
             ],
           },
@@ -261,7 +262,7 @@ RSpec.describe 'lookup' do
         'version' => '2.0.0',
         'checks'  => {
           '04_hash check1' => {
-            'type'     => 'puppet-class-parameter',
+            'type' => 'puppet-class-parameter',
           },
         },
       },
@@ -269,7 +270,7 @@ RSpec.describe 'lookup' do
         'version' => '2.0.0',
         'checks'  => {
           '04_hash check2' => {
-            'ces'      => [
+            'ces' => [
               '04_profile_test2',
             ],
           },
@@ -301,7 +302,7 @@ RSpec.describe 'lookup' do
         'checks'  => {
           '04_hash check2' => {
             'settings' => {
-              'value'     => {
+              'value' => {
                 'hash key 2' => 'hash value 2',
               },
             },
@@ -346,7 +347,7 @@ RSpec.describe 'lookup' do
         'version' => '2.0.0',
         'checks'  => {
           '04_nested hash1' => {
-            'type'     => 'puppet-class-parameter',
+            'type' => 'puppet-class-parameter',
           },
         },
       },
@@ -354,7 +355,7 @@ RSpec.describe 'lookup' do
         'version' => '2.0.0',
         'checks'  => {
           '04_nested hash2' => {
-            'type'     => 'puppet-class-parameter',
+            'type' => 'puppet-class-parameter',
           },
         },
       },
@@ -373,7 +374,7 @@ RSpec.describe 'lookup' do
         'checks'  => {
           '04_nested hash2' => {
             'settings' => {
-              'value'     => {
+              'value' => {
                 'key' => {
                   'key1' => 'value2',
                 },
@@ -441,7 +442,7 @@ RSpec.describe 'lookup' do
 
       before(:each) do
         File.open(File.join(hieradata_dir, 'profile-merging.yaml'), 'w') do |fh|
-          test_hiera = { 'compliance_engine::enforcement' => ['profile_test1', 'profile_test2'] }.to_yaml
+          test_hiera = { 'compliance_engine::enforcement' => %w[profile_test1 profile_test2] }.to_yaml
           fh.puts test_hiera
         end
       end
@@ -465,7 +466,7 @@ RSpec.describe 'lookup' do
 
       before(:each) do
         File.open(File.join(hieradata_dir, 'profile-merging.yaml'), 'w') do |fh|
-          test_hiera = { 'compliance_engine::enforcement' => ['profile_test2', 'profile_test1'] }.to_yaml
+          test_hiera = { 'compliance_engine::enforcement' => %w[profile_test2 profile_test1] }.to_yaml
           fh.puts test_hiera
         end
       end

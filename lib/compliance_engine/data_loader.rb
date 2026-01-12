@@ -25,6 +25,7 @@ class ComplianceEngine::DataLoader
   # @raise [ComplianceEngine::Error] If the value is not a Hash
   def data=(value)
     raise ComplianceEngine::Error, 'Data must be a hash' unless value.is_a?(Hash)
+
     @data = value
     changed
     notify_observers(self)

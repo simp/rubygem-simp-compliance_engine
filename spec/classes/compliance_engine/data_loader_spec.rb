@@ -19,7 +19,7 @@ RSpec.describe ComplianceEngine::DataLoader do
 
   shared_examples 'an observable' do
     it 'updates the data' do
-      expect { data_loader.data = updated_data }.to change { data_loader.data }.from(initial_data).to(updated_data)
+      expect { data_loader.data = updated_data }.to change(data_loader, :data).from(initial_data).to(updated_data)
     end
 
     it 'notifies observers' do

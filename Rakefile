@@ -1,15 +1,20 @@
 # frozen_string_literal: true
 
 require 'bundler/gem_tasks'
-require 'rspec/core/rake_task'
+require 'voxpupuli/test/rake'
 
-RSpec::Core::RakeTask.new(:spec) do |t|
-  t.pattern = 'spec/**/*_spec.rb'
-  t.exclude_pattern = 'spec/{data,fixtures,support/**/*_spec.rb'
+# Override the default spec task from voxpupuli-test to exclude spec/data and spec/fixtures
+Rake::Task[:spec].clear
+Rake::Task['spec:standalone'].clear
+
+RSpec::Core::RakeTask.new('spec:standalone') do |t|
+  t.pattern = 'spec/{classes,functions}/**/*_spec.rb'
 end
 
-require 'rubocop/rake_task'
+desc 'Run spec tests and clean the fixtures directory if successful'
+task spec: :'fixtures:prep' do |_t, args|
+  Rake::Task['spec:standalone'].invoke(*args.extras)
+  Rake::Task['fixtures:clean'].invoke
+end
 
-RuboCop::RakeTask.new
-
-task default: [:spec, :rubocop]
+task default: %i[spec rubocop]

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -S rspec
+# frozen_string_literal: true
 
 require 'spec_helper'
 require 'spec_helper_puppet'
@@ -122,7 +123,7 @@ RSpec.describe 'lookup', skip: 'Debug features not yet implemented in compliance
       it do
         result = lookup.execute('compliance_engine::debug::compliance_data')
         expect(result).to be_a(Hash)
-        expect(result.keys).to eq(['version', 'profiles', 'ce', 'checks'])
+        expect(result.keys).to eq(%w[version profiles ce checks])
         expect(result['profiles']).to include(profile['profiles'])
         expect(result['ce']).to include(ces['ce'])
         expect(result['checks']).to include(checks['checks'])

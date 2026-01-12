@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -S rspec
+# frozen_string_literal: true
 
 require 'spec_helper'
 require 'spec_helper_puppet'
@@ -54,7 +55,7 @@ RSpec.describe 'lookup' do
       'version' => '2.0.0',
       'checks'  => {
         '01_el_check' => {
-          'type'     => 'puppet-class-parameter',
+          'type' => 'puppet-class-parameter',
           'settings' => {
             'parameter' => 'test_module_01::is_el',
             'value'     => true,
@@ -67,7 +68,7 @@ RSpec.describe 'lookup' do
           },
         },
         '01_el_negative_check' => {
-          'type'     => 'puppet-class-parameter',
+          'type' => 'puppet-class-parameter',
           'settings' => {
             'parameter' => 'test_module_01::is_not_el',
             'value'     => true,
@@ -80,7 +81,7 @@ RSpec.describe 'lookup' do
           },
         },
         '01_el7_check' => {
-          'type'     => 'puppet-class-parameter',
+          'type' => 'puppet-class-parameter',
           'settings' => {
             'parameter' => 'test_module_01::el_version',
             'value'     => '7',
@@ -89,15 +90,15 @@ RSpec.describe 'lookup' do
             '01_ce2',
           ],
           'confine' => {
-            'os.name' => [
-              'RedHat',
-              'CentOS',
+            'os.name' => %w[
+              RedHat
+              CentOS
             ],
             'os.release.major' => '7',
           },
         },
         '01_el7_negative_check' => {
-          'type'     => 'puppet-class-parameter',
+          'type' => 'puppet-class-parameter',
           'settings' => {
             'parameter' => 'test_module_01::not_el_version',
             'value'     => '7',
@@ -113,7 +114,7 @@ RSpec.describe 'lookup' do
           },
         },
         '01_el7_negative_mixed_check' => {
-          'type'     => 'puppet-class-parameter',
+          'type' => 'puppet-class-parameter',
           'settings' => {
             'parameter' => 'test_module_01::not_el_centos_version',
             'value'     => '7',
@@ -183,22 +184,22 @@ RSpec.describe 'lookup' do
       end
 
       # Test for confine on a single fact in checks.
-      if os_facts[:os]['family'] != 'RedHat'
-        it { is_expected.to run.with_params('test_module_01::is_not_el').and_return(true) }
-      else
+      if os_facts[:os]['family'] == 'RedHat'
         it do
-          is_expected.to run.with_params('test_module_01::is_not_el')
-                            .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::is_not_el'")
+          is_expected.to run.with_params('test_module_01::is_not_el').
+            and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::is_not_el'")
         end
+      else
+        it { is_expected.to run.with_params('test_module_01::is_not_el').and_return(true) }
       end
 
       # Test for confine on multiple facts and an array of facts in checks.
-      if ['RedHat', 'CentOS'].include?(os_facts[:os]['name']) && os_facts[:os]['release']['major'] == '7'
+      if %w[RedHat CentOS].include?(os_facts[:os]['name']) && os_facts[:os]['release']['major'] == '7'
         it { is_expected.to run.with_params('test_module_01::el_version').and_return('7') }
       else
         it do
-          is_expected.to run.with_params('test_module_01::el_version')
-                            .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::el_version'")
+          is_expected.to run.with_params('test_module_01::el_version').
+            and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::el_version'")
         end
       end
 
@@ -207,8 +208,8 @@ RSpec.describe 'lookup' do
         it { is_expected.to run.with_params('test_module_01::not_el_version').and_return('7') }
       else
         it do
-          is_expected.to run.with_params('test_module_01::not_el_version')
-                            .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::not_el_version'")
+          is_expected.to run.with_params('test_module_01::not_el_version').
+            and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::not_el_version'")
         end
       end
 
@@ -216,21 +217,23 @@ RSpec.describe 'lookup' do
       # TODO: This does not currently work as one might expect. This will still positively match OracleLinux even though
       # we ask for OS names that aren't RedHat but are CentOS. The array we're confining can only do an OR operation rather
       # than an AND with a negative lookup.
+      # rubocop:disable RSpec/RepeatedExample
       if (os_facts[:os]['name'] != 'RedHat') && (os_facts[:os]['name'] == 'CentOS') && os_facts[:os]['release']['major'] == '7'
-        it { is_expected.to run.with_params('test_module_01::not_el_centos_version').and_return('7') } # FIXME: # rubocop:disable RSpec/RepeatedExample
+        it { is_expected.to run.with_params('test_module_01::not_el_centos_version').and_return('7') }
       elsif (os_facts[:os]['name'] != 'RedHat') && (os_facts[:os]['name'] != 'CentOS') && os_facts[:os]['release']['major'] == '7'
-        it { is_expected.to run.with_params('test_module_01::not_el_centos_version').and_return('7') } # FIXME: # rubocop:disable RSpec/RepeatedExample
+        it { is_expected.to run.with_params('test_module_01::not_el_centos_version').and_return('7') }
       else
         it do
-          is_expected.to run.with_params('test_module_01::not_el_centos_version')
-                            .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::not_el_centos_version'")
+          is_expected.to run.with_params('test_module_01::not_el_centos_version').
+            and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::not_el_centos_version'")
         end
       end
+      # rubocop:enable RSpec/RepeatedExample
 
       # Test for confine on module name & module version in ce.
       it do
-        is_expected.to run.with_params('test_module_01::fixed_confines')
-                          .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::fixed_confines'")
+        is_expected.to run.with_params('test_module_01::fixed_confines').
+          and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::fixed_confines'")
       end
     end
   end

@@ -112,7 +112,7 @@ class ComplianceEngine::Component
   #
   # @return [Array<Symbol>]
   def context_variables
-    [:@enforcement_tolerance, :@environment_data, :@facts]
+    %i[@enforcement_tolerance @environment_data @facts]
   end
 
   # Get the cache variables
@@ -134,7 +134,7 @@ class ComplianceEngine::Component
 
       fact == confine
     elsif confine.is_a?(Array)
-      if depth == 0
+      if depth.zero?
         confine.any? { |value| fact_match?(fact, value, depth + 1) }
       else
         fact == confine
@@ -155,12 +155,13 @@ class ComplianceEngine::Component
       if k == 'module_name'
         unless environment_data.nil?
           return true unless environment_data.key?(v)
+
           module_version = fragment['confine']['module_version']
           unless module_version.nil?
             require 'semantic_puppet'
             begin
               return true unless SemanticPuppet::VersionRange.parse(module_version).include?(SemanticPuppet::Version.parse(environment_data[v]))
-            rescue => e
+            rescue StandardError => e
               ComplianceEngine.log.error "Failed to compare #{v} #{environment_data[v]} with version confinement #{module_version}: #{e.message}"
               return true
             end
@@ -172,12 +173,8 @@ class ComplianceEngine::Component
         # Confinement based on Puppet facts
         unless facts.nil?
           fact = facts.dig(*k.split('.'))
-          if fact.nil?
-            return true
-          end
-          unless fact_match?(fact, v)
-            return true
-          end
+          return true if fact.nil?
+          return true unless fact_match?(fact, v)
         end
       end
     end
@@ -213,7 +210,7 @@ class ComplianceEngine::Component
       if enforcement_tolerance.is_a?(Integer) && is_a?(ComplianceEngine::Check) && fragment.key?('remediation')
         if fragment['remediation'].key?('disabled')
           message = "Remediation disabled for #{fragment}"
-          reason = fragment['remediation']['disabled']&.map { |value| value['reason'] }&.reject { |value| value.nil? }&.join("\n")
+          reason = fragment['remediation']['disabled']&.map { |value| value['reason'] }&.reject(&:nil?)&.join("\n")
           message += "\n#{reason}" unless reason.nil?
           ComplianceEngine.log.info message
           next

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -S rspec
+# frozen_string_literal: true
 
 require 'spec_helper'
 require 'spec_helper_puppet'
@@ -36,7 +37,7 @@ RSpec.describe 'lookup' do
     {
       'version' => '2.0.0',
       'checks'  => {
-        '05_hash check1'   => {
+        '05_hash check1' => {
           'type'     => 'puppet-class-parameter',
           'settings' => {
             'parameter' => 'test_module_05::hash_param',

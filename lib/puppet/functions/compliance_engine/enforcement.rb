@@ -38,15 +38,14 @@ Puppet::Functions.create_function(:'compliance_engine::enforcement') do
       data.enforcement_tolerance = enforcement_tolerance || options['enforcement_tolerance']
       data.open(ComplianceEngine::EnvironmentLoader.new(*closure_scope.environment.full_modulepath.select { |path| File.directory?(path) }))
 
-      unless compliance_map.empty?
-        data.open(ComplianceEngine::DataLoader.new(compliance_map))
-      end
+      data.open(ComplianceEngine::DataLoader.new(compliance_map)) unless compliance_map.empty?
       context.cache(:compliance_engine, data)
     end
 
     context.cache_all(data.hiera(profiles))
 
     return context.interpolate(context.cached_value(key)) if context.cache_has_key(key)
+
     # if data.hiera(profiles).key?(key)
     #   context.cache(key, data.hiera(profiles)[key])
     #   return context.interpolate(data.hiera(profiles)[key])
@@ -64,9 +63,7 @@ Puppet::Functions.create_function(:'compliance_engine::enforcement') do
     profile_list = call_function('lookup', 'compliance_engine::enforcement', { 'default_value' => [] })
 
     # For backwards compatibility with compliance_markup.
-    if @compat
-      profile_list += call_function('lookup', 'compliance_markup::enforcement', { 'default_value' => [] })
-    end
+    profile_list += call_function('lookup', 'compliance_markup::enforcement', { 'default_value' => [] }) if @compat
 
     profile_list.uniq
   end
@@ -75,9 +72,7 @@ Puppet::Functions.create_function(:'compliance_engine::enforcement') do
     hiera_compliance_map = call_function('lookup', 'compliance_engine::compliance_map', { 'default_value' => {} })
 
     # For backwards compatibility with compliance_markup.
-    if @compat
-      hiera_compliance_map = DeepMerge.deep_merge!(call_function('lookup', 'compliance_markup::compliance_map', { 'default_value' => {} }), hiera_compliance_map)
-    end
+    hiera_compliance_map = DeepMerge.deep_merge!(call_function('lookup', 'compliance_markup::compliance_map', { 'default_value' => {} }), hiera_compliance_map) if @compat
 
     hiera_compliance_map
   end
@@ -86,9 +81,7 @@ Puppet::Functions.create_function(:'compliance_engine::enforcement') do
     tolerance = call_function('lookup', 'compliance_engine::enforcement_tolerance', { 'default_value' => nil })
 
     # For backwards compatibility with compliance_markup.
-    if @compat
-      tolerance = call_function('lookup', 'compliance_markup::enforcement_tolerance_level', { 'default_value' => nil }) if tolerance.nil?
-    end
+    tolerance = call_function('lookup', 'compliance_markup::enforcement_tolerance_level', { 'default_value' => nil }) if @compat && tolerance.nil?
 
     tolerance
   end

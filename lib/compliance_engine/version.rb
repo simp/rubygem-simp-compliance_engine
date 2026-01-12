@@ -11,6 +11,7 @@ module ComplianceEngine
     def initialize(version)
       raise 'Missing version' if version.nil?
       raise "Unsupported version '#{version}'" unless version == '2.0.0'
+
       @version = version
     end
 

@@ -113,7 +113,7 @@ class ComplianceEngine::Collection
   #
   # @return [Array<Symbol>]
   def context_variables
-    [:@enforcement_tolerance, :@environment_data, :@facts]
+    %i[@enforcement_tolerance @environment_data @facts]
   end
 
   # Returns the key of the object

@@ -28,7 +28,7 @@ class ComplianceEngine::Data
   # @param facts [Hash] The facts to use while evaluating the data
   # @param enforcement_tolerance [Integer] The tolerance to use while evaluating the data
   def initialize(*paths, facts: nil, enforcement_tolerance: nil)
-    @data ||= {}
+    @data = {}
     @facts = facts
     @enforcement_tolerance = enforcement_tolerance
     open(*paths) unless paths.nil? || paths.empty?
@@ -201,7 +201,7 @@ class ComplianceEngine::Data
     end
 
     reset_collection
-  rescue => e
+  rescue StandardError => e
     ComplianceEngine.log.error e.message
   end
 
@@ -210,6 +210,7 @@ class ComplianceEngine::Data
   # @return [Array<String>]
   def files
     return @files unless @files.nil?
+
     @files = data.select { |_, file| file.key?(:content) }.keys
   end
 
@@ -219,7 +220,7 @@ class ComplianceEngine::Data
   # @return [Hash]
   def get(file)
     data[file][:content]
-  rescue
+  rescue StandardError
     nil
   end
 
@@ -263,6 +264,7 @@ class ComplianceEngine::Data
       collection.each_value do |v|
         v.to_a.each do |component|
           next unless component.key?('confine')
+
           @confines = DeepMerge.deep_merge!(component['confine'], @confines)
         end
       end
@@ -346,11 +348,9 @@ class ComplianceEngine::Data
     return true if remediation['disabled']
 
     # Filter based on risk level
-    if remediation['risk']&.is_a?(Array) && !remediation['risk'].empty?
+    if remediation['risk'].is_a?(Array) && !remediation['risk'].empty?
       risk_level = remediation['risk'][0]['level']
-      if risk_level && enforcement_tolerance.to_i > 0
-        return risk_level.to_i > enforcement_tolerance.to_i
-      end
+      return risk_level.to_i > enforcement_tolerance.to_i if risk_level && enforcement_tolerance.to_i.positive?
     end
 
     false
@@ -360,7 +360,7 @@ class ComplianceEngine::Data
   #
   # @return [Array<Symbol>]
   def collection_variables
-    [:@profiles, :@checks, :@controls, :@ces]
+    %i[@profiles @checks @controls @ces]
   end
 
   # Get the data variables
@@ -374,7 +374,7 @@ class ComplianceEngine::Data
   #
   # @return [Array<Symbol>]
   def context_variables
-    [:@enforcement_tolerance, :@environment_data, :@facts, :@modulepath]
+    %i[@enforcement_tolerance @environment_data @facts @modulepath]
   end
 
   # Get the cache variables
@@ -428,9 +428,7 @@ class ComplianceEngine::Data
   # @return [TrueClass, FalseClass]
   def correlate(a, b)
     return false if a.nil? || b.nil?
-    unless a.is_a?(Array) && b.is_a?(Hash)
-      raise ComplianceEngine::Error, "Expected array and hash, got #{a.class} and #{b.class}"
-    end
+    raise ComplianceEngine::Error, "Expected array and hash, got #{a.class} and #{b.class}" unless a.is_a?(Array) && b.is_a?(Hash)
     return false if a.empty? || b.empty?
 
     a.any? { |item| b[item] }

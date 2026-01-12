@@ -71,7 +71,7 @@ RSpec.describe ComplianceEngine::ModuleLoader do
             ce:
               ce_00: {}
               ce_01: {}
-            A_YAML
+          A_YAML
           'b/file.yaml' => <<~B_YAML,
             ---
             version: '2.0.0'
@@ -81,7 +81,7 @@ RSpec.describe ComplianceEngine::ModuleLoader do
                   ce_02: true
             ce:
               ce_02: {}
-            B_YAML
+          B_YAML
           'c/file.yaml' => <<~C_YAML,
             ---
             version: '2.0.0'
@@ -91,7 +91,7 @@ RSpec.describe ComplianceEngine::ModuleLoader do
                   ce_03: true
             ce:
               ce_03: {}
-            C_YAML
+          C_YAML
         },
       }
     end
@@ -101,14 +101,14 @@ RSpec.describe ComplianceEngine::ModuleLoader do
         allow(File).to receive(:directory?).with(module_path).and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
-        allow(Dir).to receive(:glob)
-          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
-          .and_return(
-            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+        allow(Dir).to receive(:glob).
+          with("#{module_path}/SIMP/compliance_profiles/**/*.yaml").
+          and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" }
           )
-        allow(Dir).to receive(:glob)
-          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
-          .and_return([])
+        allow(Dir).to receive(:glob).
+          with("#{module_path}/SIMP/compliance_profiles/**/*.json").
+          and_return([])
 
         file_data.each do |name, contents|
           filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
@@ -135,7 +135,7 @@ RSpec.describe ComplianceEngine::ModuleLoader do
       end
 
       it 'returns a list of file loader objects' do
-        expect(module_loader.files.map { |loader| loader.key }).to eq(test_data.map { |module_path, files| files.map { |name, _| "#{module_path}/SIMP/compliance_profiles/#{name}" } }.flatten)
+        expect(module_loader.files.map(&:key)).to eq(test_data.map { |module_path, files| files.map { |name, _| "#{module_path}/SIMP/compliance_profiles/#{name}" } }.flatten)
       end
     end
 
@@ -161,7 +161,7 @@ RSpec.describe ComplianceEngine::ModuleLoader do
       end
 
       it 'returns a list of file loader objects' do
-        expect(module_loader.files.map { |loader| loader.key }).to eq(test_data.map { |module_path, files| files.map { |name, _| "#{module_path}/SIMP/compliance_profiles/#{name}" } }.flatten)
+        expect(module_loader.files.map(&:key)).to eq(test_data.map { |module_path, files| files.map { |name, _| "#{module_path}/SIMP/compliance_profiles/#{name}" } }.flatten)
       end
     end
   end

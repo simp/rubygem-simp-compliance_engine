@@ -205,7 +205,7 @@ RSpec.describe ComplianceEngine::Data do
             ce:
               ce_00: {}
               ce_01: {}
-            A_YAML
+          A_YAML
           'b/file.yaml' => <<~B_YAML,
             ---
             version: '2.0.0'
@@ -215,7 +215,7 @@ RSpec.describe ComplianceEngine::Data do
                   ce_02: true
             ce:
               ce_02: {}
-            B_YAML
+          B_YAML
         },
         'test_module_01' => {
           'c/file.yaml' => <<~C_YAML,
@@ -227,7 +227,7 @@ RSpec.describe ComplianceEngine::Data do
                   ce_03: true
             ce:
               ce_03: {}
-            C_YAML
+          C_YAML
         },
       }
     end
@@ -239,14 +239,14 @@ RSpec.describe ComplianceEngine::Data do
         allow(File).to receive(:directory?).with(module_path).and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
-        allow(Dir).to receive(:glob)
-          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
-          .and_return(
-            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+        allow(Dir).to receive(:glob).
+          with("#{module_path}/SIMP/compliance_profiles/**/*.yaml").
+          and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" }
           )
-        allow(Dir).to receive(:glob)
-          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
-          .and_return([])
+        allow(Dir).to receive(:glob).
+          with("#{module_path}/SIMP/compliance_profiles/**/*.json").
+          and_return([])
 
         file_data.each do |name, contents|
           filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
@@ -268,12 +268,12 @@ RSpec.describe ComplianceEngine::Data do
 
     it 'returns a list of profiles' do
       expect(compliance_engine.profiles).to be_instance_of(ComplianceEngine::Profiles)
-      expect(compliance_engine.profiles.keys).to eq(['test_profile_00', 'test_profile_01', 'test_profile_02'])
+      expect(compliance_engine.profiles.keys).to eq(%w[test_profile_00 test_profile_01 test_profile_02])
     end
 
     it 'returns a list of ces' do
       expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Ces)
-      expect(compliance_engine.ces.keys).to eq(['ce_00', 'ce_01', 'ce_02', 'ce_03'])
+      expect(compliance_engine.ces.keys).to eq(%w[ce_00 ce_01 ce_02 ce_03])
     end
   end
 
@@ -319,7 +319,7 @@ RSpec.describe ComplianceEngine::Data do
                   value: true
                 ces:
                   - enable_widget_spinner_audit_logging
-            A_YAML
+          A_YAML
         },
       }
     end
@@ -331,14 +331,14 @@ RSpec.describe ComplianceEngine::Data do
         allow(File).to receive(:directory?).with(module_path).and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
-        allow(Dir).to receive(:glob)
-          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
-          .and_return(
-            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+        allow(Dir).to receive(:glob).
+          with("#{module_path}/SIMP/compliance_profiles/**/*.yaml").
+          and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" }
           )
-        allow(Dir).to receive(:glob)
-          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
-          .and_return([])
+        allow(Dir).to receive(:glob).
+          with("#{module_path}/SIMP/compliance_profiles/**/*.json").
+          and_return([])
 
         file_data.each do |name, contents|
           filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
@@ -449,7 +449,7 @@ RSpec.describe ComplianceEngine::Data do
                   value: ['no']
                 ces:
                   - enable_widget_spinner_audit_logging.el7
-            A_YAML
+          A_YAML
           'b/file.yaml' => <<~B_YAML,
             ---
             version: 2.0.0
@@ -485,7 +485,7 @@ RSpec.describe ComplianceEngine::Data do
                   value: ['yes']
                 ces:
                   - enable_widget_spinner_audit_logging.el8
-            B_YAML
+          B_YAML
           'c/file.yaml' => <<~C_YAML,
             ---
             version: 2.0.0
@@ -521,7 +521,7 @@ RSpec.describe ComplianceEngine::Data do
                   value: ['maybe']
                 ces:
                   - enable_widget_spinner_audit_logging.el9
-            C_YAML
+          C_YAML
         },
       }
     end
@@ -533,14 +533,14 @@ RSpec.describe ComplianceEngine::Data do
         allow(File).to receive(:directory?).with(module_path).and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
-        allow(Dir).to receive(:glob)
-          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
-          .and_return(
-            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+        allow(Dir).to receive(:glob).
+          with("#{module_path}/SIMP/compliance_profiles/**/*.yaml").
+          and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" }
           )
-        allow(Dir).to receive(:glob)
-          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
-          .and_return([])
+        allow(Dir).to receive(:glob).
+          with("#{module_path}/SIMP/compliance_profiles/**/*.json").
+          and_return([])
 
         file_data.each do |name, contents|
           filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
@@ -608,7 +608,7 @@ RSpec.describe ComplianceEngine::Data do
       compliance_engine.facts = nil
       hiera = compliance_engine.hiera(['custom_profile_1'])
       expect(hiera).to be_instance_of(Hash)
-      expect(hiera).to eq({ 'widget_spinner::audit_logging' => ['no', 'yes', 'maybe'] })
+      expect(hiera).to eq({ 'widget_spinner::audit_logging' => %w[no yes maybe] })
     end
 
     it 'correctly invalidates cached data' do
@@ -625,7 +625,7 @@ RSpec.describe ComplianceEngine::Data do
       compliance_engine.facts = nil
       hiera = compliance_engine.hiera(['custom_profile_1'])
       expect(hiera).to be_instance_of(Hash)
-      expect(hiera).to eq({ 'widget_spinner::audit_logging' => ['no', 'yes', 'maybe'] })
+      expect(hiera).to eq({ 'widget_spinner::audit_logging' => %w[no yes maybe] })
 
       compliance_engine.facts = { 'os' => { 'release' => { 'major' => '9' }, 'name' => 'RedHat' } }
       hiera = compliance_engine.hiera(['custom_profile_1'])
@@ -675,7 +675,7 @@ RSpec.describe ComplianceEngine::Data do
                   value: true
                 ces:
                   - enable_widget_spinner_audit_logging
-            A_YAML
+          A_YAML
         },
       }
     end
@@ -687,14 +687,14 @@ RSpec.describe ComplianceEngine::Data do
         allow(File).to receive(:directory?).with(module_path).and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
-        allow(Dir).to receive(:glob)
-          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
-          .and_return(
-            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+        allow(Dir).to receive(:glob).
+          with("#{module_path}/SIMP/compliance_profiles/**/*.yaml").
+          and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" }
           )
-        allow(Dir).to receive(:glob)
-          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
-          .and_return([])
+        allow(Dir).to receive(:glob).
+          with("#{module_path}/SIMP/compliance_profiles/**/*.json").
+          and_return([])
 
         file_data.each do |name, contents|
           filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
@@ -741,7 +741,7 @@ RSpec.describe ComplianceEngine::Data do
     it 'returns checks for a profile' do
       checks = compliance_engine.check_mapping(compliance_engine.profiles['custom_profile_1'])
       checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
-      keys = checks.values.map { |check| check.key }
+      keys = checks.values.map(&:key)
       expect(keys).to be_instance_of(Array)
       expect(keys).to eq(['widget_spinner_audit_logging'])
     end
@@ -749,7 +749,7 @@ RSpec.describe ComplianceEngine::Data do
     it 'returns checks for a ce' do
       checks = compliance_engine.check_mapping(compliance_engine.ces['enable_widget_spinner_audit_logging'])
       checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
-      keys = checks.values.map { |check| check.key }
+      keys = checks.values.map(&:key)
       expect(keys).to be_instance_of(Array)
       expect(keys).to eq(['widget_spinner_audit_logging'])
     end
@@ -774,7 +774,7 @@ RSpec.describe ComplianceEngine::Data do
                   value: true
                 controls:
                   nist_800_53:rev4:AU-2: true
-            A_YAML
+          A_YAML
         },
       }
     end
@@ -786,14 +786,14 @@ RSpec.describe ComplianceEngine::Data do
         allow(File).to receive(:directory?).with(module_path).and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
-        allow(Dir).to receive(:glob)
-          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
-          .and_return(
-            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+        allow(Dir).to receive(:glob).
+          with("#{module_path}/SIMP/compliance_profiles/**/*.yaml").
+          and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" }
           )
-        allow(Dir).to receive(:glob)
-          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
-          .and_return([])
+        allow(Dir).to receive(:glob).
+          with("#{module_path}/SIMP/compliance_profiles/**/*.json").
+          and_return([])
 
         file_data.each do |name, contents|
           filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
@@ -855,7 +855,7 @@ RSpec.describe ComplianceEngine::Data do
                 settings:
                   parameter: test_module_00::test_param
                   value: a string
-            A_YAML
+          A_YAML
         },
       }
     end
@@ -867,14 +867,14 @@ RSpec.describe ComplianceEngine::Data do
         allow(File).to receive(:directory?).with(module_path).and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
-        allow(Dir).to receive(:glob)
-          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
-          .and_return(
-            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+        allow(Dir).to receive(:glob).
+          with("#{module_path}/SIMP/compliance_profiles/**/*.yaml").
+          and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" }
           )
-        allow(Dir).to receive(:glob)
-          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
-          .and_return([])
+        allow(Dir).to receive(:glob).
+          with("#{module_path}/SIMP/compliance_profiles/**/*.json").
+          and_return([])
 
         file_data.each do |name, contents|
           filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
@@ -942,7 +942,7 @@ RSpec.describe ComplianceEngine::Data do
                   value: true
                 controls:
                   nist_800_53:rev4:AU-2: true
-            A_YAML
+          A_YAML
           'b/file.yaml' => <<~B_YAML,
             ---
             version: 2.0.0
@@ -962,7 +962,7 @@ RSpec.describe ComplianceEngine::Data do
                   value: 'a string'
                 ces:
                   - 00_ce1
-            B_YAML
+          B_YAML
         },
       }
     end
@@ -974,14 +974,14 @@ RSpec.describe ComplianceEngine::Data do
         allow(File).to receive(:directory?).with(module_path).and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
-        allow(Dir).to receive(:glob)
-          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
-          .and_return(
-            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+        allow(Dir).to receive(:glob).
+          with("#{module_path}/SIMP/compliance_profiles/**/*.yaml").
+          and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" }
           )
-        allow(Dir).to receive(:glob)
-          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
-          .and_return([])
+        allow(Dir).to receive(:glob).
+          with("#{module_path}/SIMP/compliance_profiles/**/*.json").
+          and_return([])
 
         file_data.each do |name, contents|
           filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
@@ -1004,13 +1004,13 @@ RSpec.describe ComplianceEngine::Data do
     it 'returns a list of profiles' do
       profiles = compliance_engine.profiles
       expect(profiles).to be_instance_of(ComplianceEngine::Profiles)
-      expect(profiles.keys).to eq(['custom_profile_1', '00_profile_test'])
+      expect(profiles.keys).to eq(%w[custom_profile_1 00_profile_test])
     end
 
     it 'returns a list of ces' do
       ces = compliance_engine.ces
       expect(ces).to be_instance_of(ComplianceEngine::Ces)
-      expect(ces.keys).to eq(['enable_widget_spinner_audit_logging', '00_ce1'])
+      expect(ces.keys).to eq(%w[enable_widget_spinner_audit_logging 00_ce1])
     end
 
     it 'returns no hiera data when there are no profiles' do
@@ -1040,7 +1040,7 @@ RSpec.describe ComplianceEngine::Data do
     it 'returns checks for custom_profile_1' do
       checks = compliance_engine.check_mapping(compliance_engine.profiles['custom_profile_1'])
       checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
-      keys = checks.values.map { |check| check.key }
+      keys = checks.values.map(&:key)
       expect(keys).to be_instance_of(Array)
       expect(keys).to eq(['widget_spinner_audit_logging'])
     end
@@ -1048,7 +1048,7 @@ RSpec.describe ComplianceEngine::Data do
     it 'returns checks for 00_profile_test' do
       checks = compliance_engine.check_mapping(compliance_engine.profiles['00_profile_test'])
       checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
-      keys = checks.values.map { |check| check.key }
+      keys = checks.values.map(&:key)
       expect(keys).to be_instance_of(Array)
       expect(keys).to eq(['00_check1'])
     end
@@ -1056,7 +1056,7 @@ RSpec.describe ComplianceEngine::Data do
     it 'returns checks for enable_widget_spinner_audit_logging' do
       checks = compliance_engine.check_mapping(compliance_engine.ces['enable_widget_spinner_audit_logging'])
       checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
-      keys = checks.values.map { |check| check.key }
+      keys = checks.values.map(&:key)
       expect(keys).to be_instance_of(Array)
       expect(keys).to eq(['widget_spinner_audit_logging'])
     end
@@ -1064,7 +1064,7 @@ RSpec.describe ComplianceEngine::Data do
     it 'returns checks for 00_ce1' do
       checks = compliance_engine.check_mapping(compliance_engine.ces['00_ce1'])
       checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
-      keys = checks.values.map { |check| check.key }
+      keys = checks.values.map(&:key)
       expect(keys).to be_instance_of(Array)
       expect(keys).to eq(['00_check1'])
     end
@@ -1101,12 +1101,12 @@ RSpec.describe ComplianceEngine::Data do
 
     it 'returns a list of profiles' do
       expect(compliance_engine.profiles).to be_instance_of(ComplianceEngine::Profiles)
-      expect(compliance_engine.profiles.keys).to eq(['test_profile_00', 'test_profile_01', 'test_profile_02'])
+      expect(compliance_engine.profiles.keys).to eq(%w[test_profile_00 test_profile_01 test_profile_02])
     end
 
     it 'returns a list of ces' do
       expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Ces)
-      expect(compliance_engine.ces.keys).to eq(['ce_00', 'ce_01', 'ce_02', 'ce_03'])
+      expect(compliance_engine.ces.keys).to eq(%w[ce_00 ce_01 ce_02 ce_03])
     end
   end
 
@@ -1141,12 +1141,12 @@ RSpec.describe ComplianceEngine::Data do
 
     it 'returns a list of profiles' do
       expect(compliance_engine.profiles).to be_instance_of(ComplianceEngine::Profiles)
-      expect(compliance_engine.profiles.keys).to eq(['test_profile_00', 'test_profile_01', 'test_profile_02'])
+      expect(compliance_engine.profiles.keys).to eq(%w[test_profile_00 test_profile_01 test_profile_02])
     end
 
     it 'returns a list of ces' do
       expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Ces)
-      expect(compliance_engine.ces.keys).to eq(['ce_00', 'ce_01', 'ce_02', 'ce_03'])
+      expect(compliance_engine.ces.keys).to eq(%w[ce_00 ce_01 ce_02 ce_03])
     end
   end
 end
