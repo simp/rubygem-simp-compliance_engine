@@ -148,7 +148,7 @@ RSpec.describe 'lookup' do
   end
 
   on_supported_os.each do |os, os_facts|
-    context "on #{os} with compliance_engine::::enforcement and an existing profile using tolerance above level 21" do
+    context "on #{os} with compliance_engine::enforcement and an existing profile using tolerance above level 21" do
       let(:facts) do
         os_facts.merge(
           'custom_hiera'                 => 'compliance_engine',
@@ -177,7 +177,7 @@ RSpec.describe 'lookup' do
       end
     end
 
-    context "on #{os} with compliance_engine::::enforcement and an existing profile using tolerance above level 41" do
+    context "on #{os} with compliance_engine::enforcement and an existing profile using tolerance above level 41" do
       let(:facts) do
         os_facts.merge('custom_hiera' => 'compliance_engine', 'target_compliance_profile' => '07_profile_test', 'target_enforcement_tolerance' => '42')
       end
@@ -199,7 +199,7 @@ RSpec.describe 'lookup' do
       end
     end
 
-    context "on #{os} with compliance_engine::::enforcement and an existing profile using tolerance above level 61" do
+    context "on #{os} with compliance_engine::enforcement and an existing profile using tolerance above level 61" do
       let(:facts) do
         os_facts.merge('custom_hiera' => 'compliance_engine', 'target_compliance_profile' => '07_profile_test', 'target_enforcement_tolerance' => '62')
       end
@@ -218,7 +218,7 @@ RSpec.describe 'lookup' do
       end
     end
 
-    context "on #{os} with compliance_engine::::enforcement and an existing profile using tolerance above level 81" do
+    context "on #{os} with compliance_engine::enforcement and an existing profile using tolerance above level 81" do
       let(:facts) do
         os_facts.merge('custom_hiera' => 'compliance_engine', 'target_compliance_profile' => '07_profile_test', 'target_enforcement_tolerance' => '82')
       end
