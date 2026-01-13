@@ -74,6 +74,7 @@ RSpec.describe 'lookup' do
     FileUtils.rm_rf(tmpdir)
     FileUtils.rm_f(File.join(hieradata_dir, "#{hieradata_file}.yaml"))
   end
+
   on_supported_os.each do |os, os_facts|
     context "on #{os}" do
       let(:facts) { os_facts.merge('custom_hiera' => hieradata_file) }
