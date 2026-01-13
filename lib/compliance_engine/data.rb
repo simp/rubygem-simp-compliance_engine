@@ -360,7 +360,7 @@ class ComplianceEngine::Data
   #
   # @return [Array<Symbol>]
   def collection_variables
-    %i[@profiles @checks @controls @ces]
+    [:@profiles, :@checks, :@controls, :@ces]
   end
 
   # Get the data variables
@@ -374,7 +374,7 @@ class ComplianceEngine::Data
   #
   # @return [Array<Symbol>]
   def context_variables
-    %i[@enforcement_tolerance @environment_data @facts @modulepath]
+    [:@enforcement_tolerance, :@environment_data, :@facts, :@modulepath]
   end
 
   # Get the cache variables

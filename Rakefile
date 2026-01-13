@@ -17,4 +17,4 @@ task spec: :'fixtures:prep' do |_t, args|
   Rake::Task['fixtures:clean'].invoke
 end
 
-task default: %i[spec rubocop]
+task default: [:spec, :rubocop]

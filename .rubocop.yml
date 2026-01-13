@@ -49,6 +49,10 @@ Style/TrailingCommaInArrayLiteral:
     and re-ordering nicer.
   EnforcedStyleForMultiline: comma
 
+Style/SymbolArray:
+  Description: Using percent style obscures symbolic intent of array's contents.
+  EnforcedStyle: brackets
+
 Style/Documentation:
   Exclude:
     - lib/puppet/parser/functions/**/*
