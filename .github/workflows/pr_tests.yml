@@ -44,5 +44,5 @@ jobs:
           if [ "${{ matrix.ruby }}" = "4.0" ]; then
             bundle exec rspec spec/classes
           else
-            bundle exec rake spec
+            bundle exec rake parallel_spec
           fi
