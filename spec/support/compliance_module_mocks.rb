@@ -29,12 +29,12 @@ RSpec.shared_context 'compliance module mocks' do |module_name|
       allow(File).to receive(:read).with(metadata_path).and_return(metadata_json)
     end
 
-    allow(Dir).to receive(:glob).
-      with("#{module_path}/SIMP/compliance_profiles/**/*.yaml").
-      and_return(compliance_files)
-    allow(Dir).to receive(:glob).
-      with("#{module_path}/SIMP/compliance_profiles/**/*.json").
-      and_return([])
+    allow(Dir).to receive(:glob)
+      .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
+      .and_return(compliance_files)
+    allow(Dir).to receive(:glob)
+      .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
+      .and_return([])
 
     allow(File).to receive(:size).and_call_original
     allow(File).to receive(:mtime).and_call_original

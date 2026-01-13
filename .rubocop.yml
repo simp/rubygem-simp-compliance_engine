@@ -39,6 +39,9 @@ Style/Documentation:
     - lib/puppet/parser/functions/**/*
     - spec/**/*
 
+Layout/DotPosition:
+  EnforcedStyle: leading
+
 Layout/HashAlignment:
   Enabled: false
 

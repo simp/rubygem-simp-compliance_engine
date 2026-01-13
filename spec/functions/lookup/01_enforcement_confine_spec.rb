@@ -186,8 +186,8 @@ RSpec.describe 'lookup' do
       # Test for confine on a single fact in checks.
       if os_facts[:os]['family'] == 'RedHat'
         it do
-          is_expected.to run.with_params('test_module_01::is_not_el').
-            and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::is_not_el'")
+          is_expected.to run.with_params('test_module_01::is_not_el')
+                            .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::is_not_el'")
         end
       else
         it { is_expected.to run.with_params('test_module_01::is_not_el').and_return(true) }
@@ -198,8 +198,8 @@ RSpec.describe 'lookup' do
         it { is_expected.to run.with_params('test_module_01::el_version').and_return('7') }
       else
         it do
-          is_expected.to run.with_params('test_module_01::el_version').
-            and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::el_version'")
+          is_expected.to run.with_params('test_module_01::el_version')
+                            .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::el_version'")
         end
       end
 
@@ -208,8 +208,8 @@ RSpec.describe 'lookup' do
         it { is_expected.to run.with_params('test_module_01::not_el_version').and_return('7') }
       else
         it do
-          is_expected.to run.with_params('test_module_01::not_el_version').
-            and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::not_el_version'")
+          is_expected.to run.with_params('test_module_01::not_el_version')
+                            .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::not_el_version'")
         end
       end
 
@@ -224,16 +224,16 @@ RSpec.describe 'lookup' do
         it { is_expected.to run.with_params('test_module_01::not_el_centos_version').and_return('7') }
       else
         it do
-          is_expected.to run.with_params('test_module_01::not_el_centos_version').
-            and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::not_el_centos_version'")
+          is_expected.to run.with_params('test_module_01::not_el_centos_version')
+                            .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::not_el_centos_version'")
         end
       end
       # rubocop:enable RSpec/RepeatedExample
 
       # Test for confine on module name & module version in ce.
       it do
-        is_expected.to run.with_params('test_module_01::fixed_confines').
-          and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::fixed_confines'")
+        is_expected.to run.with_params('test_module_01::fixed_confines')
+                          .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::fixed_confines'")
       end
     end
   end

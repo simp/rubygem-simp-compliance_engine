@@ -97,8 +97,8 @@ RSpec.describe 'lookup' do
     let(:facts) { {} }
 
     it 'returns not_found for any key when no profiles are set' do
-      is_expected.to run.with_params('enforcement_spec::test_param').
-        and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
+      is_expected.to run.with_params('enforcement_spec::test_param')
+                        .and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
     end
   end
 
@@ -117,23 +117,23 @@ RSpec.describe 'lookup' do
     end
 
     it 'returns not_found for keys not in compliance data' do
-      is_expected.to run.with_params('unknown::param').
-        and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
+      is_expected.to run.with_params('unknown::param')
+                        .and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
     end
 
     it 'returns not_found for lookup_options key' do
-      is_expected.to run.with_params('lookup_options').
-        and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
+      is_expected.to run.with_params('lookup_options')
+                        .and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
     end
 
     it 'returns not_found for compliance_engine:: prefixed keys' do
-      is_expected.to run.with_params('compliance_engine::some_internal_key').
-        and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
+      is_expected.to run.with_params('compliance_engine::some_internal_key')
+                        .and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
     end
 
     it 'returns not_found for compliance_markup:: prefixed keys' do
-      is_expected.to run.with_params('compliance_markup::some_internal_key').
-        and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
+      is_expected.to run.with_params('compliance_markup::some_internal_key')
+                        .and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
     end
   end
 
@@ -144,8 +144,8 @@ RSpec.describe 'lookup' do
     let(:hieradata) { 'compliance-engine' }
 
     it 'returns not_found when the profile does not exist' do
-      is_expected.to run.with_params('enforcement_spec::test_param').
-        and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
+      is_expected.to run.with_params('enforcement_spec::test_param')
+                        .and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
     end
   end
 
@@ -220,8 +220,8 @@ RSpec.describe 'lookup' do
     end
 
     it 'returns not_found for value only in second profile when first profile is selected' do
-      is_expected.to run.with_params('multi_profile::param_two').
-        and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
+      is_expected.to run.with_params('multi_profile::param_two')
+                        .and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
     end
   end
 
@@ -305,8 +305,8 @@ RSpec.describe 'lookup' do
       end
 
       it 'returns not_found for Debian-confined check' do
-        is_expected.to run.with_params('confine_test::debian_param').
-          and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
+        is_expected.to run.with_params('confine_test::debian_param')
+                          .and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
       end
 
       it 'returns value for non-confined check' do
@@ -323,8 +323,8 @@ RSpec.describe 'lookup' do
       end
 
       it 'returns not_found for RedHat-confined check' do
-        is_expected.to run.with_params('confine_test::redhat_param').
-          and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
+        is_expected.to run.with_params('confine_test::redhat_param')
+                          .and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
       end
 
       it 'returns value for Debian-confined check' do
@@ -535,13 +535,13 @@ RSpec.describe 'lookup' do
       end
 
       it 'returns not_found for medium-risk check (level 50 >= tolerance 25)' do
-        is_expected.to run.with_params('tolerance_test::medium_risk_param').
-          and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
+        is_expected.to run.with_params('tolerance_test::medium_risk_param')
+                          .and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
       end
 
       it 'returns not_found for high-risk check (level 80 >= tolerance 25)' do
-        is_expected.to run.with_params('tolerance_test::high_risk_param').
-          and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
+        is_expected.to run.with_params('tolerance_test::high_risk_param')
+                          .and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
       end
     end
 
@@ -567,8 +567,8 @@ RSpec.describe 'lookup' do
       end
 
       it 'returns not_found for high-risk check (level 80 >= tolerance 60)' do
-        is_expected.to run.with_params('tolerance_test::high_risk_param').
-          and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
+        is_expected.to run.with_params('tolerance_test::high_risk_param')
+                          .and_raise_error(Puppet::DataBinding::LookupError, %r{did not find a value})
       end
     end
 

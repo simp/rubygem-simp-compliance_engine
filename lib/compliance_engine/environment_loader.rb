@@ -17,11 +17,11 @@ class ComplianceEngine::EnvironmentLoader
     @modulepath ||= paths
     @zipfile_path = zipfile_path
     modules = paths.map do |path|
-      dirclass.entries(path).
-        grep(%r{\A[a-z][a-z0-9_]*\Z}).
-        select { |child| fileclass.directory?(File.join(path, child)) }.
-        map { |child| File.join(path, child) }.
-        sort
+      dirclass.entries(path)
+              .grep(%r{\A[a-z][a-z0-9_]*\Z})
+              .select { |child| fileclass.directory?(File.join(path, child)) }
+              .map { |child| File.join(path, child) }
+              .sort
     rescue StandardError
       []
     end

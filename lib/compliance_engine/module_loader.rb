@@ -34,9 +34,9 @@ class ComplianceEngine::ModuleLoader
 
     # In this directory, we want to look for all yaml and json files
     # under SIMP/compliance_profiles and simp/compliance_profiles.
-    globs = ['SIMP/compliance_profiles', 'simp/compliance_profiles'].
-            select { |dir| fileclass.directory?(File.join(path, dir)) }.
-            map { |dir|
+    globs = ['SIMP/compliance_profiles', 'simp/compliance_profiles']
+            .select { |dir| fileclass.directory?(File.join(path, dir)) }
+            .map { |dir|
       %w[yaml json].map { |type| File.join(path, dir, '**', "*.#{type}") }
     }.flatten
     # Using .each here to make mocking with rspec easier.

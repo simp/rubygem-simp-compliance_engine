@@ -160,25 +160,25 @@ RSpec.describe 'lookup' do
       let(:hieradata) { 'compliance_engine' }
 
       it do
-        is_expected.to run.with_params('test_module_07::is_disabled').
-          and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_disabled'")
+        is_expected.to run.with_params('test_module_07::is_disabled')
+                          .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_disabled'")
       end
 
       it { is_expected.to run.with_params('test_module_07::is_level_21').and_return(true) }
 
       it do
-        is_expected.to run.with_params('test_module_07::is_level_41').
-          and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_level_41'")
+        is_expected.to run.with_params('test_module_07::is_level_41')
+                          .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_level_41'")
       end
 
       it do
-        is_expected.to run.with_params('test_module_07::is_level_61').
-          and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_level_61'")
+        is_expected.to run.with_params('test_module_07::is_level_61')
+                          .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_level_61'")
       end
 
       it do
-        is_expected.to run.with_params('test_module_07::is_level_81').
-          and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_level_81'")
+        is_expected.to run.with_params('test_module_07::is_level_81')
+                          .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_level_81'")
       end
     end
 
@@ -189,21 +189,21 @@ RSpec.describe 'lookup' do
       let(:hieradata) { 'compliance_engine' }
 
       it do
-        is_expected.to run.with_params('test_module_07::is_disabled').
-          and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_disabled'")
+        is_expected.to run.with_params('test_module_07::is_disabled')
+                          .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_disabled'")
       end
 
       it { is_expected.to run.with_params('test_module_07::is_level_21').and_return(true) }
       it { is_expected.to run.with_params('test_module_07::is_level_41').and_return(true) }
 
       it do
-        is_expected.to run.with_params('test_module_07::is_level_61').
-          and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_level_61'")
+        is_expected.to run.with_params('test_module_07::is_level_61')
+                          .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_level_61'")
       end
 
       it do
-        is_expected.to run.with_params('test_module_07::is_level_81').
-          and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_level_81'")
+        is_expected.to run.with_params('test_module_07::is_level_81')
+                          .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_level_81'")
       end
     end
 
@@ -214,8 +214,8 @@ RSpec.describe 'lookup' do
       let(:hieradata) { 'compliance_engine' }
 
       it do
-        is_expected.to run.with_params('test_module_07::is_disabled').
-          and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_disabled'")
+        is_expected.to run.with_params('test_module_07::is_disabled')
+                          .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_disabled'")
       end
 
       it { is_expected.to run.with_params('test_module_07::is_level_21').and_return(true) }
@@ -223,8 +223,8 @@ RSpec.describe 'lookup' do
       it { is_expected.to run.with_params('test_module_07::is_level_61').and_return(true) }
 
       it do
-        is_expected.to run.with_params('test_module_07::is_level_81').
-          and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_level_81'")
+        is_expected.to run.with_params('test_module_07::is_level_81')
+                          .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_level_81'")
       end
     end
 
@@ -235,8 +235,8 @@ RSpec.describe 'lookup' do
       let(:hieradata) { 'compliance_engine' }
 
       it do
-        is_expected.to run.with_params('test_module_07::is_disabled').
-          and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_disabled'")
+        is_expected.to run.with_params('test_module_07::is_disabled')
+                          .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_07::is_disabled'")
       end
 
       it { is_expected.to run.with_params('test_module_07::is_level_21').and_return(true) }

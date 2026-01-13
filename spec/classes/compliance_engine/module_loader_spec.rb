@@ -101,14 +101,14 @@ RSpec.describe ComplianceEngine::ModuleLoader do
         allow(File).to receive(:directory?).with(module_path).and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
         allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
-        allow(Dir).to receive(:glob).
-          with("#{module_path}/SIMP/compliance_profiles/**/*.yaml").
-          and_return(
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
+          .and_return(
             file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" }
           )
-        allow(Dir).to receive(:glob).
-          with("#{module_path}/SIMP/compliance_profiles/**/*.json").
-          and_return([])
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
+          .and_return([])
 
         file_data.each do |name, contents|
           filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
