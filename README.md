@@ -42,6 +42,34 @@ Options:
 
 See the [`ComplianceEngine::Data`](https://rubydoc.info/gems/compliance_engine/ComplianceEngine/Data) class for details.
 
+## Using as a Puppet Module
+
+The Compliance Engine can be used as a Puppet module to provide a Hiera backend for compliance data. This allows you to enforce compliance profiles through Hiera lookups within your Puppet manifests.
+
+### Hiera Backend
+
+To use the Compliance Engine Hiera backend, configure it in your `hiera.yaml`:
+
+```yaml
+---
+version: 5
+hierarchy:
+  - name: "Compliance Engine"
+    lookup_key: compliance_engine::enforcement
+```
+
+Specify the profile used by setting the `compliance_engine::enforcement` key in your Hiera data.
+
+```yaml
+---
+compliance_engine::enforcement:
+  - your_profile
+```
+
+The `compliance_engine::enforcement` function serves as the Hiera entry point and allows you to look up compliance data based on configured profiles.
+
+For detailed information about available functions, parameters, and configuration options, see [REFERENCE.md](REFERENCE.md).
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/simp/rubygem-simp-compliance_engine.
