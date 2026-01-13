@@ -328,33 +328,11 @@ class ComplianceEngine::Data
     return @check_mapping[cache_key] if @check_mapping.key?(cache_key)
 
     @check_mapping[cache_key] = checks.select do |_, check|
-      mapping?(check, profile_or_ce) && !filtered_by_tolerance?(check)
+      mapping?(check, profile_or_ce)
     end
   end
 
   private
-
-  # Check if a check should be filtered out based on enforcement tolerance
-  #
-  # @param check [ComplianceEngine::Check] The check to evaluate
-  # @return [TrueClass, FalseClass] true if check should be filtered out
-  def filtered_by_tolerance?(check)
-    return false if enforcement_tolerance.nil?
-
-    remediation = check.remediation
-    return false if remediation.nil?
-
-    # Filter out disabled checks
-    return true if remediation['disabled']
-
-    # Filter based on risk level
-    if remediation['risk'].is_a?(Array) && !remediation['risk'].empty?
-      risk_level = remediation['risk'][0]['level']
-      return risk_level.to_i > enforcement_tolerance.to_i if risk_level && enforcement_tolerance.to_i.positive?
-    end
-
-    false
-  end
 
   # Get the collection variables
   #

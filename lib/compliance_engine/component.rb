@@ -207,7 +207,8 @@ class ComplianceEngine::Component
       next if confine_away?(fragment)
 
       # Confinement based on remediation risk
-      if enforcement_tolerance.is_a?(Integer) && is_a?(ComplianceEngine::Check) && fragment.key?('remediation')
+      tolerance = enforcement_tolerance.is_a?(String) ? enforcement_tolerance.to_i : enforcement_tolerance
+      if tolerance.is_a?(Integer) && tolerance.positive? && is_a?(ComplianceEngine::Check) && fragment.key?('remediation')
         if fragment['remediation'].key?('disabled')
           message = "Remediation disabled for #{fragment}"
           reason = fragment['remediation']['disabled']&.map { |value| value['reason'] }&.reject(&:nil?)&.join("\n")
@@ -218,8 +219,8 @@ class ComplianceEngine::Component
 
         if fragment['remediation'].key?('risk')
           risk_level = fragment['remediation']['risk']&.map { |value| value['level'] }&.select { |value| value.is_a?(Integer) }&.max
-          if risk_level.is_a?(Integer) && risk_level >= enforcement_tolerance
-            ComplianceEngine.log.info "Remediation risk #{risk_level} exceeds enforcement tolerance #{enforcement_tolerance} for #{fragment}"
+          if risk_level.is_a?(Integer) && risk_level >= tolerance
+            ComplianceEngine.log.info "Remediation risk #{risk_level} exceeds enforcement tolerance #{tolerance} for #{fragment}"
             next
           end
         end
