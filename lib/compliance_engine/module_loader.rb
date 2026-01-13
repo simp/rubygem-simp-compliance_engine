@@ -37,7 +37,7 @@ class ComplianceEngine::ModuleLoader
     globs = ['SIMP/compliance_profiles', 'simp/compliance_profiles']
             .select { |dir| fileclass.directory?(File.join(path, dir)) }
             .map { |dir|
-      %w[yaml json].map { |type| File.join(path, dir, '**', "*.#{type}") }
+      ['yaml', 'json'].map { |type| File.join(path, dir, '**', "*.#{type}") }
     }.flatten
     # Using .each here to make mocking with rspec easier.
     globs.each do |glob|

@@ -654,7 +654,7 @@ RSpec.describe 'lookup' do
             'type' => 'puppet-class-parameter',
             'settings' => {
               'parameter' => 'types_test::array_param',
-              'value' => %w[item1 item2 item3],
+              'value' => ['item1', 'item2', 'item3'],
             },
             'ces' => ['types_ce'],
           },
@@ -692,7 +692,7 @@ RSpec.describe 'lookup' do
     end
 
     it 'returns array value' do
-      is_expected.to run.with_params('types_test::array_param').and_return(%w[item1 item2 item3])
+      is_expected.to run.with_params('types_test::array_param').and_return(['item1', 'item2', 'item3'])
     end
 
     it 'returns hash value' do

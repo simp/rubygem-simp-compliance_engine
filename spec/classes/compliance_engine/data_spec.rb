@@ -268,12 +268,12 @@ RSpec.describe ComplianceEngine::Data do
 
     it 'returns a list of profiles' do
       expect(compliance_engine.profiles).to be_instance_of(ComplianceEngine::Profiles)
-      expect(compliance_engine.profiles.keys).to eq(%w[test_profile_00 test_profile_01 test_profile_02])
+      expect(compliance_engine.profiles.keys).to eq(['test_profile_00', 'test_profile_01', 'test_profile_02'])
     end
 
     it 'returns a list of ces' do
       expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Ces)
-      expect(compliance_engine.ces.keys).to eq(%w[ce_00 ce_01 ce_02 ce_03])
+      expect(compliance_engine.ces.keys).to eq(['ce_00', 'ce_01', 'ce_02', 'ce_03'])
     end
   end
 
@@ -608,7 +608,7 @@ RSpec.describe ComplianceEngine::Data do
       compliance_engine.facts = nil
       hiera = compliance_engine.hiera(['custom_profile_1'])
       expect(hiera).to be_instance_of(Hash)
-      expect(hiera).to eq({ 'widget_spinner::audit_logging' => %w[no yes maybe] })
+      expect(hiera).to eq({ 'widget_spinner::audit_logging' => ['no', 'yes', 'maybe'] })
     end
 
     it 'correctly invalidates cached data' do
@@ -625,7 +625,7 @@ RSpec.describe ComplianceEngine::Data do
       compliance_engine.facts = nil
       hiera = compliance_engine.hiera(['custom_profile_1'])
       expect(hiera).to be_instance_of(Hash)
-      expect(hiera).to eq({ 'widget_spinner::audit_logging' => %w[no yes maybe] })
+      expect(hiera).to eq({ 'widget_spinner::audit_logging' => ['no', 'yes', 'maybe'] })
 
       compliance_engine.facts = { 'os' => { 'release' => { 'major' => '9' }, 'name' => 'RedHat' } }
       hiera = compliance_engine.hiera(['custom_profile_1'])
@@ -1004,13 +1004,13 @@ RSpec.describe ComplianceEngine::Data do
     it 'returns a list of profiles' do
       profiles = compliance_engine.profiles
       expect(profiles).to be_instance_of(ComplianceEngine::Profiles)
-      expect(profiles.keys).to eq(%w[custom_profile_1 00_profile_test])
+      expect(profiles.keys).to eq(['custom_profile_1', '00_profile_test'])
     end
 
     it 'returns a list of ces' do
       ces = compliance_engine.ces
       expect(ces).to be_instance_of(ComplianceEngine::Ces)
-      expect(ces.keys).to eq(%w[enable_widget_spinner_audit_logging 00_ce1])
+      expect(ces.keys).to eq(['enable_widget_spinner_audit_logging', '00_ce1'])
     end
 
     it 'returns no hiera data when there are no profiles' do
@@ -1101,12 +1101,12 @@ RSpec.describe ComplianceEngine::Data do
 
     it 'returns a list of profiles' do
       expect(compliance_engine.profiles).to be_instance_of(ComplianceEngine::Profiles)
-      expect(compliance_engine.profiles.keys).to eq(%w[test_profile_00 test_profile_01 test_profile_02])
+      expect(compliance_engine.profiles.keys).to eq(['test_profile_00', 'test_profile_01', 'test_profile_02'])
     end
 
     it 'returns a list of ces' do
       expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Ces)
-      expect(compliance_engine.ces.keys).to eq(%w[ce_00 ce_01 ce_02 ce_03])
+      expect(compliance_engine.ces.keys).to eq(['ce_00', 'ce_01', 'ce_02', 'ce_03'])
     end
   end
 
@@ -1141,12 +1141,12 @@ RSpec.describe ComplianceEngine::Data do
 
     it 'returns a list of profiles' do
       expect(compliance_engine.profiles).to be_instance_of(ComplianceEngine::Profiles)
-      expect(compliance_engine.profiles.keys).to eq(%w[test_profile_00 test_profile_01 test_profile_02])
+      expect(compliance_engine.profiles.keys).to eq(['test_profile_00', 'test_profile_01', 'test_profile_02'])
     end
 
     it 'returns a list of ces' do
       expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Ces)
-      expect(compliance_engine.ces.keys).to eq(%w[ce_00 ce_01 ce_02 ce_03])
+      expect(compliance_engine.ces.keys).to eq(['ce_00', 'ce_01', 'ce_02', 'ce_03'])
     end
   end
 end

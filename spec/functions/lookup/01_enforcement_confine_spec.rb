@@ -90,9 +90,9 @@ RSpec.describe 'lookup' do
             '01_ce2',
           ],
           'confine' => {
-            'os.name' => %w[
-              RedHat
-              CentOS
+            'os.name' => [
+              'RedHat',
+              'CentOS'
             ],
             'os.release.major' => '7',
           },
@@ -194,7 +194,7 @@ RSpec.describe 'lookup' do
       end
 
       # Test for confine on multiple facts and an array of facts in checks.
-      if %w[RedHat CentOS].include?(os_facts[:os]['name']) && os_facts[:os]['release']['major'] == '7'
+      if ['RedHat', 'CentOS'].include?(os_facts[:os]['name']) && os_facts[:os]['release']['major'] == '7'
         it { is_expected.to run.with_params('test_module_01::el_version').and_return('7') }
       else
         it do

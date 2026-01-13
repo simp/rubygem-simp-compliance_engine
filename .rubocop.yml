@@ -58,6 +58,9 @@ Style/Documentation:
     - lib/puppet/parser/functions/**/*
     - spec/**/*
 
+Style/WordArray:
+  EnforcedStyle: brackets
+
 Layout/HashAlignment:
   Enabled: false
 

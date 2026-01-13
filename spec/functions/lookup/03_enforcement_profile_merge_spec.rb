@@ -174,7 +174,7 @@ RSpec.describe 'lookup' do
 
       before(:each) do
         File.open(File.join(hieradata_dir, 'profile-merging.yaml'), 'w') do |fh|
-          test_hiera = { 'compliance_engine::enforcement' => %w[profile_test1 profile_test2] }.to_yaml
+          test_hiera = { 'compliance_engine::enforcement' => ['profile_test1', 'profile_test2'] }.to_yaml
           fh.puts test_hiera
         end
       end
@@ -198,7 +198,7 @@ RSpec.describe 'lookup' do
 
       before(:each) do
         File.open(File.join(hieradata_dir, 'profile-merging.yaml'), 'w') do |fh|
-          test_hiera = { 'compliance_engine::enforcement' => %w[profile_test2 profile_test1] }.to_yaml
+          test_hiera = { 'compliance_engine::enforcement' => ['profile_test2', 'profile_test1'] }.to_yaml
           fh.puts test_hiera
         end
       end
