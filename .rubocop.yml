@@ -34,13 +34,25 @@ Style/ClassAndModuleChildren:
   Description: Compact style reduces the required amount of indentation.
   EnforcedStyle: compact
 
+Layout/DotPosition:
+  EnforcedStyle: leading
+
+Style/TrailingCommaInArguments:
+  Description:
+    Prefer always trailing comma on multiline argument lists. This makes
+    diffs, and re-ordering nicer.
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInArrayLiteral:
+  Description:
+    Prefer always trailing comma on multiline literals. This makes diffs,
+    and re-ordering nicer.
+  EnforcedStyleForMultiline: comma
+
 Style/Documentation:
   Exclude:
     - lib/puppet/parser/functions/**/*
     - spec/**/*
-
-Layout/DotPosition:
-  EnforcedStyle: leading
 
 Layout/HashAlignment:
   Enabled: false

@@ -242,7 +242,7 @@ RSpec.describe ComplianceEngine::Data do
         allow(Dir).to receive(:glob)
           .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
           .and_return(
-            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" }
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
           )
         allow(Dir).to receive(:glob)
           .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
@@ -334,7 +334,7 @@ RSpec.describe ComplianceEngine::Data do
         allow(Dir).to receive(:glob)
           .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
           .and_return(
-            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" }
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
           )
         allow(Dir).to receive(:glob)
           .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
@@ -536,7 +536,7 @@ RSpec.describe ComplianceEngine::Data do
         allow(Dir).to receive(:glob)
           .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
           .and_return(
-            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" }
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
           )
         allow(Dir).to receive(:glob)
           .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
@@ -690,7 +690,7 @@ RSpec.describe ComplianceEngine::Data do
         allow(Dir).to receive(:glob)
           .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
           .and_return(
-            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" }
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
           )
         allow(Dir).to receive(:glob)
           .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
@@ -789,7 +789,7 @@ RSpec.describe ComplianceEngine::Data do
         allow(Dir).to receive(:glob)
           .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
           .and_return(
-            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" }
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
           )
         allow(Dir).to receive(:glob)
           .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
@@ -870,7 +870,7 @@ RSpec.describe ComplianceEngine::Data do
         allow(Dir).to receive(:glob)
           .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
           .and_return(
-            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" }
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
           )
         allow(Dir).to receive(:glob)
           .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
@@ -977,7 +977,7 @@ RSpec.describe ComplianceEngine::Data do
         allow(Dir).to receive(:glob)
           .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
           .and_return(
-            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" }
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
           )
         allow(Dir).to receive(:glob)
           .with("#{module_path}/SIMP/compliance_profiles/**/*.json")

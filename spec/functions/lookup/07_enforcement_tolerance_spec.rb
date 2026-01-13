@@ -154,7 +154,7 @@ RSpec.describe 'lookup' do
         os_facts.merge(
           'custom_hiera'                 => 'compliance_engine',
           'target_compliance_profile'    => '07_profile_test',
-          'target_enforcement_tolerance' => '22'
+          'target_enforcement_tolerance' => '22',
         )
       end
       let(:hieradata) { 'compliance_engine' }
