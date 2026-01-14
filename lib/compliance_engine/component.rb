@@ -182,6 +182,34 @@ class ComplianceEngine::Component
     false
   end
 
+  # Check if a fragment is has remediation risk too high or if remediation is disabled
+  #
+  # @param fragment [Hash] The fragment to check
+  # @return [TrueClass, FalseClass] true if the fragment should be dropped
+  def risk_too_high?(fragment)
+    return false unless is_a?(ComplianceEngine::Check)
+    return false unless fragment.key?('remediation')
+    return false unless enforcement_tolerance.is_a?(Integer) && enforcement_tolerance.positive?
+
+    if fragment['remediation'].key?('disabled')
+      message = "Remediation disabled for #{fragment}"
+      reason = fragment['remediation']['disabled']&.map { |value| value['reason'] }&.reject(&:nil?)&.join("\n")
+      message += "\n#{reason}" unless reason.nil?
+      ComplianceEngine.log.info message
+      return true
+    end
+
+    if fragment['remediation'].key?('risk')
+      risk_level = fragment['remediation']['risk']&.map { |value| value['level'] }&.select { |value| value.is_a?(Integer) }&.max
+      if risk_level.is_a?(Integer) && risk_level >= enforcement_tolerance
+        ComplianceEngine.log.info "Remediation risk #{risk_level} exceeds enforcement enforcement_tolerance #{enforcement_tolerance} for #{fragment}"
+        return true
+      end
+    end
+
+    false
+  end
+
   # Returns the fragments of the component after confinement
   #
   # @return [Hash] the fragments of the component
@@ -205,26 +233,7 @@ class ComplianceEngine::Component
       end
 
       next if confine_away?(fragment)
-
-      # Confinement based on remediation risk
-      tolerance = enforcement_tolerance.is_a?(String) ? enforcement_tolerance.to_i : enforcement_tolerance
-      if tolerance.is_a?(Integer) && tolerance.positive? && is_a?(ComplianceEngine::Check) && fragment.key?('remediation')
-        if fragment['remediation'].key?('disabled')
-          message = "Remediation disabled for #{fragment}"
-          reason = fragment['remediation']['disabled']&.map { |value| value['reason'] }&.reject(&:nil?)&.join("\n")
-          message += "\n#{reason}" unless reason.nil?
-          ComplianceEngine.log.info message
-          next
-        end
-
-        if fragment['remediation'].key?('risk')
-          risk_level = fragment['remediation']['risk']&.map { |value| value['level'] }&.select { |value| value.is_a?(Integer) }&.max
-          if risk_level.is_a?(Integer) && risk_level >= tolerance
-            ComplianceEngine.log.info "Remediation risk #{risk_level} exceeds enforcement tolerance #{tolerance} for #{fragment}"
-            next
-          end
-        end
-      end
+      next if risk_too_high?(fragment)
 
       @fragments[filename] = fragment
     end

@@ -83,6 +83,8 @@ Puppet::Functions.create_function(:'compliance_engine::enforcement') do
     # For backwards compatibility with compliance_markup.
     tolerance = call_function('lookup', 'compliance_markup::enforcement_tolerance_level', { 'default_value' => nil }) if @compat && tolerance.nil?
 
+    tolerance = tolerance.to_i if tolerance.is_a?(String)
+
     tolerance
   end
 end
