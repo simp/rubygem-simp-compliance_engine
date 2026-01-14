@@ -1,0 +1,6 @@
+---
+compliance_engine::enforcement:
+  - "%{facts.target_compliance_profile}"
+
+# Hardcoded integer value for tolerance - Hiera interpolation would produce a string
+compliance_engine::enforcement_tolerance: 60

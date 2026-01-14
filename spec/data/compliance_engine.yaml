@@ -1,0 +1,19 @@
+---
+compliance_engine::validate_profiles:
+  - "%{facts.target_compliance_profile}"
+
+# Needed for catalog inspection to ensure valid data
+compliance_engine::report_on_client: true
+compliance_engine::report_on_server: false
+compliance_engine::report_types:
+  - 'compliant'
+  - 'non_compliant'
+  - 'unknown_parameters'
+  - 'unknown_resources'
+
+# Ideally, this would be the same as the validation array but you may want to
+# do something different based on your test requirements
+compliance_engine::enforcement:
+  - "%{facts.target_compliance_profile}"
+
+compliance_engine::enforcement_tolerance: "%{facts.target_enforcement_tolerance}"

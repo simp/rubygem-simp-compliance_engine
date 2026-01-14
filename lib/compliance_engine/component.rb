@@ -134,7 +134,7 @@ class ComplianceEngine::Component
 
       fact == confine
     elsif confine.is_a?(Array)
-      if depth == 0
+      if depth.zero?
         confine.any? { |value| fact_match?(fact, value, depth + 1) }
       else
         fact == confine
@@ -155,12 +155,13 @@ class ComplianceEngine::Component
       if k == 'module_name'
         unless environment_data.nil?
           return true unless environment_data.key?(v)
+
           module_version = fragment['confine']['module_version']
           unless module_version.nil?
             require 'semantic_puppet'
             begin
               return true unless SemanticPuppet::VersionRange.parse(module_version).include?(SemanticPuppet::Version.parse(environment_data[v]))
-            rescue => e
+            rescue StandardError => e
               ComplianceEngine.log.error "Failed to compare #{v} #{environment_data[v]} with version confinement #{module_version}: #{e.message}"
               return true
             end
@@ -172,13 +173,37 @@ class ComplianceEngine::Component
         # Confinement based on Puppet facts
         unless facts.nil?
           fact = facts.dig(*k.split('.'))
-          if fact.nil?
-            return true
-          end
-          unless fact_match?(fact, v)
-            return true
-          end
+          return true if fact.nil?
+          return true unless fact_match?(fact, v)
         end
+      end
+    end
+
+    false
+  end
+
+  # Check if a fragment is has remediation risk too high or if remediation is disabled
+  #
+  # @param fragment [Hash] The fragment to check
+  # @return [TrueClass, FalseClass] true if the fragment should be dropped
+  def risk_too_high?(fragment)
+    return false unless is_a?(ComplianceEngine::Check)
+    return false unless fragment.key?('remediation')
+    return false unless enforcement_tolerance.is_a?(Integer) && enforcement_tolerance.positive?
+
+    if fragment['remediation'].key?('disabled')
+      message = "Remediation disabled for #{fragment}"
+      reason = fragment['remediation']['disabled']&.map { |value| value['reason'] }&.reject(&:nil?)&.join("\n")
+      message += "\n#{reason}" unless reason.nil?
+      ComplianceEngine.log.info message
+      return true
+    end
+
+    if fragment['remediation'].key?('risk')
+      risk_level = fragment['remediation']['risk']&.map { |value| value['level'] }&.select { |value| value.is_a?(Integer) }&.max
+      if risk_level.is_a?(Integer) && risk_level >= enforcement_tolerance
+        ComplianceEngine.log.info "Remediation risk #{risk_level} exceeds enforcement enforcement_tolerance #{enforcement_tolerance} for #{fragment}"
+        return true
       end
     end
 
@@ -208,25 +233,7 @@ class ComplianceEngine::Component
       end
 
       next if confine_away?(fragment)
-
-      # Confinement based on remediation risk
-      if enforcement_tolerance.is_a?(Integer) && is_a?(ComplianceEngine::Check) && fragment.key?('remediation')
-        if fragment['remediation'].key?('disabled')
-          message = "Remediation disabled for #{fragment}"
-          reason = fragment['remediation']['disabled']&.map { |value| value['reason'] }&.reject { |value| value.nil? }&.join("\n")
-          message += "\n#{reason}" unless reason.nil?
-          ComplianceEngine.log.info message
-          next
-        end
-
-        if fragment['remediation'].key?('risk')
-          risk_level = fragment['remediation']['risk']&.map { |value| value['level'] }&.select { |value| value.is_a?(Integer) }&.max
-          if risk_level.is_a?(Integer) && risk_level >= enforcement_tolerance
-            ComplianceEngine.log.info "Remediation risk #{risk_level} exceeds enforcement tolerance #{enforcement_tolerance} for #{fragment}"
-            next
-          end
-        end
-      end
+      next if risk_too_high?(fragment)
 
       @fragments[filename] = fragment
     end

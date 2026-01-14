@@ -27,7 +27,6 @@ jobs:
     strategy:
       matrix:
         ruby:
-          - '2.7'  # Puppet 7
           - '3.2'  # Puppet 8
           - '3.3'
           - '3.4'
@@ -41,4 +40,9 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
       - name: Spec tests
-        run: bundle exec rake spec
+        run: |
+          if [ "${{ matrix.ruby }}" = "4.0" ]; then
+            bundle exec rspec spec/classes
+          else
+            bundle exec rake parallel_spec
+          fi

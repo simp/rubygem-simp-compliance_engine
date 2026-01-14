@@ -10,5 +10,10 @@
 # rspec failure tracking
 .rspec_status
 
+# Test-generated hiera data files (process-specific, cleaned up automatically)
+/spec/data/profile-merging-*.yaml
+/spec/data/10_enforce_spec-*.yaml
+
 /Gemfile.lock
 /vendor/
+/spec/fixtures/modules/

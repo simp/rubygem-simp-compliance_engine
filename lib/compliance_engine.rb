@@ -30,7 +30,7 @@ module ComplianceEngine
   def self.log
     return @log unless @log.nil?
 
-    @log = Logger.new(STDERR)
+    @log = Logger.new($stderr)
     @log.level = Logger::WARN
     @log
   end

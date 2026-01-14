@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module ComplianceEngine
-  VERSION = '0.1.6'
+  VERSION = '0.2.0'
 
   # Handle supported compliance data versions
   class Version
@@ -11,6 +11,7 @@ module ComplianceEngine
     def initialize(version)
       raise 'Missing version' if version.nil?
       raise "Unsupported version '#{version}'" unless version == '2.0.0'
+
       @version = version
     end
 

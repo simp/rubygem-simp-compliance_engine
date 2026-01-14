@@ -13,6 +13,7 @@ class ComplianceEngine::EnvironmentLoader
   # @param zipfile_path [String, nil] the path to the zip file if loading from a zip archive
   def initialize(*paths, fileclass: File, dirclass: Dir, zipfile_path: nil)
     raise ArgumentError, 'No paths specified' if paths.empty?
+
     @modulepath ||= paths
     @zipfile_path = zipfile_path
     modules = paths.map do |path|
@@ -21,7 +22,7 @@ class ComplianceEngine::EnvironmentLoader
               .select { |child| fileclass.directory?(File.join(path, child)) }
               .map { |child| File.join(path, child) }
               .sort
-    rescue
+    rescue StandardError
       []
     end
     modules.flatten!

@@ -205,7 +205,7 @@ RSpec.describe ComplianceEngine::Data do
             ce:
               ce_00: {}
               ce_01: {}
-            A_YAML
+          A_YAML
           'b/file.yaml' => <<~B_YAML,
             ---
             version: '2.0.0'
@@ -215,7 +215,7 @@ RSpec.describe ComplianceEngine::Data do
                   ce_02: true
             ce:
               ce_02: {}
-            B_YAML
+          B_YAML
         },
         'test_module_01' => {
           'c/file.yaml' => <<~C_YAML,
@@ -227,7 +227,7 @@ RSpec.describe ComplianceEngine::Data do
                   ce_03: true
             ce:
               ce_03: {}
-            C_YAML
+          C_YAML
         },
       }
     end
@@ -319,7 +319,7 @@ RSpec.describe ComplianceEngine::Data do
                   value: true
                 ces:
                   - enable_widget_spinner_audit_logging
-            A_YAML
+          A_YAML
         },
       }
     end
@@ -449,7 +449,7 @@ RSpec.describe ComplianceEngine::Data do
                   value: ['no']
                 ces:
                   - enable_widget_spinner_audit_logging.el7
-            A_YAML
+          A_YAML
           'b/file.yaml' => <<~B_YAML,
             ---
             version: 2.0.0
@@ -485,7 +485,7 @@ RSpec.describe ComplianceEngine::Data do
                   value: ['yes']
                 ces:
                   - enable_widget_spinner_audit_logging.el8
-            B_YAML
+          B_YAML
           'c/file.yaml' => <<~C_YAML,
             ---
             version: 2.0.0
@@ -521,7 +521,7 @@ RSpec.describe ComplianceEngine::Data do
                   value: ['maybe']
                 ces:
                   - enable_widget_spinner_audit_logging.el9
-            C_YAML
+          C_YAML
         },
       }
     end
@@ -675,7 +675,7 @@ RSpec.describe ComplianceEngine::Data do
                   value: true
                 ces:
                   - enable_widget_spinner_audit_logging
-            A_YAML
+          A_YAML
         },
       }
     end
@@ -741,7 +741,7 @@ RSpec.describe ComplianceEngine::Data do
     it 'returns checks for a profile' do
       checks = compliance_engine.check_mapping(compliance_engine.profiles['custom_profile_1'])
       checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
-      keys = checks.values.map { |check| check.key }
+      keys = checks.values.map(&:key)
       expect(keys).to be_instance_of(Array)
       expect(keys).to eq(['widget_spinner_audit_logging'])
     end
@@ -749,7 +749,7 @@ RSpec.describe ComplianceEngine::Data do
     it 'returns checks for a ce' do
       checks = compliance_engine.check_mapping(compliance_engine.ces['enable_widget_spinner_audit_logging'])
       checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
-      keys = checks.values.map { |check| check.key }
+      keys = checks.values.map(&:key)
       expect(keys).to be_instance_of(Array)
       expect(keys).to eq(['widget_spinner_audit_logging'])
     end
@@ -774,7 +774,7 @@ RSpec.describe ComplianceEngine::Data do
                   value: true
                 controls:
                   nist_800_53:rev4:AU-2: true
-            A_YAML
+          A_YAML
         },
       }
     end
@@ -855,7 +855,7 @@ RSpec.describe ComplianceEngine::Data do
                 settings:
                   parameter: test_module_00::test_param
                   value: a string
-            A_YAML
+          A_YAML
         },
       }
     end
@@ -942,7 +942,7 @@ RSpec.describe ComplianceEngine::Data do
                   value: true
                 controls:
                   nist_800_53:rev4:AU-2: true
-            A_YAML
+          A_YAML
           'b/file.yaml' => <<~B_YAML,
             ---
             version: 2.0.0
@@ -962,7 +962,7 @@ RSpec.describe ComplianceEngine::Data do
                   value: 'a string'
                 ces:
                   - 00_ce1
-            B_YAML
+          B_YAML
         },
       }
     end
@@ -1040,7 +1040,7 @@ RSpec.describe ComplianceEngine::Data do
     it 'returns checks for custom_profile_1' do
       checks = compliance_engine.check_mapping(compliance_engine.profiles['custom_profile_1'])
       checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
-      keys = checks.values.map { |check| check.key }
+      keys = checks.values.map(&:key)
       expect(keys).to be_instance_of(Array)
       expect(keys).to eq(['widget_spinner_audit_logging'])
     end
@@ -1048,7 +1048,7 @@ RSpec.describe ComplianceEngine::Data do
     it 'returns checks for 00_profile_test' do
       checks = compliance_engine.check_mapping(compliance_engine.profiles['00_profile_test'])
       checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
-      keys = checks.values.map { |check| check.key }
+      keys = checks.values.map(&:key)
       expect(keys).to be_instance_of(Array)
       expect(keys).to eq(['00_check1'])
     end
@@ -1056,7 +1056,7 @@ RSpec.describe ComplianceEngine::Data do
     it 'returns checks for enable_widget_spinner_audit_logging' do
       checks = compliance_engine.check_mapping(compliance_engine.ces['enable_widget_spinner_audit_logging'])
       checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
-      keys = checks.values.map { |check| check.key }
+      keys = checks.values.map(&:key)
       expect(keys).to be_instance_of(Array)
       expect(keys).to eq(['widget_spinner_audit_logging'])
     end
@@ -1064,7 +1064,7 @@ RSpec.describe ComplianceEngine::Data do
     it 'returns checks for 00_ce1' do
       checks = compliance_engine.check_mapping(compliance_engine.ces['00_ce1'])
       checks.each_value { |check| expect(check).to be_instance_of(ComplianceEngine::Check) }
-      keys = checks.values.map { |check| check.key }
+      keys = checks.values.map(&:key)
       expect(keys).to be_instance_of(Array)
       expect(keys).to eq(['00_check1'])
     end

@@ -19,9 +19,9 @@ RSpec.describe ComplianceEngine::Check do
         'file2' => { 'merge_key' => ['value2'], 'confine' => { 'kernel' => ['windows'] } },
         'file3' => { 'merge_key' => ['value3'], 'confine' => { 'module_name' => 'author-module' } },
         'file4' => { 'merge_key' => ['value4'], 'confine' => { 'module_name' => 'author-module', 'module_version' => '>= 1.0.0 < 2.0.0' } },
-        'file5' => { 'merge_key' => ['value5'], 'remediation' => { 'disabled' => [ { 'reason' => 'anything' } ], 'risk' => [ { 'level' => 1 } ] } },
-        'file6' => { 'merge_key' => ['value6'], 'remediation' => { 'risk' => [ { 'level' => 21 } ] } },
-        'file7' => { 'merge_key' => ['value7'], 'remediation' => { 'risk' => [ { 'level' => 41 } ] } },
+        'file5' => { 'merge_key' => ['value5'], 'remediation' => { 'disabled' => [{ 'reason' => 'anything' }], 'risk' => [{ 'level' => 1 }] } },
+        'file6' => { 'merge_key' => ['value6'], 'remediation' => { 'risk' => [{ 'level' => 21 }] } },
+        'file7' => { 'merge_key' => ['value7'], 'remediation' => { 'risk' => [{ 'level' => 41 }] } },
       }
     end
 

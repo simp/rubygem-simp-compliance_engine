@@ -27,7 +27,7 @@ class ComplianceEngine::ModuleLoader
         metadata = ComplianceEngine::DataLoader::Json.new(metadata_json, fileclass: fileclass)
         @name = metadata.data['name']
         @version = metadata.data['version']
-      rescue => e
+      rescue StandardError => e
         ComplianceEngine.log.warn "Could not parse #{metadata_json}: #{e.message}"
       end
     end
@@ -53,7 +53,7 @@ class ComplianceEngine::ModuleLoader
                    ComplianceEngine::DataLoader::Yaml.new(file.to_s, fileclass: fileclass, key: key)
                  end
         @files << loader
-      rescue => e
+      rescue StandardError => e
         ComplianceEngine.log.warn "Could not load #{file}: #{e.message}"
       end
     end

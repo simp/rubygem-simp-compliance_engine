@@ -43,10 +43,12 @@ USER vscode
 RUN git clone https://github.com/magicmonty/bash-git-prompt.git /home/vscode/.bash-git-prompt --depth 1 \
     && cat >> /home/vscode/.bashrc <<EOF
 
-if [ -f ~/.bash-git-prompt/gitprompt.sh ]; then
-    GIT_PROMPT_ONLY_IN_REPO=1
-    . ~/.bash-git-prompt/gitprompt.sh
-fi
+bash_git_prompt() {
+  if [ -f ~/.bash-git-prompt/gitprompt.sh ]; then
+      GIT_PROMPT_ONLY_IN_REPO=1
+      . ~/.bash-git-prompt/gitprompt.sh
+  fi
+}
 EOF
 
 # Set the working directory
