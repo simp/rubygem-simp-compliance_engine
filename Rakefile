@@ -11,6 +11,12 @@ RSpec::Core::RakeTask.new('spec:standalone') do |t|
   t.pattern = 'spec/{classes,functions}/**/*_spec.rb'
 end
 
+desc 'Prepare fixtures for testing'
+task spec_prep: :'fixtures:prep'
+
+desc 'Clean up fixtures after testing'
+task spec_clean: :'fixtures:clean'
+
 desc 'Run spec tests and clean the fixtures directory if successful'
 task spec: :'fixtures:prep' do |_t, args|
   Rake::Task['spec:standalone'].invoke(*args.extras)

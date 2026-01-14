@@ -98,7 +98,6 @@ RSpec.describe 'lookup' do
           let(:policy_order) { 'disa_stig' }
 
           it 'returns /bin/disa' do
-            skip('String value for compliance_engine::enforcement not supported, must be Array')
             result = lookup.execute('useradd::shells')
             expect(result).to be_instance_of(Array)
             expect(result).to include('/bin/disa')

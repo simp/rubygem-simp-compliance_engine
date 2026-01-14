@@ -60,10 +60,10 @@ Puppet::Functions.create_function(:'compliance_engine::enforcement') do
   end
 
   def profiles
-    profile_list = call_function('lookup', 'compliance_engine::enforcement', { 'default_value' => [] })
+    profile_list = Array(call_function('lookup', 'compliance_engine::enforcement', { 'default_value' => [] }))
 
     # For backwards compatibility with compliance_markup.
-    profile_list += call_function('lookup', 'compliance_markup::enforcement', { 'default_value' => [] }) if @compat
+    profile_list += Array(call_function('lookup', 'compliance_markup::enforcement', { 'default_value' => [] })) if @compat
 
     profile_list.uniq
   end
