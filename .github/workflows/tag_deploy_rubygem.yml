@@ -1,4 +1,4 @@
-# Create GitHub release, build & publish .gem to rubygems.org on SemVer tag push
+# Create GitHub release, build & publish .gem to rubygems.org and Puppet Forge on SemVer tag push
 #
 # This workflow's jobs are only triggered in repos under the `simp` organization
 # ------------------------------------------------------------------------------
@@ -16,6 +16,7 @@
 #   GitHub Secret variable    Type      Notes
 #   ------------------------  --------  ----------------------------------------
 #   RUBYGEMS_API_KEY          Required
+#   PUPPETFORGE_API_TOKEN     Required
 #
 # ------------------------------------------------------------------------------
 #
@@ -210,3 +211,32 @@ jobs:
 
           echo "Running '$RELEASE_COMMAND'..."
           $RELEASE_COMMAND
+
+  deploy-to-puppet-forge:
+    name: 'Deploy PuppetForge Release'
+    needs: [ create-github-release ]
+    if: (github.repository_owner == 'simp') && (needs.create-github-release.outputs.prerelease != 'yes')
+    runs-on: ubuntu-latest
+    env:
+      PUPPETFORGE_API_TOKEN: ${{ secrets.PUPPETFORGE_API_TOKEN }}
+      FORGE_USER_AGENT: GitHubActions-ForgeReleng-Workflow/0.4.1 (Purpose/forge-ops-for-${{ github.event.repository.name }})
+      FORGE_API_URL: https://forgeapi.puppet.com/v3/releases
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+          clean: true
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2.9
+          bundler-cache: true
+      - name: Build Puppet module (PDK)
+        run: bundle exec pdk build --force
+      - name: Deploy to Puppet Forge (skipped when prerelease)
+        run: |
+          curl -X POST --silent --show-error --fail \
+            --user-agent "$FORGE_USER_AGENT" \
+            --header "Authorization: Bearer ${PUPPETFORGE_API_TOKEN}" \
+            --form "file=@$(find $PWD/pkg -name ''*.tar.gz'')" \
+            "$FORGE_API_URL"
