@@ -4,7 +4,9 @@
   "author": "Sicura",
   "summary": "Hiera backend for Sicura Compliance Engine data",
   "license": "Apache-2.0",
-  "source": "https://github.com/simp/rubygem-simp-compliance_engine",
+  "source": "https://github.com/simp/rubygem-simp-compliance_engine.git",
+  "project_page": "https://github.com/simp/rubygem-simp-compliance_engine",
+  "issues_url": "https://github.com/simp/rubygem-simp-compliance_engine/issues",
   "dependencies": [
   ],
   "operatingsystem_support": [
