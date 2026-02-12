@@ -13,8 +13,6 @@ Puppet::Functions.create_function(:'compliance_engine::enforcement') do
   require 'compliance_engine'
 
   def enforcement(key, options, context)
-    ComplianceEngine.log.level = Logger::DEBUG
-
     @compat = options['compliance_markup_compatibility']
 
     case key
