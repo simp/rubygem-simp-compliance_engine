@@ -1,3 +1,6 @@
+### 0.2.1 / 2026-02-12
+* Turn off debugging in compliance_engine::enforcement function
+
 ### 0.2.0 / 2026-01-15
 * Add Hiera backend (#33)
 
