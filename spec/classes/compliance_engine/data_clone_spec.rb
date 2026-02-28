@@ -119,8 +119,10 @@ RSpec.describe ComplianceEngine::Data do
       d
     end
 
+    # rubocop:disable RSpec/IndexedLet
     let(:clone1) { data.clone }
     let(:clone2) { data.clone }
+    # rubocop:enable RSpec/IndexedLet
 
     # --- facts isolation on the Data objects themselves ---
 
@@ -217,8 +219,10 @@ RSpec.describe ComplianceEngine::Data do
   describe 'cloning with lazily computed collections (currently works)' do
     # NOTE: data.ces / data.profiles are deliberately NOT called here.
     let(:data) { described_class.new(ComplianceEngine::DataLoader.new(compliance_data)) }
+    # rubocop:disable RSpec/IndexedLet
     let(:clone1) { data.clone }
     let(:clone2) { data.clone }
+    # rubocop:enable RSpec/IndexedLet
 
     it 'isolates facts when collections are built after setting facts on each clone' do
       # Set facts before the first collection access on either clone.
