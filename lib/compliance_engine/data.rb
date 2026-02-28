@@ -88,6 +88,26 @@ class ComplianceEngine::Data
     (instance_variables - (data_variables + context_variables)).each { |var| instance_variable_set(var, nil) }
   end
 
+  # Ensure that cloned/duped objects get independent collection instances.
+  #
+  # Ruby's default clone/dup is a shallow copy, so the collection instance
+  # variables (@ces, @profiles, @checks, @controls) would otherwise point to
+  # the same objects as the source.  When facts= is later called on either the
+  # source or the clone, invalidate_cache propagates facts into the shared
+  # collection, causing the other object to silently adopt the wrong facts.
+  #
+  # Nilling the collection variables here forces each clone to lazily rebuild
+  # its own collections the first time they are accessed, using its own context
+  # (facts, enforcement_tolerance, etc.).  Cache variables that depend on those
+  # collections are cleared for the same reason.
+  #
+  # @return [NilClass]
+  def initialize_copy(source)
+    super
+    collection_variables.each { |var| instance_variable_set(var, nil) }
+    cache_variables.each { |var| instance_variable_set(var, nil) }
+  end
+
   # Scan a Puppet environment from a zip file
   # @param path [String] The Puppet environment archive file
   # @return [NilClass]
