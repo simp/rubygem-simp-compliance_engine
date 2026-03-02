@@ -188,6 +188,16 @@ RSpec.describe ComplianceEngine::Component do
         expect(source.to_a.map { |f| f['merge_key'] }.flatten).not_to include('value_new')
       end
 
+      it 'mutating a nested value in a copy fragment does not affect the source' do
+        # initialize_copy must deep-copy each fragment payload so that nested
+        # mutable structures in the copy are independent from those in the source.
+        src = described_class.new('nested_key')
+        src.add('file_nested', { 'x' => { 'y' => 1 } })
+        copy = src.public_send(copy_method)
+        copy.to_a.first['x']['y'] = 2
+        expect(src.to_a.first['x']['y']).to eq(1)
+      end
+
       # --- source context inheritance ---
 
       it 'copy starts with source facts and can diverge independently' do

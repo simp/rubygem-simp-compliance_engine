@@ -44,7 +44,7 @@ class ComplianceEngine::Component
   def initialize_copy(_source)
     super
     @component = @component.dup
-    @component[:fragments] = @component[:fragments].dup
+    @component[:fragments] = @component[:fragments].transform_values { |fragment| Marshal.load(Marshal.dump(fragment)) }
     cache_variables.each { |var| instance_variable_set(var, nil) }
     nil
   end
