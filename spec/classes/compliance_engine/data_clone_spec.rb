@@ -529,6 +529,57 @@ RSpec.describe ComplianceEngine::Data do
   end
 
   # ---------------------------------------------------------------------------
+  # Observer re-subscription after clone/dup.
+  #
+  # initialize_copy sets :loader to nil in each @data entry so the copy does
+  # not hold a reference to the source's loader.  When the copy later calls
+  # open(loader) for a key already present in @data, the else branch of
+  # Data#update checks the :loader VALUE (not just key presence) to decide
+  # whether to register the copy as an observer.  A nil value is correctly
+  # treated as "not yet registered", so add_observer is called and the copy
+  # receives future loader refreshes independently from the source.
+  # ---------------------------------------------------------------------------
+  describe 'observer re-subscription after clone/dup' do
+    let(:initial_data) do
+      { 'version' => '2.0.0', 'ce' => { 'original_ce' => { 'title' => 'Original CE' } } }
+    end
+
+    let(:refreshed_data) do
+      { 'version' => '2.0.0', 'ce' => { 'refreshed_ce' => { 'title' => 'Refreshed CE' } } }
+    end
+
+    let(:loader) { ComplianceEngine::DataLoader.new(initial_data, key: 'observer_test_loader') }
+    let(:source) { described_class.new(loader) }
+
+    shared_examples 'observer re-subscription' do |copy_method|
+      it 'copy receives loader refreshes after re-opening a known loader key' do
+        copy = source.public_send(copy_method)
+
+        # Re-open the same loader on the copy.  initialize_copy nil'd the
+        # :loader entry so the copy must register itself as a new observer.
+        copy.open(loader)
+
+        # Refresh the loader.  Both source and copy must be notified so each
+        # rebuilds its collections from the refreshed content.
+        loader.data = refreshed_data
+
+        expect(source.ces.keys).to include('refreshed_ce')
+        expect(source.ces.keys).not_to include('original_ce')
+        expect(copy.ces.keys).to include('refreshed_ce')
+        expect(copy.ces.keys).not_to include('original_ce')
+      end
+    end
+
+    describe '#clone' do
+      include_examples 'observer re-subscription', :clone
+    end
+
+    describe '#dup' do
+      include_examples 'observer re-subscription', :dup
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # Lazily computed collections: guard against future regressions.
   #
   # When collections are never accessed on the source before cloning, each

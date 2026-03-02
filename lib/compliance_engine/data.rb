@@ -227,8 +227,13 @@ class ComplianceEngine::Data
     else
       data[filename.key] ||= {}
 
-      # Assume filename is a loader object
-      unless data[filename.key]&.key?(:loader)
+      # Register as an observer only when no loader is currently attached.
+      # Checking the :loader value (rather than key presence) is important
+      # after clone/dup: initialize_copy sets :loader to nil so the copy does
+      # not share the source's loader, but the key still exists.  Checking
+      # key presence would see the nil as "already registered" and skip
+      # add_observer, leaving the copy deaf to future loader refreshes.
+      unless data[filename.key][:loader]
         data[filename.key][:loader] = filename
         data[filename.key][:loader].add_observer(self, :update)
       end
