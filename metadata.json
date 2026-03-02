@@ -1,6 +1,6 @@
 {
   "name": "simp-compliance_engine",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "author": "Sicura",
   "summary": "Hiera backend for Sicura Compliance Engine data",
   "license": "Apache-2.0",
