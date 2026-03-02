@@ -16,9 +16,9 @@ RSpec.describe ComplianceEngine::Ces do
   # clone/dup isolation (Collection behavior)
   #
   # Ces is used as the concrete Collection subclass.  Source has all Ce caches
-  # pre-computed before copying -- the hardest case, because the Component
-  # objects inside @collection are included in the shallow copy and share the
-  # same invalidate_cache propagation path.
+  # pre-computed before copying -- the hardest case, because initialize_copy
+  # must dup each Component in @collection to give copies independent objects
+  # with independent invalidate_cache propagation.
   # ---------------------------------------------------------------------------
   describe 'clone/dup isolation (Collection behavior)' do
     let(:compliance_data) do
@@ -72,9 +72,9 @@ RSpec.describe ComplianceEngine::Ces do
       end
 
       it 'applying RHEL facts to copy1 does not confine copy2 to RHEL' do
-        # Without initialize_copy the Ce objects are shared.  invalidate_cache
-        # on copy1 propagates rhel facts into those shared Ces, so copy2's
-        # rendering also becomes RHEL-confined.
+        # initialize_copy dups each Ce in @collection so copies have independent
+        # component objects.  invalidate_cache on copy1 therefore updates only
+        # copy1's Ces, leaving copy2's components unaffected.
         copy1.invalidate_cache(rhel_data)
         # copy2 components still have nil facts => both CEs unconfined
         expect(copy2['rhel_only_ce'].title).to eq('RHEL Only CE')

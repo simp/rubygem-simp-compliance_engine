@@ -15,7 +15,9 @@ require 'compliance_engine/data_loader'
 #   same problem: open() on one copy leaked new file entries to every other.
 #
 # Fix (initialize_copy in ComplianceEngine::Data):
-#   * Dups the outer @data hash so new file entries stay local to each copy.
+#   * Deep-copies each per-file inner hash via transform_values and clears
+#     :loader in each entry so file entries and loader references stay local
+#     to the copy.
 #   * Nils out all collection and cache variables so each copy builds its own
 #     independent collections the first time they are accessed.
 
@@ -272,14 +274,12 @@ RSpec.describe ComplianceEngine::Data do
   # DataLoader::File#refresh detects on-disk changes and calls self.data=,
   # which triggers Observable#notify_observers.  The only registered observer
   # is the original (source) Data object; copies are never added as observers.
-  # Data#update then mutates the per-file inner hash inside @data in-place
-  # (:version and :content keys).  Because @data.dup is a shallow copy, the
-  # copy shares these inner hashes and silently reads the refreshed content
-  # the next time it lazily builds its collections.
+  # Data#update mutates the source's per-file inner hash in-place (:version
+  # and :content keys).  initialize_copy deep-copies these inner hashes so
+  # the copy has its own independent entry that is unaffected by the refresh.
   #
   # The copy is tested before it has accessed any collections (lazy), which
-  # is the scenario that triggers the bug.  A copy that has already cached
-  # its collections before the refresh would not be affected regardless.
+  # is the case where an unprotected shallow copy would be most vulnerable.
   # ---------------------------------------------------------------------------
   describe 'loader refresh isolation' do
     let(:original_ce_data) do
@@ -299,9 +299,9 @@ RSpec.describe ComplianceEngine::Data do
 
         # Simulates DataLoader::File#refresh: updating the loader's data
         # notifies the source (the sole registered Observable observer) and
-        # causes Data#update to mutate the shared inner @data hash entry
-        # in-place.  Without a deeper dup of @data's values, the copy reads
-        # refreshed content the next time it lazily builds its collections.
+        # causes Data#update to mutate the source's inner @data hash entry
+        # in-place.  The copy's inner hash is independent (deep-copied by
+        # initialize_copy) so it retains the original content.
         loader.data = refreshed_ce_data
 
         expect(source.ces.keys).to include('refreshed_ce')
@@ -323,11 +323,10 @@ RSpec.describe ComplianceEngine::Data do
   # ---------------------------------------------------------------------------
   # enforcement_tolerance isolation.
   #
-  # enforcement_tolerance= calls invalidate_cache just like facts= does, so it
-  # is subject to the same shared-collection poisoning that the original bug
-  # exposed for facts.  These tests confirm that copies have independent
-  # enforcement_tolerance values and that each copy's checks are filtered by
-  # its own tolerance, not the other copy's.
+  # enforcement_tolerance= calls invalidate_cache just like facts= does.
+  # These tests confirm that copies have independent enforcement_tolerance
+  # values and that each copy's checks are filtered by its own tolerance,
+  # not the other copy's.
   # ---------------------------------------------------------------------------
   describe 'enforcement_tolerance isolation' do
     # Two checks with different remediation risk levels.  With
@@ -388,10 +387,9 @@ RSpec.describe ComplianceEngine::Data do
   # ---------------------------------------------------------------------------
   # environment_data isolation.
   #
-  # environment_data= also calls invalidate_cache and is subject to the same
-  # shared-collection issue.  These tests confirm that copies have independent
-  # environment_data and that module-confined checks are filtered correctly per
-  # copy.
+  # environment_data= also calls invalidate_cache.  These tests confirm that
+  # copies have independent environment_data and that module-confined checks
+  # are filtered correctly per copy.
   # ---------------------------------------------------------------------------
   describe 'environment_data isolation' do
     # One check confined to a specific Puppet module; only visible when that
@@ -484,6 +482,49 @@ RSpec.describe ComplianceEngine::Data do
 
     describe '#dup' do
       include_examples 'source context inherited', :dup
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Shared loader isolation.
+  #
+  # initialize_copy clears :loader from each per-file inner hash so the copy
+  # does not hold a reference to the source's DataLoader object.  A shared
+  # loader would allow the copy to trigger loader.refresh via update(key),
+  # which would notify the source (the registered Observable observer) and
+  # overwrite source.data[key][:content] while the copy's inner hash stayed
+  # stale.  With :loader nil the copy creates its own independent loader (and
+  # registers itself as observer) the next time it opens that file.
+  # ---------------------------------------------------------------------------
+  describe 'shared loader isolation' do
+    let(:initial_data) do
+      { 'version' => '2.0.0', 'ce' => { 'original_ce' => { 'title' => 'Original CE' } } }
+    end
+
+    let(:loader) { ComplianceEngine::DataLoader.new(initial_data) }
+    let(:source) { described_class.new(loader) }
+
+    shared_examples 'shared loader copy isolation' do |copy_method|
+      it 'copy @data entries have the loader reference cleared' do
+        # initialize_copy sets entry[:loader] to nil so the copy holds no
+        # reference to the source's DataLoader.  This prevents the copy from
+        # accidentally triggering loader.refresh via update(key_string), which
+        # would notify the source (the registered Observable observer) and
+        # overwrite source.data[key][:content] while the copy's inner hash
+        # stayed stale.
+        copy = source.public_send(copy_method)
+        copy.data.each_value do |entry|
+          expect(entry[:loader]).to be_nil
+        end
+      end
+    end
+
+    describe '#clone' do
+      include_examples 'shared loader copy isolation', :clone
+    end
+
+    describe '#dup' do
+      include_examples 'shared loader copy isolation', :dup
     end
   end
 

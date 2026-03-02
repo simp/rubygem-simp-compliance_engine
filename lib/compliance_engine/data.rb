@@ -110,7 +110,15 @@ class ComplianceEngine::Data
     # the source (which mutates the inner hash in-place via Data#update) does
     # not silently affect a clone that has not yet built its lazy collections.
     # The inner per-file content values (read-only parsed data) stay shared.
-    @data = @data.transform_values(&:dup)
+    #
+    # :loader is additionally cleared (set to nil) so the copy does not hold
+    # a reference to the source's DataLoader object.  If it did, the copy
+    # calling update(key_string) for an already-known file would invoke
+    # loader.refresh, which notifies the source (the registered Observable
+    # observer) and overwrites source.data[key][:content] while the copy's
+    # inner hash stays stale.  With :loader nil the copy creates its own
+    # independent loader (and registers itself as observer) on next access.
+    @data = @data.transform_values { |entry| entry.merge(loader: nil) }
     collection_variables.each { |var| instance_variable_set(var, nil) }
     cache_variables.each { |var| instance_variable_set(var, nil) }
     nil

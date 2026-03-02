@@ -126,9 +126,9 @@ RSpec.describe ComplianceEngine::Component do
       end
 
       it 'each copy reflects its own facts independently' do
-        # Without initialize_copy the pre-computed @element is shared and
-        # stale, so copy1 would return unconfined results even after setting
-        # Linux facts (the cached nil-facts element is returned instead).
+        # initialize_copy clears the pre-computed @element cache so each copy
+        # rebuilds it from its own fragments using its own facts, rather than
+        # returning a stale cached element computed with the source's facts.
         copy1.facts = { 'kernel' => 'Linux' }
         copy2.facts = { 'kernel' => 'Darwin' }
         expect(copy1.to_h['merge_key']).to include('value_linux', 'value_any')
@@ -140,8 +140,8 @@ RSpec.describe ComplianceEngine::Component do
       # --- data isolation ---
 
       it 'a fragment added to copy1 does not appear in copy2' do
-        # Without initialize_copy the inner fragments hash is shared, so
-        # add on copy1 writes into copy2's fragment store too.
+        # initialize_copy dups the inner fragments hash so each copy has an
+        # independent store; writes on one copy stay local to that copy.
         copy1.add('file_new', { 'merge_key' => ['value_new'] })
         expect(copy1.to_a.map { |f| f['merge_key'] }.flatten).to include('value_new')
         expect(copy2.to_a.map { |f| f['merge_key'] }.flatten).not_to include('value_new')
