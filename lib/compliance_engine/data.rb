@@ -104,10 +104,13 @@ class ComplianceEngine::Data
   # @return [NilClass]
   def initialize_copy(source)
     super
-    # Give each clone its own outer @data hash so that new files opened on one
-    # clone (via open/update) are not visible to other clones or the source.
-    # The inner per-file entries (read-only parsed content) stay shared.
-    @data = @data.dup
+    # Give each clone its own outer @data hash and its own per-file inner
+    # hashes so that new files opened on one clone (via open/update) are not
+    # visible to other clones or the source, and so that a loader refresh on
+    # the source (which mutates the inner hash in-place via Data#update) does
+    # not silently affect a clone that has not yet built its lazy collections.
+    # The inner per-file content values (read-only parsed data) stay shared.
+    @data = @data.transform_values(&:dup)
     collection_variables.each { |var| instance_variable_set(var, nil) }
     cache_variables.each { |var| instance_variable_set(var, nil) }
   end

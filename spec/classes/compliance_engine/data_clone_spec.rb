@@ -267,6 +267,60 @@ RSpec.describe ComplianceEngine::Data do
   end
 
   # ---------------------------------------------------------------------------
+  # Loader refresh isolation.
+  #
+  # DataLoader::File#refresh detects on-disk changes and calls self.data=,
+  # which triggers Observable#notify_observers.  The only registered observer
+  # is the original (source) Data object; copies are never added as observers.
+  # Data#update then mutates the per-file inner hash inside @data in-place
+  # (:version and :content keys).  Because @data.dup is a shallow copy, the
+  # copy shares these inner hashes and silently reads the refreshed content
+  # the next time it lazily builds its collections.
+  #
+  # The copy is tested before it has accessed any collections (lazy), which
+  # is the scenario that triggers the bug.  A copy that has already cached
+  # its collections before the refresh would not be affected regardless.
+  # ---------------------------------------------------------------------------
+  describe 'loader refresh isolation' do
+    let(:original_ce_data) do
+      { 'version' => '2.0.0', 'ce' => { 'original_ce' => { 'title' => 'Original CE' } } }
+    end
+
+    let(:refreshed_ce_data) do
+      { 'version' => '2.0.0', 'ce' => { 'refreshed_ce' => { 'title' => 'Refreshed CE' } } }
+    end
+
+    shared_examples 'loader refresh isolation' do |copy_method|
+      it 'a loader refresh on the source does not affect a lazily built copy' do
+        loader = ComplianceEngine::DataLoader.new(original_ce_data)
+        source = described_class.new(loader)
+
+        copy = source.public_send(copy_method)
+
+        # Simulates DataLoader::File#refresh: updating the loader's data
+        # notifies the source (the sole registered Observable observer) and
+        # causes Data#update to mutate the shared inner @data hash entry
+        # in-place.  Without a deeper dup of @data's values, the copy reads
+        # refreshed content the next time it lazily builds its collections.
+        loader.data = refreshed_ce_data
+
+        expect(source.ces.keys).to include('refreshed_ce')
+        expect(source.ces.keys).not_to include('original_ce')
+        expect(copy.ces.keys).to include('original_ce')
+        expect(copy.ces.keys).not_to include('refreshed_ce')
+      end
+    end
+
+    describe '#clone' do
+      include_examples 'loader refresh isolation', :clone
+    end
+
+    describe '#dup' do
+      include_examples 'loader refresh isolation', :dup
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # Lazily computed collections: guard against future regressions.
   #
   # When collections are never accessed on the source before cloning, each
