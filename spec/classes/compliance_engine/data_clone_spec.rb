@@ -321,6 +321,173 @@ RSpec.describe ComplianceEngine::Data do
   end
 
   # ---------------------------------------------------------------------------
+  # enforcement_tolerance isolation.
+  #
+  # enforcement_tolerance= calls invalidate_cache just like facts= does, so it
+  # is subject to the same shared-collection poisoning that the original bug
+  # exposed for facts.  These tests confirm that copies have independent
+  # enforcement_tolerance values and that each copy's checks are filtered by
+  # its own tolerance, not the other copy's.
+  # ---------------------------------------------------------------------------
+  describe 'enforcement_tolerance isolation' do
+    # Two checks with different remediation risk levels.  With
+    # enforcement_tolerance = 30, fragments whose risk level >= 30 are dropped.
+    let(:risk_data) do
+      {
+        'version' => '2.0.0',
+        'checks' => {
+          'low_risk_check' => {
+            'type' => 'puppet-class-parameter',
+            'settings' => { 'parameter' => 'mod::low', 'value' => true },
+            'remediation' => { 'risk' => [{ 'level' => 20 }] },
+          },
+          'high_risk_check' => {
+            'type' => 'puppet-class-parameter',
+            'settings' => { 'parameter' => 'mod::high', 'value' => true },
+            'remediation' => { 'risk' => [{ 'level' => 40 }] },
+          },
+        },
+      }
+    end
+
+    let(:source) do
+      d = described_class.new(ComplianceEngine::DataLoader.new(risk_data))
+      d.checks # pre-compute
+      d
+    end
+
+    shared_examples 'enforcement_tolerance copy isolation' do |copy_method|
+      # rubocop:disable RSpec/IndexedLet
+      let(:copy1) { source.public_send(copy_method) }
+      let(:copy2) { source.public_send(copy_method) }
+      # rubocop:enable RSpec/IndexedLet
+
+      it 'copies have independent enforcement_tolerance' do
+        copy1.enforcement_tolerance = 30
+        copy2.enforcement_tolerance = 50
+        expect(copy1.enforcement_tolerance).to eq(30)
+        expect(copy2.enforcement_tolerance).to eq(50)
+      end
+
+      it 'high-risk check excluded on copy1 (tol=30) remains visible on copy2 (tol=nil)' do
+        copy1.enforcement_tolerance = 30 # risk 40 >= 30 => excluded
+        expect(copy1.checks['high_risk_check'].to_h).to be_empty
+        expect(copy2.checks['high_risk_check'].to_h).not_to be_empty
+      end
+    end
+
+    describe '#clone isolation' do
+      include_examples 'enforcement_tolerance copy isolation', :clone
+    end
+
+    describe '#dup isolation' do
+      include_examples 'enforcement_tolerance copy isolation', :dup
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # environment_data isolation.
+  #
+  # environment_data= also calls invalidate_cache and is subject to the same
+  # shared-collection issue.  These tests confirm that copies have independent
+  # environment_data and that module-confined checks are filtered correctly per
+  # copy.
+  # ---------------------------------------------------------------------------
+  describe 'environment_data isolation' do
+    # One check confined to a specific Puppet module; only visible when that
+    # module is present in environment_data.
+    let(:module_data) do
+      {
+        'version' => '2.0.0',
+        'checks' => {
+          'module_check' => {
+            'type' => 'puppet-class-parameter',
+            'settings' => { 'parameter' => 'mod::param', 'value' => true },
+            'confine' => { 'module_name' => 'author-module' },
+          },
+        },
+      }
+    end
+
+    let(:source) do
+      d = described_class.new(ComplianceEngine::DataLoader.new(module_data))
+      d.checks # pre-compute
+      d
+    end
+
+    shared_examples 'environment_data copy isolation' do |copy_method|
+      # rubocop:disable RSpec/IndexedLet
+      let(:copy1) { source.public_send(copy_method) }
+      let(:copy2) { source.public_send(copy_method) }
+      # rubocop:enable RSpec/IndexedLet
+
+      it 'copies have independent environment_data' do
+        copy1.environment_data = { 'author-module' => '1.0.0' }
+        copy2.environment_data = { 'other-module' => '2.0.0' }
+        expect(copy1.environment_data).to eq({ 'author-module' => '1.0.0' })
+        expect(copy2.environment_data).to eq({ 'other-module' => '2.0.0' })
+      end
+
+      it 'module-confined check visible on copy1 is excluded on copy2' do
+        copy1.environment_data = { 'author-module' => '1.0.0' }
+        copy2.environment_data = { 'other-module' => '2.0.0' }
+        expect(copy1.checks['module_check'].to_h).not_to be_empty
+        expect(copy2.checks['module_check'].to_h).to be_empty
+      end
+    end
+
+    describe '#clone isolation' do
+      include_examples 'environment_data copy isolation', :clone
+    end
+
+    describe '#dup isolation' do
+      include_examples 'environment_data copy isolation', :dup
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Source context is inherited by copies.
+  #
+  # When the source has context (facts, etc.) already set before cloning, the
+  # copy should start with that same context and render accordingly.  It must
+  # also be able to diverge independently without affecting the source.
+  # ---------------------------------------------------------------------------
+  describe 'source context is inherited by copies' do
+    let(:source) do
+      d = described_class.new(ComplianceEngine::DataLoader.new(compliance_data))
+      d.facts = rhel9_facts
+      d.ces # pre-compute with RHEL facts
+      d
+    end
+
+    shared_examples 'source context inherited' do |copy_method|
+      let(:copy) { source.public_send(copy_method) }
+
+      it 'copy starts with the source facts and applies them correctly' do
+        expect(copy.facts).to eq(rhel9_facts)
+        expect(visible_ce_titles(copy).keys).to include('rhel_only_ce')
+        expect(visible_ce_titles(copy).keys).not_to include('debian_only_ce')
+      end
+
+      it 'copy can diverge from the source context without affecting the source' do
+        copy.facts = nil
+        expect(visible_ce_titles(copy).keys).to include('rhel_only_ce', 'debian_only_ce')
+        expect(source.facts).to eq(rhel9_facts)
+        expect(visible_ce_titles(source).keys).to include('rhel_only_ce')
+        expect(visible_ce_titles(source).keys).not_to include('debian_only_ce')
+      end
+    end
+
+    describe '#clone' do
+      include_examples 'source context inherited', :clone
+    end
+
+    describe '#dup' do
+      include_examples 'source context inherited', :dup
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # Lazily computed collections: guard against future regressions.
   #
   # When collections are never accessed on the source before cloning, each

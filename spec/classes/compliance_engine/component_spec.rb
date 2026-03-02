@@ -152,6 +152,35 @@ RSpec.describe ComplianceEngine::Component do
         expect(copy1.to_a.map { |f| f['merge_key'] }.flatten).to include('value_new')
         expect(source.to_a.map { |f| f['merge_key'] }.flatten).not_to include('value_new')
       end
+
+      # --- source context inheritance ---
+
+      it 'copy starts with source facts and can diverge independently' do
+        # Build a component that has Linux facts already set and cached,
+        # simulating the case where the source has pre-existing context.
+        src = described_class.new('inherit_key')
+        src.add('file_linux', { 'merge_key' => ['value_linux'], 'confine' => { 'kernel' => ['Linux'] } })
+        src.add('file_darwin', { 'merge_key' => ['value_darwin'], 'confine' => { 'kernel' => ['Darwin'] } })
+        src.add('file_any', { 'merge_key' => ['value_any'] })
+        src.facts = { 'kernel' => 'Linux' }
+        src.to_h # pre-compute with Linux facts
+
+        copy = src.public_send(copy_method)
+
+        # Copy inherits Linux facts and renders them correctly.
+        expect(copy.facts).to eq({ 'kernel' => 'Linux' })
+        expect(copy.to_h['merge_key']).to include('value_linux', 'value_any')
+        expect(copy.to_h['merge_key']).not_to include('value_darwin')
+
+        # Diverge: Component#invalidate_cache with no argument clears context
+        # variables (setting them to nil) as well as caches.
+        copy.invalidate_cache
+        expect(copy.to_h['merge_key']).to include('value_linux', 'value_darwin', 'value_any')
+
+        # Source is unchanged.
+        expect(src.facts).to eq({ 'kernel' => 'Linux' })
+        expect(src.to_h['merge_key']).not_to include('value_darwin')
+      end
     end
 
     describe '#clone isolation' do
