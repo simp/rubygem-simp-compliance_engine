@@ -104,7 +104,10 @@ RSpec.describe ComplianceEngine::Data do
   shared_examples 'copy isolation' do |copy_method|
     let(:source) do
       d = described_class.new(ComplianceEngine::DataLoader.new(compliance_data))
-      d.ces; d.profiles; d.checks; d.controls  # pre-compute all collections
+      d.ces
+      d.profiles
+      d.checks
+      d.controls # pre-compute all collections
       d
     end
 
@@ -125,7 +128,7 @@ RSpec.describe ComplianceEngine::Data do
     it 'copy2 with nil facts sees all CEs (unconfined) even after copy1 sets RHEL facts' do
       copy1.facts = rhel9_facts
       expect(copy2.facts).to be_nil
-      # nil facts → no confinement → both CEs should be visible on copy2
+      # nil facts => no confinement => both CEs should be visible on copy2
       expect(visible_ce_titles(copy2)).to include('debian_only_ce')
     end
 
@@ -142,9 +145,9 @@ RSpec.describe ComplianceEngine::Data do
       copy1.facts = debian_facts
       expect(visible_ce_titles(copy1).keys).not_to include('rhel_only_ce')
       copy2.facts = nil
-      # copy2 with nil facts → unconfined → both CEs visible
+      # copy2 with nil facts => unconfined => both CEs visible
       expect(visible_ce_titles(copy2).keys).to include('rhel_only_ce', 'debian_only_ce')
-      # copy1 still has Debian facts → RHEL CE must remain hidden
+      # copy1 still has Debian facts => RHEL CE must remain hidden
       expect(visible_ce_titles(copy1).keys).not_to include('rhel_only_ce')
     end
 
@@ -199,7 +202,10 @@ RSpec.describe ComplianceEngine::Data do
       # Force all four collection objects to be instantiated before cloning.
       # After this, d.@ces, d.@profiles, d.@checks, d.@controls are non-nil,
       # which triggered the sharing bug via Ruby's shallow clone.
-      d.ces; d.profiles; d.checks; d.controls
+      d.ces
+      d.profiles
+      d.checks
+      d.controls
       d
     end
 
