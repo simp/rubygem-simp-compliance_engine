@@ -46,6 +46,7 @@ class ComplianceEngine::Component
     @component = @component.dup
     @component[:fragments] = @component[:fragments].dup
     cache_variables.each { |var| instance_variable_set(var, nil) }
+    nil
   end
 
   # Adds a value to the fragments array of the component.

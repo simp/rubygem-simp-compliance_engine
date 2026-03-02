@@ -113,6 +113,7 @@ class ComplianceEngine::Data
     @data = @data.transform_values(&:dup)
     collection_variables.each { |var| instance_variable_set(var, nil) }
     cache_variables.each { |var| instance_variable_set(var, nil) }
+    nil
   end
 
   # Scan a Puppet environment from a zip file

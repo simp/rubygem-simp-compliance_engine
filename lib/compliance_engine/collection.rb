@@ -50,6 +50,7 @@ class ComplianceEngine::Collection
     super
     @collection = @collection.transform_values(&:dup)
     (instance_variables - (context_variables + [:@collection])).each { |var| instance_variable_set(var, nil) }
+    nil
   end
 
   # Converts the object to a hash representation
