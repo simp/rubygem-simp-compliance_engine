@@ -209,6 +209,56 @@ RSpec.describe ComplianceEngine::Data do
   end
 
   # -------------------------------------------------------------------------
+  # Data isolation: opening new data on one clone must not affect others.
+  #
+  # After a shallow clone, @data points to the same Hash object in every clone.
+  # Calling open() on clone1 invokes update(), which writes a new key into that
+  # shared hash, making the new file visible to clone2 as well.  The fix is to
+  # dup the outer @data hash in initialize_copy so each clone owns its own map
+  # of file keys to content entries.
+  # -------------------------------------------------------------------------
+  describe 'opening new data on a clone does not affect other clones' do
+    let(:extra_data) do
+      {
+        'version' => '2.0.0',
+        'ce' => {
+          'extra_ce' => { 'title' => 'Extra CE' },
+        },
+      }
+    end
+
+    let(:data) { described_class.new(ComplianceEngine::DataLoader.new(compliance_data)) }
+    # rubocop:disable RSpec/IndexedLet
+    let(:clone1) { data.clone }
+    let(:clone2) { data.clone }
+    # rubocop:enable RSpec/IndexedLet
+
+    it 'new data opened on clone1 is visible on clone1' do
+      clone1.open(ComplianceEngine::DataLoader.new(extra_data))
+      expect(clone1.ces.keys).to include('extra_ce')
+    end
+
+    it 'new data opened on clone1 does not appear on clone2' do
+      clone1.open(ComplianceEngine::DataLoader.new(extra_data))
+      expect(clone1.ces.keys).to include('extra_ce')
+      # clone2 shares the same original data but must not see extra_ce
+      expect(clone2.ces.keys).not_to include('extra_ce')
+    end
+
+    it 'new data opened on clone1 does not appear on the source object' do
+      clone1.open(ComplianceEngine::DataLoader.new(extra_data))
+      expect(clone1.ces.keys).to include('extra_ce')
+      expect(data.ces.keys).not_to include('extra_ce')
+    end
+
+    it 'new data opened on clone2 does not appear on clone1' do
+      clone2.open(ComplianceEngine::DataLoader.new(extra_data))
+      expect(clone2.ces.keys).to include('extra_ce')
+      expect(clone1.ces.keys).not_to include('extra_ce')
+    end
+  end
+
+  # -------------------------------------------------------------------------
   # Lazily computed collections scenario.
   #
   # If collections are never accessed on the *source* object before cloning,

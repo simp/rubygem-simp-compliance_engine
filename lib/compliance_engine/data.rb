@@ -104,6 +104,10 @@ class ComplianceEngine::Data
   # @return [NilClass]
   def initialize_copy(source)
     super
+    # Give each clone its own outer @data hash so that new files opened on one
+    # clone (via open/update) are not visible to other clones or the source.
+    # The inner per-file entries (read-only parsed content) stay shared.
+    @data = @data.dup
     collection_variables.each { |var| instance_variable_set(var, nil) }
     cache_variables.each { |var| instance_variable_set(var, nil) }
   end
