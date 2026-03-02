@@ -94,6 +94,41 @@ RSpec.describe ComplianceEngine::Component do
   end
 
   # ---------------------------------------------------------------------------
+  # Frozen fragment merging
+  #
+  # DataLoader deep-freezes all parsed data so that source compliance data is
+  # treated as read-only once loaded.  Without the fix, even a single
+  # deeply-frozen fragment could trigger a FrozenError in DeepMerge.deep_merge!:
+  # when a fragment has a hash-valued setting (e.g. settings => { value => { ... } }),
+  # deep_merge! shallow-dups the outer settings hash before merging but leaves the
+  # inner value hash as a frozen reference.  Recursing into that frozen inner hash
+  # and trying to assign into it raised FrozenError.
+  #
+  # Component#element deep-copies each fragment via Marshal before passing it to
+  # deep_merge! so that all nested hash references are mutable copies.
+  # ---------------------------------------------------------------------------
+  describe 'merging frozen fragments' do
+    let(:deeply_frozen_fragment) do
+      # DataLoader.new deep-freezes the entire structure, including the nested
+      # 'value' hash inside 'settings'.  This replicates the exact runtime
+      # shape of a check fragment loaded from a YAML file.
+      data = {
+        'settings' => {
+          'parameter' => 'some::param',
+          'value'     => { 'hash key 1' => 'hash value 1' },
+        },
+      }
+      ComplianceEngine::DataLoader.new(data).data
+    end
+
+    it 'merges a deeply-frozen fragment with a nested hash value without raising FrozenError' do
+      component.add('file1', deeply_frozen_fragment)
+      expect { component.to_h }.not_to raise_error
+      expect(component.to_h['settings']['value']).to eq('hash key 1' => 'hash value 1')
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # clone/dup isolation
   #
   # Source has all caches pre-computed before copying -- the hardest case,
