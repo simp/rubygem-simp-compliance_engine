@@ -9,6 +9,41 @@ name: PR Tests
   pull_request:
 
 jobs:
+  validate-versions:
+    name: 'Validate Versions'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: Verify versions match
+        run: |
+          ruby << 'RUBY'
+          require "json"
+
+          metadata_version = JSON.parse(File.read("metadata.json"))["version"]
+
+          version_rb = File.read("lib/compliance_engine/version.rb")
+          version_rb_match = version_rb.match(/VERSION\s*=\s*['"]([^'"]+)['"]/)
+          raise "Could not parse version from lib/compliance_engine/version.rb" unless version_rb_match
+          version_rb_version = version_rb_match[1]
+
+          changelog_match = File.read("CHANGELOG.md").match(/^###\s+(\d+\.\d+\.\d+)/)
+          raise "Could not parse version from CHANGELOG.md" unless changelog_match
+          changelog_version = changelog_match[1]
+
+          errors = []
+          errors << "metadata.json (#{metadata_version}) != version.rb (#{version_rb_version})" unless metadata_version == version_rb_version
+          errors << "metadata.json (#{metadata_version}) != CHANGELOG.md (#{changelog_version})" unless metadata_version == changelog_version
+
+          if errors.empty?
+            puts "All versions match: #{metadata_version}"
+          else
+            errors.each { |e| puts "ERROR: #{e}" }
+            exit 1
+          end
+          RUBY
+
   ruby-style:
     name: 'Ruby Style'
     runs-on: ubuntu-latest
