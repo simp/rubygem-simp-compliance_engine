@@ -92,4 +92,74 @@ RSpec.describe ComplianceEngine::Component do
       end
     end
   end
+
+  # ---------------------------------------------------------------------------
+  # clone/dup isolation
+  #
+  # Source has all caches pre-computed before copying -- the hardest case,
+  # since the cached @element and @fragments objects are included in the
+  # shallow copy and must be cleared by initialize_copy.
+  # ---------------------------------------------------------------------------
+  describe 'clone/dup isolation' do
+    let(:source) do
+      c = described_class.new('test_key')
+      c.add('file_linux', { 'merge_key' => ['value_linux'], 'confine' => { 'kernel' => ['Linux'] } })
+      c.add('file_darwin', { 'merge_key' => ['value_darwin'], 'confine' => { 'kernel' => ['Darwin'] } })
+      c.add('file_any', { 'merge_key' => ['value_any'] })
+      c.to_h # pre-compute @element and @fragments before copying
+      c
+    end
+
+    shared_examples 'component copy isolation' do |copy_method|
+      # rubocop:disable RSpec/IndexedLet
+      let(:copy1) { source.public_send(copy_method) }
+      let(:copy2) { source.public_send(copy_method) }
+      # rubocop:enable RSpec/IndexedLet
+
+      # --- facts isolation ---
+
+      it 'copies have independent facts' do
+        copy1.facts = { 'kernel' => 'Linux' }
+        copy2.facts = { 'kernel' => 'Darwin' }
+        expect(copy1.facts).to eq({ 'kernel' => 'Linux' })
+        expect(copy2.facts).to eq({ 'kernel' => 'Darwin' })
+      end
+
+      it 'each copy reflects its own facts independently' do
+        # Without initialize_copy the pre-computed @element is shared and
+        # stale, so copy1 would return unconfined results even after setting
+        # Linux facts (the cached nil-facts element is returned instead).
+        copy1.facts = { 'kernel' => 'Linux' }
+        copy2.facts = { 'kernel' => 'Darwin' }
+        expect(copy1.to_h['merge_key']).to include('value_linux', 'value_any')
+        expect(copy1.to_h['merge_key']).not_to include('value_darwin')
+        expect(copy2.to_h['merge_key']).to include('value_darwin', 'value_any')
+        expect(copy2.to_h['merge_key']).not_to include('value_linux')
+      end
+
+      # --- data isolation ---
+
+      it 'a fragment added to copy1 does not appear in copy2' do
+        # Without initialize_copy the inner fragments hash is shared, so
+        # add on copy1 writes into copy2's fragment store too.
+        copy1.add('file_new', { 'merge_key' => ['value_new'] })
+        expect(copy1.to_a.map { |f| f['merge_key'] }.flatten).to include('value_new')
+        expect(copy2.to_a.map { |f| f['merge_key'] }.flatten).not_to include('value_new')
+      end
+
+      it 'a fragment added to copy1 does not appear in the source' do
+        copy1.add('file_new', { 'merge_key' => ['value_new'] })
+        expect(copy1.to_a.map { |f| f['merge_key'] }.flatten).to include('value_new')
+        expect(source.to_a.map { |f| f['merge_key'] }.flatten).not_to include('value_new')
+      end
+    end
+
+    describe '#clone isolation' do
+      include_examples 'component copy isolation', :clone
+    end
+
+    describe '#dup isolation' do
+      include_examples 'component copy isolation', :dup
+    end
+  end
 end

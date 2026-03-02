@@ -32,6 +32,26 @@ class ComplianceEngine::Collection
     nil
   end
 
+  # Ensure that cloned/duped objects get independent component instances.
+  #
+  # Ruby's default clone/dup is a shallow copy, so @collection would be
+  # shared between the source and the copy, and every Component inside it
+  # would be the same object.  Calling invalidate_cache on one copy would
+  # then propagate its facts into those shared components, silently
+  # affecting the other copy's view of the data.
+  #
+  # Duping each Component (which triggers Component#initialize_copy) gives
+  # every copy of the Collection its own independent components.  Any
+  # derived caches on the Collection itself (e.g. @by_oval_id in Ces) are
+  # cleared so each copy rebuilds them from its own component set.
+  #
+  # @return [NilClass]
+  def initialize_copy(source)
+    super
+    @collection = @collection.transform_values(&:dup)
+    (instance_variables - (context_variables + [:@collection])).each { |var| instance_variable_set(var, nil) }
+  end
+
   # Converts the object to a hash representation
   #
   # @return [Hash] the hash representation of the object

@@ -26,6 +26,28 @@ class ComplianceEngine::Component
     nil
   end
 
+  # Ensure that cloned/duped objects get independent fragment stores.
+  #
+  # Ruby's default clone/dup is a shallow copy, so @component (and the
+  # fragments hash nested within it) would be shared between the source
+  # and the copy.  Calling add on either would write into the same
+  # fragments hash, making new fragments visible on both objects.
+  # Pre-computed @element and @fragments caches would also be shared,
+  # returning stale fact-filtered results on the copy even after facts
+  # are changed.
+  #
+  # Duping @component and its inner fragments hash ensures each copy has
+  # an independent fragment store.  Cache variables are cleared so each
+  # copy rebuilds them lazily from its own fragments on first access.
+  #
+  # @return [NilClass]
+  def initialize_copy(source)
+    super
+    @component = @component.dup
+    @component[:fragments] = @component[:fragments].dup
+    cache_variables.each { |var| instance_variable_set(var, nil) }
+  end
+
   # Adds a value to the fragments array of the component.
   #
   # @param value [Object] The value to be added to the fragments array.
