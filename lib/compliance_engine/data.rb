@@ -102,7 +102,7 @@ class ComplianceEngine::Data
   # collections are cleared for the same reason.
   #
   # @return [NilClass]
-  def initialize_copy(source)
+  def initialize_copy(_source)
     super
     # Give each clone its own outer @data hash and its own per-file inner
     # hashes so that new files opened on one clone (via open/update) are not

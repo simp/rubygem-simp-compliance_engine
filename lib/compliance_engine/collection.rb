@@ -46,7 +46,7 @@ class ComplianceEngine::Collection
   # cleared so each copy rebuilds them from its own component set.
   #
   # @return [NilClass]
-  def initialize_copy(source)
+  def initialize_copy(_source)
     super
     @collection = @collection.transform_values(&:dup)
     (instance_variables - (context_variables + [:@collection])).each { |var| instance_variable_set(var, nil) }

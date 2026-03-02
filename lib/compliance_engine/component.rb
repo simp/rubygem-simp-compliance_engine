@@ -41,7 +41,7 @@ class ComplianceEngine::Component
   # copy rebuilds them lazily from its own fragments on first access.
   #
   # @return [NilClass]
-  def initialize_copy(source)
+  def initialize_copy(_source)
     super
     @component = @component.dup
     @component[:fragments] = @component[:fragments].dup
