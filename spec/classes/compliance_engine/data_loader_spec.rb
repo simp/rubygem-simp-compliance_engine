@@ -90,6 +90,54 @@ RSpec.describe ComplianceEngine::DataLoader do
     it_behaves_like 'an observable'
   end
 
+  context 'data immutability' do
+    subject(:loader) { described_class.new(nested_data) }
+
+    let(:nested_data) do
+      {
+        'version' => '2.0.0',
+        'ce' => {
+          'some_ce' => {
+            'title' => 'Some CE',
+            'oval-ids' => ['oval:example:def:1'],
+          },
+        },
+      }
+    end
+
+    it 'freezes the top-level data hash' do
+      expect(loader.data).to be_frozen
+    end
+
+    it 'freezes nested hashes recursively' do
+      expect(loader.data['ce']).to be_frozen
+      expect(loader.data['ce']['some_ce']).to be_frozen
+    end
+
+    it 'freezes nested arrays' do
+      expect(loader.data['ce']['some_ce']['oval-ids']).to be_frozen
+    end
+
+    it 'freezes string values' do
+      expect(loader.data['version']).to be_frozen
+      expect(loader.data['ce']['some_ce']['title']).to be_frozen
+    end
+
+    it 'prevents top-level mutation' do
+      expect { loader.data['new_key'] = 'value' }.to raise_error(FrozenError)
+    end
+
+    it 'prevents nested mutation' do
+      expect { loader.data['ce']['new_ce'] = {} }.to raise_error(FrozenError)
+    end
+
+    it 'freezes replacement data on subsequent data= calls' do
+      new_data = { 'version' => '2.0.0' }
+      loader.data = new_data
+      expect(loader.data).to be_frozen
+    end
+  end
+
   context 'with invalid data' do
     let(:data) { 'invalid data' }
 

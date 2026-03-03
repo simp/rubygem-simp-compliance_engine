@@ -88,6 +88,42 @@ class ComplianceEngine::Data
     (instance_variables - (data_variables + context_variables)).each { |var| instance_variable_set(var, nil) }
   end
 
+  # Ensure that cloned/duped objects get independent collection instances.
+  #
+  # Ruby's default clone/dup is a shallow copy, so the collection instance
+  # variables (@ces, @profiles, @checks, @controls) would otherwise point to
+  # the same objects as the source.  When facts= is later called on either the
+  # source or the clone, invalidate_cache propagates facts into the shared
+  # collection, causing the other object to silently adopt the wrong facts.
+  #
+  # Nilling the collection variables here forces each clone to lazily rebuild
+  # its own collections the first time they are accessed, using its own context
+  # (facts, enforcement_tolerance, etc.).  Cache variables that depend on those
+  # collections are cleared for the same reason.
+  #
+  # @return [NilClass]
+  def initialize_copy(_source)
+    super
+    # Give each clone its own outer @data hash and its own per-file inner
+    # hashes so that new files opened on one clone (via open/update) are not
+    # visible to other clones or the source, and so that a loader refresh on
+    # the source (which mutates the inner hash in-place via Data#update) does
+    # not silently affect a clone that has not yet built its lazy collections.
+    # The inner per-file content values (read-only parsed data) stay shared.
+    #
+    # :loader is additionally cleared (set to nil) so the copy does not hold
+    # a reference to the source's DataLoader object.  If it did, the copy
+    # calling update(key_string) for an already-known file would invoke
+    # loader.refresh, which notifies the source (the registered Observable
+    # observer) and overwrites source.data[key][:content] while the copy's
+    # inner hash stays stale.  With :loader nil the copy creates its own
+    # independent loader (and registers itself as observer) on next access.
+    @data = @data.transform_values { |entry| entry.merge(loader: nil) }
+    collection_variables.each { |var| instance_variable_set(var, nil) }
+    cache_variables.each { |var| instance_variable_set(var, nil) }
+    nil
+  end
+
   # Scan a Puppet environment from a zip file
   # @param path [String] The Puppet environment archive file
   # @return [NilClass]
@@ -191,8 +227,13 @@ class ComplianceEngine::Data
     else
       data[filename.key] ||= {}
 
-      # Assume filename is a loader object
-      unless data[filename.key]&.key?(:loader)
+      # Register as an observer only when no loader is currently attached.
+      # Checking the :loader value (rather than key presence) is important
+      # after clone/dup: initialize_copy sets :loader to nil so the copy does
+      # not share the source's loader, but the key still exists.  Checking
+      # key presence would see the nil as "already registered" and skip
+      # add_observer, leaving the copy deaf to future loader refreshes.
+      unless data[filename.key][:loader]
         data[filename.key][:loader] = filename
         data[filename.key][:loader].add_observer(self, :update)
       end

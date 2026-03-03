@@ -1,3 +1,6 @@
+### 0.2.2 / 2026-03-02
+* Ensure that cloned/duped objects get independent collection instances
+
 ### 0.2.1 / 2026-02-12
 * Turn off debugging in compliance_engine::enforcement function
 
