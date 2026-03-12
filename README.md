@@ -82,13 +82,13 @@ A component (profile, CE, check, or control) may be defined across multiple sour
 
 - **Facts** (`confine:` key): dot-notation Puppet facts, optionally negated with a `!` prefix. A fragment is dropped if its confinement does not match the current system's facts.
 - **Module presence/version** (`confine.module_name` / `confine.module_version`): fragment is dropped if the required module is absent or the wrong version.
-- **Remediation risk** (`remediation.risk`): fragment is dropped if its risk level is ≥ `enforcement_tolerance`, or if remediation is explicitly `disabled`.
+- **Remediation risk/status** (`remediation.risk` / `remediation.disabled`): when `enforcement_tolerance` is set to a positive Integer, a fragment is dropped if remediation is explicitly `disabled` or if its risk level is ≥ `enforcement_tolerance`.
 
-If `facts` is `nil`, all fact/module confinement is skipped and every fragment is included.
+If `facts` is `nil`, all fact/module confinement is skipped; fragments are still subject to remediation-based filtering when `enforcement_tolerance` is set.
 
 ### Enforcement Tolerance
 
-`enforcement_tolerance` is an integer threshold that controls how cautiously the engine applies remediations. Fragments whose `remediation.risk.level` meets or exceeds the threshold are silently excluded from the merged result, allowing operators to tune aggressiveness (e.g. apply only low-risk remediations in production, all remediations in a test environment).
+`enforcement_tolerance` is an optional integer threshold that controls how cautiously the engine applies remediations. When it is set to a positive Integer, fragments whose `remediation.risk.level` meets or exceeds the threshold, or whose remediation is explicitly `disabled`, are silently excluded from the merged result, allowing operators to tune aggressiveness (e.g. apply only low-risk remediations in production, all remediations in a test environment). When `enforcement_tolerance` is `nil` or not a positive Integer, no remediation-based filtering occurs and `remediation.risk` / `remediation.disabled` do not affect fragment inclusion.
 
 ## Using as a Puppet Module
 
