@@ -118,11 +118,11 @@ paths → EnvironmentLoader → ModuleLoader (one per module dir)
 ### Confinement and Enforcement Tolerance
 
 `Component#fragments` filters source fragments based on:
-- **Fact confinement** (`confine` key): dot-notation Puppet facts (e.g. `os.release.major`). Values may be a string (exact match), a string prefixed with `!` (negation), or an array (any match). Implemented in `Component#fact_match?`.
-- **Module confinement** (`confine.module_name` + `confine.module_version`): checks against `environment_data` (a `{module_name => version}` hash) using semantic versioning.
-- **Remediation risk** (`remediation.risk`): drops fragments where risk level ≥ `enforcement_tolerance`; also drops disabled remediations. Only applies to `Check` components.
+- **Fact confinement** (`confine` key): dot-notation Puppet facts (e.g. `os.release.major`). Values may be a string (exact match), a string prefixed with `!` (negation), or an array (any match). Implemented in `Component#fact_match?`. Fact confinement is skipped when `facts` is `nil`.
+- **Module confinement** (`confine.module_name` + `confine.module_version`): checks against `environment_data` (a `{module_name => version}` hash) using semantic versioning. Module confinement only runs when `environment_data` is set (e.g. by `ComplianceEngine::Data#open`).
+- **Remediation risk** (`remediation.risk`): when `enforcement_tolerance` is a positive `Integer`, drops fragments where risk level ≥ `enforcement_tolerance` and drops disabled remediations. Only applies to `Check` components.
 
-When `facts` is `nil`, all fact/module confinement is skipped (every fragment is included). This is useful for offline analysis where system context is unavailable.
+In practice, only fact confinement is bypassed when `facts` is `nil`; module confinement still applies whenever `environment_data` is available. All confinement and risk/disabled-remediation filtering are effectively bypassed only when both `facts` and `environment_data` are unset and `enforcement_tolerance` is not a positive `Integer` (every fragment is then included). This is useful for offline analysis where system context and enforcement settings are unavailable.
 
 ### Code Style
 
