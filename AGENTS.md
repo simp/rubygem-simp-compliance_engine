@@ -91,7 +91,7 @@ A component can have multiple **fragments** (one per source file), which are dee
 | CE→Control overlap | Any of `check.ces`' CEs has a control that also appears in `profile.controls` |
 | Direct reference | `profile.checks[check_key]` is truthy |
 
-`check_mapping` is also called recursively with CE objects (used internally when `check_mapping` walks a profile's CEs). Results are cached by `"#{object.class}:#{object.key}"`.
+`check_mapping` can also be called with CE objects (in addition to profiles). Results are cached by `"#{object.class}:#{object.key}"`.
 
 ### Loading Pipeline
 
