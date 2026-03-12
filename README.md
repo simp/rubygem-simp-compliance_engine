@@ -42,6 +42,54 @@ Options:
 
 See the [`ComplianceEngine::Data`](https://rubydoc.info/gems/compliance_engine/ComplianceEngine/Data) class for details.
 
+## Concepts
+
+### Data Model
+
+Compliance data is expressed across four entity types that live in YAML/JSON files inside Puppet modules (`<module>/SIMP/compliance_profiles/*.yaml`):
+
+| Entity | Key | Purpose |
+|--------|-----|---------|
+| **Profile** | `profiles` | A named compliance standard (e.g. `nist_800_53_rev4`). References CEs, checks, and/or controls that together constitute that standard. |
+| **CE** (Compliance Element) | `ce` | A single, named compliance capability (e.g. "enable audit logging"). Bridges profiles to checks via a shared vocabulary. |
+| **Check** | `checks` | A verifiable assertion about a system setting. Checks of `type: puppet-class-parameter` carry a `parameter` and `value` that become Hiera data. |
+| **Control** | `controls` | A cross-reference label from an external framework (e.g. `nist_800_53:rev4:AU-2`). Profiles and checks both annotate themselves with controls to express alignment. |
+
+### From Profiles to Hiera Data
+
+The central operation of the library is `Data#hiera(profiles)`, which converts a list of profile names into a flat hash of Puppet class parameters and their enforced values:
+
+```
+profile names
+    ↓  check_mapping: find all checks that belong to each profile
+checks (type: puppet-class-parameter only)
+    ↓  Check#hiera: extract { 'class::param' => value }
+deep-merged hash  →  { 'widget_spinner::audit_logging' => true, ... }
+```
+
+**How check_mapping works** — a check is considered part of a profile if any of the following are true:
+
+1. The check and profile share a **control** label (`nist_800_53:rev4:AU-2`).
+2. The check and profile share a **CE** reference.
+3. The check's CE and the profile share a **control** label.
+4. The profile explicitly lists the check by key under its `checks:` map.
+
+This layered matching lets compliance authors express mappings at different levels of abstraction and have the engine resolve them automatically.
+
+### Confinement
+
+A component (profile, CE, check, or control) may be defined across multiple source files. Each file contributes a **fragment**. Before fragments are merged, they are filtered by:
+
+- **Facts** (`confine:` key): dot-notation Puppet facts, optionally negated with a `!` prefix. A fragment is dropped if its confinement does not match the current system's facts.
+- **Module presence/version** (`confine.module_name` / `confine.module_version`): fragment is dropped if the required module is absent or the wrong version.
+- **Remediation risk** (`remediation.risk`): fragment is dropped if its risk level is ≥ `enforcement_tolerance`, or if remediation is explicitly `disabled`.
+
+If `facts` is `nil`, all fact/module confinement is skipped and every fragment is included.
+
+### Enforcement Tolerance
+
+`enforcement_tolerance` is an integer threshold that controls how cautiously the engine applies remediations. Fragments whose `remediation.risk.level` meets or exceeds the threshold are silently excluded from the merged result, allowing operators to tune aggressiveness (e.g. apply only low-risk remediations in production, all remediations in a test environment).
+
 ## Using as a Puppet Module
 
 The Compliance Engine can be used as a Puppet module to provide a Hiera backend for compliance data. This allows you to enforce compliance profiles through Hiera lookups within your Puppet manifests.
