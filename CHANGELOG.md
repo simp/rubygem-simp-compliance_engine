@@ -1,3 +1,6 @@
+### 0.3.0 / 2026-03-19
+* Hash-like Collection methods return Collection objects (#37)
+
 ### 0.2.2 / 2026-03-02
 * Ensure that cloned/duped objects get independent collection instances
 
