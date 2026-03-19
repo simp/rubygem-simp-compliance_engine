@@ -67,6 +67,13 @@ class ComplianceEngine::Collection
     to_h.keys
   end
 
+  # Returns the values of the collection
+  #
+  # @return [Array] the values of the collection
+  def values
+    to_h.values
+  end
+
   # Return a single value from the collection
   #
   # @param key [String] the key of the value to return
@@ -78,22 +85,34 @@ class ComplianceEngine::Collection
   # Iterates over the collection
   #
   # @param block [Proc] the block to execute
+  # @return [self, Enumerator]
   def each(&block)
+    return to_enum(:each) unless block
+
     to_h.each(&block)
+    self
   end
 
   # Iterates over values in the collection
   #
   # @param block [Proc] the block to execute
+  # @return [self, Enumerator]
   def each_value(&block)
+    return to_enum(:each_value) unless block
+
     to_h.each_value(&block)
+    self
   end
 
   # Iterates over keys in the collection
   #
   # @param block [Proc] the block to execute
+  # @return [self, Enumerator]
   def each_key(&block)
+    return to_enum(:each_key) unless block
+
     to_h.each_key(&block)
+    self
   end
 
   # Return true if any of the values in the collection match the block
@@ -115,17 +134,35 @@ class ComplianceEngine::Collection
   # Select values in the collection
   #
   # @param block [Proc] the block to execute
-  # @return [Hash] the filtered hash
+  # @return [ComplianceEngine::Collection, Enumerator] the filtered collection or an Enumerator when no block is given
   def select(&block)
-    to_h.select(&block)
+    return to_enum(:select) unless block_given?
+
+    result = dup
+    result.collection = result.to_h.select(&block)
+    result
   end
+
+  alias filter select
 
   # Filter out values in the collection
   #
   # @param block [Proc] the block to execute
-  # @return [Hash] the filtered hash
+  # @return [ComplianceEngine::Collection, Enumerator] the filtered collection or an Enumerator when no block is given
   def reject(&block)
-    to_h.reject(&block)
+    return to_enum(:reject) unless block_given?
+
+    result = dup
+    result.collection = result.to_h.reject(&block)
+    result
+  end
+
+  # Transform values in the collection
+  #
+  # @param block [Proc] the block to execute
+  # @return [Hash, Enumerator] a hash with transformed values, or an Enumerator when no block is given
+  def transform_values(&block)
+    to_h.transform_values(&block)
   end
 
   private

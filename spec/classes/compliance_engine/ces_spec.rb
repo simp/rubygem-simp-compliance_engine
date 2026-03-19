@@ -13,6 +13,70 @@ RSpec.describe ComplianceEngine::Ces do
   end
 
   # ---------------------------------------------------------------------------
+  # Hash-like methods returning Collections (issue #37)
+  # ---------------------------------------------------------------------------
+  describe 'Hash-like methods that return Collections' do
+    subject(:ces) { described_class.new(ComplianceEngine::Data.new(ComplianceEngine::DataLoader.new(compliance_data))) }
+
+    let(:compliance_data) do
+      {
+        'version' => '2.0.0',
+        'ce' => {
+          'ce_one' => { 'title' => 'CE One' },
+          'ce_two' => { 'title' => 'CE Two' },
+          'ce_three' => { 'title' => 'CE Three' },
+        },
+      }
+    end
+
+    describe '#select' do
+      it 'returns a Collection of the same type' do
+        result = ces.select { |k, _| k == 'ce_one' }
+        expect(result).to be_instance_of(described_class)
+      end
+
+      it 'contains only the selected keys' do
+        result = ces.select { |k, _| k == 'ce_one' }
+        expect(result.keys).to eq(['ce_one'])
+      end
+
+      it 'does not modify the original collection' do
+        ces.select { |k, _| k == 'ce_one' }
+        expect(ces.keys).to contain_exactly('ce_one', 'ce_two', 'ce_three')
+      end
+    end
+
+    describe '#reject' do
+      it 'returns a Collection of the same type' do
+        result = ces.reject { |k, _| k == 'ce_one' }
+        expect(result).to be_instance_of(described_class)
+      end
+
+      it 'excludes the rejected keys' do
+        result = ces.reject { |k, _| k == 'ce_one' }
+        expect(result.keys).to contain_exactly('ce_two', 'ce_three')
+      end
+
+      it 'does not modify the original collection' do
+        ces.reject { |k, _| k == 'ce_one' }
+        expect(ces.keys).to contain_exactly('ce_one', 'ce_two', 'ce_three')
+      end
+    end
+
+    describe '#transform_values' do
+      it 'returns a Hash' do
+        result = ces.transform_values(&:title)
+        expect(result).to be_instance_of(Hash)
+      end
+
+      it 'maps each component to its transformed value' do
+        result = ces.transform_values(&:title)
+        expect(result).to eq('ce_one' => 'CE One', 'ce_two' => 'CE Two', 'ce_three' => 'CE Three')
+      end
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # clone/dup isolation (Collection behavior)
   #
   # Ces is used as the concrete Collection subclass.  Source has all Ce caches
