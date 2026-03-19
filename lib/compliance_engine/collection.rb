@@ -160,7 +160,7 @@ class ComplianceEngine::Collection
   # Transform values in the collection
   #
   # @param block [Proc] the block to execute
-  # @return [Hash] a hash with transformed values
+  # @return [Hash, Enumerator] a hash with transformed values, or an Enumerator when no block is given
   def transform_values(&block)
     to_h.transform_values(&block)
   end
