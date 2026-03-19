@@ -134,10 +134,12 @@ class ComplianceEngine::Collection
   # Select values in the collection
   #
   # @param block [Proc] the block to execute
-  # @return [ComplianceEngine::Collection] the filtered collection
+  # @return [ComplianceEngine::Collection, Enumerator] the filtered collection or an Enumerator when no block is given
   def select(&block)
+    return to_enum(:select) unless block_given?
+
     result = dup
-    result.collection = to_h.select(&block)
+    result.collection = result.to_h.select(&block)
     result
   end
 
@@ -146,10 +148,12 @@ class ComplianceEngine::Collection
   # Filter out values in the collection
   #
   # @param block [Proc] the block to execute
-  # @return [ComplianceEngine::Collection] the filtered collection
+  # @return [ComplianceEngine::Collection, Enumerator] the filtered collection or an Enumerator when no block is given
   def reject(&block)
+    return to_enum(:reject) unless block_given?
+
     result = dup
-    result.collection = to_h.reject(&block)
+    result.collection = result.to_h.reject(&block)
     result
   end
 
