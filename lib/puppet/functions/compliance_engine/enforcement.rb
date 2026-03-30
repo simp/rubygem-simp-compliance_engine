@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+require 'compliance_engine'
+require 'compliance_engine/puppet_logger'
+
+ComplianceEngine.log = ComplianceEngine::PuppetLogger.new
+
 # @summary Hiera entry point for Compliance Engine
 Puppet::Functions.create_function(:'compliance_engine::enforcement') do
   # @param key String The key to lookup in the Hiera data
@@ -45,11 +50,6 @@ Puppet::Functions.create_function(:'compliance_engine::enforcement') do
     context.cache_all(data.hiera(profiles))
 
     return context.interpolate(context.cached_value(key)) if context.cache_has_key(key)
-
-    # if data.hiera(profiles).key?(key)
-    #   context.cache(key, data.hiera(profiles)[key])
-    #   return context.interpolate(data.hiera(profiles)[key])
-    # end
 
     context.not_found
   rescue StandardError => e
