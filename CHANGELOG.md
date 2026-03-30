@@ -1,3 +1,6 @@
+### 0.4.0 / 2026-03-30
+* Route Puppet Hiera backend log messages through Puppet's logging system
+
 ### 0.3.0 / 2026-03-19
 * Hash-like Collection methods return Collection objects (#37)
 
