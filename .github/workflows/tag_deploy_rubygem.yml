@@ -230,7 +230,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           # PDK requires pinning to Ruby < 4.0
-          ruby-version: 3.4.9
+          ruby-version: 4.0.2
           bundler-cache: true
       - name: Build Puppet module (PDK)
         run: bundle exec pdk build --force
