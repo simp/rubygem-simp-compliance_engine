@@ -27,3 +27,8 @@ group :development do
   gem 'pry-byebug'
   gem 'ruby-prof'
 end
+
+group :release do
+  # renovate: datasource=rubygems versioning=ruby
+  gem 'pdk', ENV.fetch('PDK_VERSION', ['>= 2.0', '< 4.0']), require: false if RUBY_VERSION < '4'
+end

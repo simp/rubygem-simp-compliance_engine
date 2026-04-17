@@ -15,7 +15,7 @@ require 'spec_helper_acceptance'
 #   - Expected: each agent gets its own environment's value.
 #   - Environment leak: an agent gets the other environment's value.
 describe 'compliance_engine environment leakage between Puppet environments' do
-  let(:server)            { only_host_with_role(hosts, 'master') }
+  let(:server) { only_host_with_role(hosts, 'master') }
   let(:production_agent) { hosts_with_role(hosts, 'agent')[0] }
   let(:staging_agent)    { hosts_with_role(hosts, 'agent')[1] }
 
