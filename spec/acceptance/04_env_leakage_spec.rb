@@ -10,14 +10,14 @@ require 'spec_helper_acceptance'
 # versa).
 #
 # Test design:
-#   - agent1 uses the 'production' environment; enforces value 'production_value'.
-#   - agent2 uses the 'staging' environment; enforces value 'staging_value'.
+#   - production_agent uses the 'production' environment; enforces value 'production_value'.
+#   - staging_agent uses the 'staging' environment; enforces value 'staging_value'.
 #   - Expected: each agent gets its own environment's value.
 #   - Environment leak: an agent gets the other environment's value.
 describe 'compliance_engine environment leakage between Puppet environments' do
-  let(:server) { only_host_with_role(hosts, 'master') }
-  let(:agent1) { hosts_with_role(hosts, 'agent')[0] }
-  let(:agent2) { hosts_with_role(hosts, 'agent')[1] }
+  let(:server)            { only_host_with_role(hosts, 'master') }
+  let(:production_agent) { hosts_with_role(hosts, 'agent')[0] }
+  let(:staging_agent)    { hosts_with_role(hosts, 'agent')[1] }
 
   before(:all) do
     srv = only_host_with_role(hosts, 'master')
@@ -56,8 +56,8 @@ describe 'compliance_engine environment leakage between Puppet environments' do
     ensure_environment(srv, 'staging')
   end
 
-  it 'agent1 (production) receives the production-environment value' do
-    result = on(agent1,
+  it 'production_agent (production) receives the production-environment value' do
+    result = on(production_agent,
                 'puppet agent --test',
                 acceptable_exit_codes: [0, 2])
 
@@ -65,8 +65,8 @@ describe 'compliance_engine environment leakage between Puppet environments' do
     expect(combined_output(result)).not_to include('enforced_param=staging_value')
   end
 
-  it 'agent2 (staging) receives the staging-environment value' do
-    result = on(agent2,
+  it 'staging_agent (staging) receives the staging-environment value' do
+    result = on(staging_agent,
                 'puppet agent --test',
                 acceptable_exit_codes: [0, 2])
 
@@ -74,11 +74,11 @@ describe 'compliance_engine environment leakage between Puppet environments' do
     expect(combined_output(result)).not_to include('enforced_param=production_value')
   end
 
-  it 'agent1 still receives the production value after agent2 (staging) has run' do
+  it 'production_agent still receives the production value after staging_agent (staging) has run' do
     # Run the staging agent first to prime any potential cross-environment cache.
-    on(agent2, 'puppet agent --test', acceptable_exit_codes: [0, 2])
+    on(staging_agent, 'puppet agent --test', acceptable_exit_codes: [0, 2])
 
-    result = on(agent1,
+    result = on(production_agent,
                 'puppet agent --test',
                 acceptable_exit_codes: [0, 2])
 

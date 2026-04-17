@@ -6,19 +6,19 @@ require 'spec_helper_acceptance'
 # server across different catalog compilations.
 #
 # If caching leaks between agents, a ComplianceEngine::Data object initialised
-# with agent1's facts (and its fact-confine-selected checks) would be reused for
-# agent2, causing agent2 to receive agent1's enforced values instead of its own.
+# with first_agent's facts (and its fact-confine-selected checks) would be reused for
+# second_agent, causing second_agent to receive first_agent's enforced values instead of its own.
 #
 # Test design:
 #   - Both agents use the same compliance profile.
 #   - The compliance data contains two checks, each confined to a different
 #     agent's FQDN.  Each check enforces a distinct value for the same parameter.
-#   - Expected: agent1 gets value_for_agent1, agent2 gets value_for_agent2.
-#   - Cache leak: agent2 would get value_for_agent1 (or vice-versa).
+#   - Expected: first_agent gets value_for_first_agent, second_agent gets value_for_second_agent.
+#   - Cache leak: second_agent would get value_for_first_agent (or vice-versa).
 describe 'compliance_engine cache leakage between agents' do
-  let(:server) { only_host_with_role(hosts, 'master') }
-  let(:agent1) { hosts_with_role(hosts, 'agent')[0] }
-  let(:agent2) { hosts_with_role(hosts, 'agent')[1] }
+  let(:server)       { only_host_with_role(hosts, 'master') }
+  let(:first_agent)  { hosts_with_role(hosts, 'agent')[0] }
+  let(:second_agent) { hosts_with_role(hosts, 'agent')[1] }
 
   before(:all) do
     srv = only_host_with_role(hosts, 'master')
@@ -54,20 +54,20 @@ describe 'compliance_engine cache leakage between agents' do
         'cache_test_ce' => { 'controls' => { 'cache_test_ctl' => true } },
       },
       'checks' => {
-        'cache_check_agent1' => {
+        'cache_check_first_agent' => {
           'type' => 'puppet-class-parameter',
           'settings' => {
             'parameter' => 'ce_cache_test::enforced_param',
-            'value' => 'value_for_agent1',
+            'value' => 'value_for_first_agent',
           },
           'ces' => ['cache_test_ce'],
           'confine' => { 'networking.fqdn' => fqdn1 },
         },
-        'cache_check_agent2' => {
+        'cache_check_second_agent' => {
           'type' => 'puppet-class-parameter',
           'settings' => {
             'parameter' => 'ce_cache_test::enforced_param',
-            'value' => 'value_for_agent2',
+            'value' => 'value_for_second_agent',
           },
           'ces' => ['cache_test_ce'],
           'confine' => { 'networking.fqdn' => fqdn2 },
@@ -82,34 +82,34 @@ describe 'compliance_engine cache leakage between agents' do
     ensure_environment(srv)
   end
 
-  it 'agent1 receives the value confined to its own FQDN' do
-    result = on(agent1,
+  it 'first_agent receives the value confined to its own FQDN' do
+    result = on(first_agent,
                 'puppet agent --test --environment production',
                 acceptable_exit_codes: [0, 2])
 
-    expect(combined_output(result)).to include('enforced_param=value_for_agent1')
-    expect(combined_output(result)).not_to include('enforced_param=value_for_agent2')
+    expect(combined_output(result)).to include('enforced_param=value_for_first_agent')
+    expect(combined_output(result)).not_to include('enforced_param=value_for_second_agent')
   end
 
-  it 'agent2 receives the value confined to its own FQDN' do
-    result = on(agent2,
+  it 'second_agent receives the value confined to its own FQDN' do
+    result = on(second_agent,
                 'puppet agent --test --environment production',
                 acceptable_exit_codes: [0, 2])
 
-    expect(combined_output(result)).to include('enforced_param=value_for_agent2')
-    expect(combined_output(result)).not_to include('enforced_param=value_for_agent1')
+    expect(combined_output(result)).to include('enforced_param=value_for_second_agent')
+    expect(combined_output(result)).not_to include('enforced_param=value_for_first_agent')
   end
 
-  it 'agent1 still receives its own value after agent2 has run' do
-    # Run agent2 first to prime any potential server-side cache.
-    on(agent2, 'puppet agent --test --environment production',
+  it 'first_agent still receives its own value after second_agent has run' do
+    # Run second_agent first to prime any potential server-side cache.
+    on(second_agent, 'puppet agent --test --environment production',
        acceptable_exit_codes: [0, 2])
 
-    result = on(agent1,
+    result = on(first_agent,
                 'puppet agent --test --environment production',
                 acceptable_exit_codes: [0, 2])
 
-    expect(combined_output(result)).to include('enforced_param=value_for_agent1')
-    expect(combined_output(result)).not_to include('enforced_param=value_for_agent2')
+    expect(combined_output(result)).to include('enforced_param=value_for_first_agent')
+    expect(combined_output(result)).not_to include('enforced_param=value_for_second_agent')
   end
 end

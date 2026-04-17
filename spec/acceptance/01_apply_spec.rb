@@ -31,6 +31,6 @@ describe 'compliance_engine::enforcement with puppet apply' do
                 "puppet apply --environment production -e 'include ce_apply_test'",
                 acceptable_exit_codes: [0, 2])
 
-    expect(combined_output(result)).not_to match(/Error:/i)
+    expect(combined_output(result)).not_to match(%r{Error:}i)
   end
 end
