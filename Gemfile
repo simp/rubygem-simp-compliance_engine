@@ -10,7 +10,7 @@ gem 'rake', '~> 13.4.0'
 group :tests do
   # renovate: datasource=rubygems versioning=ruby
   gem 'openvox', ENV.fetch('OPENVOX_VERSION', ENV.fetch('PUPPET_VERSION', '~> 8.0'))
-  gem 'syslog', require: false
+  gem 'syslog', require: false, platforms: :mri
   gem 'voxpupuli-test', '~> 14.0'
 end
 
@@ -20,6 +20,6 @@ end
 
 group :development do
   gem 'pry'
-  gem 'pry-byebug'
-  gem 'ruby-prof'
+  gem 'pry-byebug', platforms: :mri
+  gem 'ruby-prof', platforms: :mri
 end

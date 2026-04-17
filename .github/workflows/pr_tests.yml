@@ -66,6 +66,8 @@ jobs:
           - '3.3'
           - '3.4'
           - '4.0'  # Latest
+          - 'jruby-9.4'  # OpenVox Server 8
+          - 'jruby-10.0'  # Ruby 3.4-compatible
 
     steps:
       - uses: actions/checkout@v6
@@ -75,9 +77,4 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
       - name: Spec tests
-        run: |
-          if [ "${{ matrix.ruby }}" = "4.0" ]; then
-            bundle exec rspec spec/classes
-          else
-            bundle exec rake parallel_spec
-          fi
+        run: bundle exec rake parallel_spec
