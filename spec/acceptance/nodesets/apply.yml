@@ -1,0 +1,15 @@
+---
+# Single openvox-agent node for puppet apply tests.
+# Use with: BEAKER_SETFILE=spec/acceptance/nodesets/apply.yml
+#           BEAKER_PUPPET_COLLECTION=openvox8
+HOSTS:
+  agent:
+    roles:
+      - agent
+      - default
+    platform: el-9-x86_64
+    hypervisor: docker
+    image: almalinux:9
+CONFIG:
+  type: foss
+  log_level: verbose
