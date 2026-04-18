@@ -24,3 +24,37 @@ task spec: :'fixtures:prep' do |_t, args|
 end
 
 task default: [:spec, :rubocop]
+
+# Puppet module build (requires `bundle install` with the release group).
+#
+# puppet-modulebuilder 2.x dropped support for .pdkignore; this subclass
+# restores it so the published module package matches what PDK produced.
+begin
+  require 'puppet/modulebuilder'
+
+  class PdkCompatBuilder < Puppet::Modulebuilder::Builder
+    def ignored_files
+      spec = super
+      pdkignore = File.join(source, '.pdkignore')
+      return spec unless File.exist?(pdkignore)
+
+      File.readlines(pdkignore, chomp: true).each do |line|
+        next if line.strip.empty? || line.start_with?('#')
+
+        spec.add(line)
+      end
+      spec
+    end
+  end
+
+  namespace :module do
+    desc 'Build the Puppet module package into pkg/, honouring .pdkignore'
+    task :build do
+      builder = PdkCompatBuilder.new(Dir.pwd)
+      pkg = builder.build
+      puts "Built: #{pkg}"
+    end
+  end
+rescue LoadError
+  # puppet-modulebuilder not installed; run `bundle install` with the release group
+end
