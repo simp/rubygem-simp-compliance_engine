@@ -92,7 +92,7 @@ RSpec.describe 'lookup' do
           'confine' => {
             'os.name' => [
               'RedHat',
-              'CentOS'
+              'CentOS',
             ],
             'os.release.major' => '7',
           },

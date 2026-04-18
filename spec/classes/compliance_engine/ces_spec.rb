@@ -31,17 +31,17 @@ RSpec.describe ComplianceEngine::Ces do
 
     describe '#select' do
       it 'returns a Collection of the same type' do
-        result = ces.select { |k, _| k == 'ce_one' }
+        result = ces.select { |k, _| k == 'ce_one' } # rubocop:disable Style/HashSlice
         expect(result).to be_instance_of(described_class)
       end
 
       it 'contains only the selected keys' do
-        result = ces.select { |k, _| k == 'ce_one' }
+        result = ces.select { |k, _| k == 'ce_one' } # rubocop:disable Style/HashSlice
         expect(result.keys).to eq(['ce_one'])
       end
 
       it 'does not modify the original collection' do
-        ces.select { |k, _| k == 'ce_one' }
+        ces.select { |k, _| k == 'ce_one' } # rubocop:disable Style/HashSlice
         expect(ces.keys).to contain_exactly('ce_one', 'ce_two', 'ce_three')
       end
     end
@@ -182,11 +182,11 @@ RSpec.describe ComplianceEngine::Ces do
     end
 
     describe '#clone isolation' do
-      include_examples 'collection copy isolation', :clone
+      it_behaves_like 'collection copy isolation', :clone
     end
 
     describe '#dup isolation' do
-      include_examples 'collection copy isolation', :dup
+      it_behaves_like 'collection copy isolation', :dup
     end
   end
 
@@ -272,11 +272,11 @@ RSpec.describe ComplianceEngine::Ces do
     end
 
     describe '#clone isolation' do
-      include_examples 'by_oval_id copy isolation', :clone
+      it_behaves_like 'by_oval_id copy isolation', :clone
     end
 
     describe '#dup isolation' do
-      include_examples 'by_oval_id copy isolation', :dup
+      it_behaves_like 'by_oval_id copy isolation', :dup
     end
   end
 end

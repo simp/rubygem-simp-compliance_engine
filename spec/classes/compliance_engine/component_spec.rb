@@ -229,11 +229,11 @@ RSpec.describe ComplianceEngine::Component do
     end
 
     describe '#clone isolation' do
-      include_examples 'component copy isolation', :clone
+      it_behaves_like 'component copy isolation', :clone
     end
 
     describe '#dup isolation' do
-      include_examples 'component copy isolation', :dup
+      it_behaves_like 'component copy isolation', :dup
     end
   end
 end

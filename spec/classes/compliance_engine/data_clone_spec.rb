@@ -183,11 +183,11 @@ RSpec.describe ComplianceEngine::Data do
   # Run the shared isolation suite for both copy methods.
   # ---------------------------------------------------------------------------
   describe '#clone isolation' do
-    include_examples 'copy isolation', :clone
+    it_behaves_like 'copy isolation', :clone
   end
 
   describe '#dup isolation' do
-    include_examples 'copy isolation', :dup
+    it_behaves_like 'copy isolation', :dup
   end
 
   # ---------------------------------------------------------------------------
@@ -312,11 +312,11 @@ RSpec.describe ComplianceEngine::Data do
     end
 
     describe '#clone' do
-      include_examples 'loader refresh isolation', :clone
+      it_behaves_like 'loader refresh isolation', :clone
     end
 
     describe '#dup' do
-      include_examples 'loader refresh isolation', :dup
+      it_behaves_like 'loader refresh isolation', :dup
     end
   end
 
@@ -376,11 +376,11 @@ RSpec.describe ComplianceEngine::Data do
     end
 
     describe '#clone isolation' do
-      include_examples 'enforcement_tolerance copy isolation', :clone
+      it_behaves_like 'enforcement_tolerance copy isolation', :clone
     end
 
     describe '#dup isolation' do
-      include_examples 'enforcement_tolerance copy isolation', :dup
+      it_behaves_like 'enforcement_tolerance copy isolation', :dup
     end
   end
 
@@ -435,11 +435,11 @@ RSpec.describe ComplianceEngine::Data do
     end
 
     describe '#clone isolation' do
-      include_examples 'environment_data copy isolation', :clone
+      it_behaves_like 'environment_data copy isolation', :clone
     end
 
     describe '#dup isolation' do
-      include_examples 'environment_data copy isolation', :dup
+      it_behaves_like 'environment_data copy isolation', :dup
     end
   end
 
@@ -477,11 +477,11 @@ RSpec.describe ComplianceEngine::Data do
     end
 
     describe '#clone' do
-      include_examples 'source context inherited', :clone
+      it_behaves_like 'source context inherited', :clone
     end
 
     describe '#dup' do
-      include_examples 'source context inherited', :dup
+      it_behaves_like 'source context inherited', :dup
     end
   end
 
@@ -520,11 +520,11 @@ RSpec.describe ComplianceEngine::Data do
     end
 
     describe '#clone' do
-      include_examples 'shared loader copy isolation', :clone
+      it_behaves_like 'shared loader copy isolation', :clone
     end
 
     describe '#dup' do
-      include_examples 'shared loader copy isolation', :dup
+      it_behaves_like 'shared loader copy isolation', :dup
     end
   end
 
@@ -571,11 +571,11 @@ RSpec.describe ComplianceEngine::Data do
     end
 
     describe '#clone' do
-      include_examples 'observer re-subscription', :clone
+      it_behaves_like 'observer re-subscription', :clone
     end
 
     describe '#dup' do
-      include_examples 'observer re-subscription', :dup
+      it_behaves_like 'observer re-subscription', :dup
     end
   end
 

@@ -14,7 +14,7 @@ group :tests do
   # renovate: datasource=rubygems versioning=ruby
   gem 'pdk', ENV.fetch('PDK_VERSION', ['>= 2.0', '< 4.0']), require: false if RUBY_VERSION < '4'
   gem 'syslog', require: false
-  gem 'voxpupuli-test', '~> 13.0'
+  gem 'voxpupuli-test', '~> 14.0'
 end
 
 group :development do
