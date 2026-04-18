@@ -3,6 +3,15 @@
 require 'timeout'
 require 'yaml'
 
+require 'rspec'
+
+# spec_helper.rb (auto-required by .rspec) calls disable_monkey_patching!
+# which removes shared_examples from main via expose_dsl_globally = false.
+# Acceptance tests and beaker-rspec depend on the global DSL, so re-enable it
+# before loading voxpupuli-acceptance (which calls shared_examples at the top
+# level of examples.rb before beaker-rspec has a chance to set things up).
+RSpec.configuration.expose_dsl_globally = true
+
 require 'voxpupuli/acceptance/spec_helper_acceptance'
 
 RSpec.configure do |c|

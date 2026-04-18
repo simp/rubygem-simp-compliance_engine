@@ -10,6 +10,11 @@ HOSTS:
     platform: el-9-x86_64
     hypervisor: docker
     image: almalinux:9
+    docker_cmd:
+      - /sbin/init
+    docker_image_commands:
+      - cp /bin/true /sbin/agetty
+      - dnf install -y cronie crontabs initscripts iproute openssl wget which glibc-langpack-en hostname
   agent1:
     roles:
       - agent
@@ -17,12 +22,22 @@ HOSTS:
     platform: el-9-x86_64
     hypervisor: docker
     image: almalinux:9
+    docker_cmd:
+      - /sbin/init
+    docker_image_commands:
+      - cp /bin/true /sbin/agetty
+      - dnf install -y cronie crontabs initscripts iproute openssl wget which glibc-langpack-en hostname
   agent2:
     roles:
       - agent
     platform: el-9-x86_64
     hypervisor: docker
     image: almalinux:9
+    docker_cmd:
+      - /sbin/init
+    docker_image_commands:
+      - cp /bin/true /sbin/agetty
+      - dnf install -y cronie crontabs initscripts iproute openssl wget which glibc-langpack-en hostname
 CONFIG:
   type: foss
   log_level: verbose
