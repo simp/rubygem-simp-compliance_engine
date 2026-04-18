@@ -216,14 +216,14 @@ class ComplianceEngine::Component
 
     if fragment['remediation'].key?('disabled')
       message = "Remediation disabled for #{fragment}"
-      reason = fragment['remediation']['disabled']&.map { |value| value['reason'] }&.reject(&:nil?)&.join("\n")
+      reason = fragment['remediation']['disabled']&.map { |value| value['reason'] }&.compact&.join("\n")
       message += "\n#{reason}" unless reason.nil?
       ComplianceEngine.log.info message
       return true
     end
 
     if fragment['remediation'].key?('risk')
-      risk_level = fragment['remediation']['risk']&.map { |value| value['level'] }&.select { |value| value.is_a?(Integer) }&.max
+      risk_level = fragment['remediation']['risk']&.map { |value| value['level'] }&.grep(Integer)&.max
       if risk_level.is_a?(Integer) && risk_level >= enforcement_tolerance
         ComplianceEngine.log.info "Remediation risk #{risk_level} exceeds enforcement enforcement_tolerance #{enforcement_tolerance} for #{fragment}"
         return true

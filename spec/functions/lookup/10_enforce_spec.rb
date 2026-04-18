@@ -39,29 +39,29 @@ RSpec.describe 'lookup' do
             },
             'identifiers' => {
               'FOO2' => ['FOO2'],
-              'BAR2' => ['BAR2']
+              'BAR2' => ['BAR2'],
             },
             'settings'    => {
               'parameter' => 'useradd::shells',
-              'value'     => ['/bin/disa']
-            }
+              'value'     => ['/bin/disa'],
+            },
           },
           'oval:com.puppet.test.nist.useradd_shells' => {
             'type'        => 'puppet-class-parameter',
             'controls'    => {
-              'nist_800_53:rev4' => true
+              'nist_800_53:rev4' => true,
             },
             'identifiers' => {
               'FOO2' => ['FOO2'],
-              'BAR2' => ['BAR2']
+              'BAR2' => ['BAR2'],
             },
             'settings'    => {
               'parameter' => 'useradd::shells',
-              'value'     => ['/bin/nist']
-            }
-          }
-        }
-      }
+              'value'     => ['/bin/nist'],
+            },
+          },
+        },
+      },
     }
 
     File.open(File.join(hieradata_dir, "#{hieradata_file}.yaml"), 'w') do |fh|

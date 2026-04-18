@@ -57,7 +57,7 @@ RSpec.describe 'lookup' do
           'remediation' => {
             'disabled' => [
               { 'reason' => 'This is the reason this check is disabled.' },
-            ]
+            ],
           },
         },
         '07_level_21_check' => {
@@ -72,7 +72,7 @@ RSpec.describe 'lookup' do
           'remediation' => {
             'risk' => [
               { 'level' => 21 },
-            ]
+            ],
           },
         },
         '07_level_41_check' => {
@@ -87,7 +87,7 @@ RSpec.describe 'lookup' do
           'remediation' => {
             'risk' => [
               { 'level' => 41, 'reason' => 'this is the reason for level 41' },
-            ]
+            ],
           },
         },
         '07_level_61_check' => {
@@ -102,7 +102,7 @@ RSpec.describe 'lookup' do
           'remediation' => {
             'risk' => [
               { 'level' => 61, 'reason' => 'this is the reason for level 61' },
-            ]
+            ],
           },
         },
         '07_level_81_check' => {
@@ -117,7 +117,7 @@ RSpec.describe 'lookup' do
           'remediation' => {
             'risk' => [
               { 'level' => 81, 'reason' => 'this is the reason for level 81' },
-            ]
+            ],
           },
         },
       },
