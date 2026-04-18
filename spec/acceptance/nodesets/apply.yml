@@ -1,0 +1,25 @@
+---
+# Single openvox-agent node for puppet apply tests.
+# Use with: BEAKER_SETFILE=spec/acceptance/nodesets/apply.yml
+#           BEAKER_PUPPET_COLLECTION=openvox8
+HOSTS:
+  agent:
+    roles:
+      - agent
+      - default
+    platform: el-9-x86_64
+    hypervisor: docker
+    image: almalinux:9
+    # Use systemd as init, matching what beaker-hostgenerator generates for
+    # AlmaLinux.  Without this, beaker-docker sets CMD to
+    # "service sshd start; tail -f /dev/null" which fails on minimal images.
+    docker_cmd:
+      - /sbin/init
+    # Install initscripts (provides the 'service' command) and common tools,
+    # mirroring beaker-hostgenerator's el_package_install_command for EL >= 8.
+    docker_image_commands:
+      - cp /bin/true /sbin/agetty
+      - dnf install -y cronie crontabs initscripts iproute openssl wget which glibc-langpack-en hostname
+CONFIG:
+  type: foss
+  log_level: verbose
