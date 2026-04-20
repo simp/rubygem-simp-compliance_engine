@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'compliance_engine'
-require 'compliance_engine/puppet_logger'
+require_relative '../../../compliance_engine'
+require_relative '../../../compliance_engine/puppet_logger'
 
 # Only install the Puppet logger when no logger has been explicitly
 # configured.  ComplianceEngine.log auto-initialises to a default
