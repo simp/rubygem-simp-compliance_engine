@@ -1,3 +1,9 @@
+### 0.4.0 / 2026-04-20
+* Route Puppet Hiera backend log messages through Puppet's logging system (#96)
+* Fix JRuby compatibility: convert internal requires to require_relative so the library loads correctly inside Puppet Server / OpenVox Server when installed as a Puppet module rather than a standalone gem
+* Replace PDK with puppet-modulebuilder for Puppet Forge builds
+* Add Beaker acceptance test suite covering puppet apply, server/agent, cache leakage, and environment leakage scenarios
+
 ### 0.3.0 / 2026-03-19
 * Hash-like Collection methods return Collection objects (#37)
 

@@ -26,7 +26,7 @@ module ComplianceEngine
 
   # Get the logger
   #
-  # @return [Logger]
+  # @return [Logger, ComplianceEngine::PuppetLogger]
   def self.log
     return @log unless @log.nil?
 
@@ -36,8 +36,20 @@ module ComplianceEngine
   end
 
   # Set the logger
-  # @param logger [Logger] The logger to use
+  #
+  # @param value [Logger, ComplianceEngine::PuppetLogger] The logger to use
   def self.log=(value)
     @log = value
+  end
+
+  # Install a PuppetLogger unless a logger has already been explicitly configured.
+  # Extracted so the behaviour can be unit-tested without reloading enforcement.rb.
+  #
+  # @return [void]
+  def self.install_puppet_logger
+    return unless @log.nil?
+
+    require_relative 'compliance_engine/puppet_logger'
+    @log = PuppetLogger.new
   end
 end

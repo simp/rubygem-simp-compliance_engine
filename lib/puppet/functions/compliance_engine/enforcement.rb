@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+require_relative '../../../compliance_engine'
+
+ComplianceEngine.install_puppet_logger
+
 # @summary Hiera entry point for Compliance Engine
 Puppet::Functions.create_function(:'compliance_engine::enforcement') do
   # @param key String The key to lookup in the Hiera data
@@ -9,10 +13,6 @@ Puppet::Functions.create_function(:'compliance_engine::enforcement') do
     param 'Hash[String[1], Any]', :options
     param 'Puppet::LookupContext', :context
   end
-
-  # Load the module library using a path relative to this function file so we
-  # do not mutate the global LOAD_PATH inside the long-lived server process.
-  require_relative '../../../compliance_engine'
 
   def enforcement(key, options, context)
     @compat = options['compliance_markup_compatibility']
@@ -45,11 +45,6 @@ Puppet::Functions.create_function(:'compliance_engine::enforcement') do
     context.cache_all(data.hiera(profiles))
 
     return context.interpolate(context.cached_value(key)) if context.cache_has_key(key)
-
-    # if data.hiera(profiles).key?(key)
-    #   context.cache(key, data.hiera(profiles)[key])
-    #   return context.interpolate(data.hiera(profiles)[key])
-    # end
 
     context.not_found
   rescue StandardError => e
