@@ -81,3 +81,56 @@ jobs:
           else
             bundle exec rake parallel_spec
           fi
+
+  acceptance-apply:
+    name: 'Acceptance: puppet apply (alma9)'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+      - name: Install dependencies (with acceptance group)
+        run: bundle install
+        env:
+          BUNDLE_WITH: acceptance
+      - name: Run puppet apply acceptance tests
+        run: bundle exec rake acceptance:apply
+        env:
+          BEAKER_SETFILE: spec/acceptance/nodesets/apply.yml
+          BEAKER_PUPPET_COLLECTION: openvox8
+          BEAKER_HYPERVISOR: docker
+
+  acceptance-server:
+    name: 'Acceptance: puppet agent + openvox-server (alma9)'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - name: 'basic server/agent'
+            spec: '02_server_agent_spec.rb'
+            label: 'basic'
+          - name: 'cache leakage'
+            spec: '03_cache_leakage_spec.rb'
+            label: 'cache'
+          - name: 'environment leakage'
+            spec: '04_env_leakage_spec.rb'
+            label: 'env-leakage'
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+      - name: Install dependencies (with acceptance group)
+        run: bundle install
+        env:
+          BUNDLE_WITH: acceptance
+      - name: Run ${{ matrix.suite.name }} acceptance tests
+        run: bundle exec rspec spec/acceptance/${{ matrix.suite.spec }}
+        env:
+          BEAKER_SETFILE: spec/acceptance/nodesets/server_agent.yml
+          BEAKER_PUPPET_COLLECTION: openvox8
+          BEAKER_HYPERVISOR: docker

@@ -1,0 +1,43 @@
+---
+# openvox-server node plus two openvox-agent nodes.
+# Used for puppet agent tests, cache-leakage tests, and environment-leakage tests.
+# Use with: BEAKER_SETFILE=spec/acceptance/nodesets/server_agent.yml
+#           BEAKER_PUPPET_COLLECTION=openvox8
+HOSTS:
+  server:
+    roles:
+      - master
+    platform: el-9-x86_64
+    hypervisor: docker
+    image: almalinux:9
+    docker_cmd:
+      - /sbin/init
+    docker_image_commands:
+      - cp /bin/true /sbin/agetty
+      - dnf install -y cronie crontabs initscripts iproute openssl wget which glibc-langpack-en hostname
+  agent1:
+    roles:
+      - agent
+      - default
+    platform: el-9-x86_64
+    hypervisor: docker
+    image: almalinux:9
+    docker_cmd:
+      - /sbin/init
+    docker_image_commands:
+      - cp /bin/true /sbin/agetty
+      - dnf install -y cronie crontabs initscripts iproute openssl wget which glibc-langpack-en hostname
+  agent2:
+    roles:
+      - agent
+    platform: el-9-x86_64
+    hypervisor: docker
+    image: almalinux:9
+    docker_cmd:
+      - /sbin/init
+    docker_image_commands:
+      - cp /bin/true /sbin/agetty
+      - dnf install -y cronie crontabs initscripts iproute openssl wget which glibc-langpack-en hostname
+CONFIG:
+  type: aio
+  log_level: verbose

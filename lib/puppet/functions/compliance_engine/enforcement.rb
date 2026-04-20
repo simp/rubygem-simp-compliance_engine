@@ -10,7 +10,9 @@ Puppet::Functions.create_function(:'compliance_engine::enforcement') do
     param 'Puppet::LookupContext', :context
   end
 
-  require 'compliance_engine'
+  # Load the module library using a path relative to this function file so we
+  # do not mutate the global LOAD_PATH inside the long-lived server process.
+  require_relative '../../../compliance_engine'
 
   def enforcement(key, options, context)
     @compat = options['compliance_markup_compatibility']

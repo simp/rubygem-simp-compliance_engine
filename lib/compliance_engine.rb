@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'compliance_engine/version'
-require 'compliance_engine/data'
+require_relative 'compliance_engine/version'
+require_relative 'compliance_engine/data'
 require 'logger'
 
 # Work with compliance data

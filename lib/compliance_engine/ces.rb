@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'compliance_engine'
+require_relative '../compliance_engine'
 
 # A collection of compliance engine data CEs
 class ComplianceEngine::Ces < ComplianceEngine::Collection

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'compliance_engine'
-require 'compliance_engine/data_loader/json'
-require 'compliance_engine/data_loader/yaml'
+require_relative '../compliance_engine'
+require_relative 'data_loader/json'
+require_relative 'data_loader/yaml'
 
 # Load compliance engine data from a Puppet module
 class ComplianceEngine::ModuleLoader

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'compliance_engine'
-require 'compliance_engine/data_loader'
+require_relative '../../compliance_engine'
+require_relative '../data_loader'
 
 # Load compliance engine data from a file
 class ComplianceEngine::DataLoader::File < ComplianceEngine::DataLoader
