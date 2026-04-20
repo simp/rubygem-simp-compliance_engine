@@ -58,3 +58,29 @@ begin
 rescue LoadError
   # puppet-modulebuilder not installed; run `bundle install` with the release group
 end
+
+# Acceptance tests (requires `bundle install --with acceptance`)
+# voxpupuli-acceptance wraps beaker/beaker-docker; BEAKER_SETFILE selects the
+# nodeset (a beaker-hostgenerator spec string or a path to a custom YAML file).
+#
+# If multi-node support turns out to need features beyond what
+# voxpupuli-acceptance exposes, replace this with direct beaker/beaker-docker
+# rake tasks.
+begin
+  require 'rspec/core/rake_task'
+  require 'voxpupuli/acceptance/rake'
+
+  namespace :acceptance do
+    desc 'Run puppet apply acceptance tests (single openvox-agent node, set BEAKER_SETFILE=spec/acceptance/nodesets/apply.yml)'
+    RSpec::Core::RakeTask.new(:apply) do |t|
+      t.pattern = 'spec/acceptance/01_apply_spec.rb'
+    end
+
+    desc 'Run puppet server/agent acceptance tests (set BEAKER_SETFILE=spec/acceptance/nodesets/server_agent.yml)'
+    RSpec::Core::RakeTask.new(:server) do |t|
+      t.pattern = 'spec/acceptance/0{2,3,4}_*_spec.rb'
+    end
+  end
+rescue LoadError
+  # voxpupuli-acceptance not installed; run `bundle install --with acceptance`
+end

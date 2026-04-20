@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'compliance_engine'
-require 'compliance_engine/environment_loader'
+require_relative '../../compliance_engine'
+require_relative '../environment_loader'
 require 'zip/filesystem'
 
 # Load compliance engine data from a zip file containing a Puppet environment

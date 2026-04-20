@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'compliance_engine'
+require_relative '../compliance_engine'
 require 'thor'
 
 # Compliance Engine CLI

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'compliance_engine'
-require 'compliance_engine/module_loader'
+require_relative '../compliance_engine'
+require_relative 'module_loader'
 
 # Load compliance engine data from a Puppet environment
 class ComplianceEngine::EnvironmentLoader

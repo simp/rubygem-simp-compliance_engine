@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'compliance_engine'
-require 'compliance_engine/data_loader/file'
+require_relative '../../compliance_engine'
+require_relative 'file'
 
 require 'json'
 
