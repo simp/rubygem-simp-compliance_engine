@@ -42,7 +42,8 @@ module ComplianceEngine
     def ensure_puppet_available!
       return if defined?(::Puppet)
 
-      raise 'ComplianceEngine::PuppetLogger requires Puppet to be loaded, but ::Puppet is not defined'
+      raise ComplianceEngine::Error,
+            'ComplianceEngine::PuppetLogger requires Puppet to be loaded, but ::Puppet is not defined'
     end
   end
 end

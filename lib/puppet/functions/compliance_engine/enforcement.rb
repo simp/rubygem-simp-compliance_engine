@@ -1,13 +1,8 @@
 # frozen_string_literal: true
 
 require_relative '../../../compliance_engine'
-require_relative '../../../compliance_engine/puppet_logger'
 
-# Only install the Puppet logger when no logger has been explicitly
-# configured.  ComplianceEngine.log auto-initialises to a default
-# Logger when @log is nil, so we inspect the instance variable
-# directly rather than using ||= (which would always see a truthy value).
-ComplianceEngine.log = ComplianceEngine::PuppetLogger.new unless ComplianceEngine.instance_variable_get(:@log)
+ComplianceEngine.install_puppet_logger
 
 # @summary Hiera entry point for Compliance Engine
 Puppet::Functions.create_function(:'compliance_engine::enforcement') do

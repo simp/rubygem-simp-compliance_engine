@@ -58,20 +58,32 @@ RSpec.describe ComplianceEngine::PuppetLogger do
     end
   end
 
-  describe 'ComplianceEngine.log' do
+  describe 'ComplianceEngine.install_puppet_logger' do
     around(:each) do |example|
       original_log = ComplianceEngine.instance_variable_get(:@log)
-      # Clear the raw instance variable so enforcement.rb installs
-      # PuppetLogger even if the file was already required by another spec.
-      ComplianceEngine.instance_variable_set(:@log, nil)
-      load File.expand_path('../../../lib/puppet/functions/compliance_engine/enforcement.rb', __dir__)
       example.run
     ensure
       ComplianceEngine.instance_variable_set(:@log, original_log)
     end
 
-    it 'is set to a PuppetLogger instance when enforcement.rb is loaded' do
-      expect(ComplianceEngine.log).to be_a(described_class)
+    context 'when no logger has been configured' do
+      before(:each) { ComplianceEngine.instance_variable_set(:@log, nil) }
+
+      it 'installs a PuppetLogger' do
+        ComplianceEngine.install_puppet_logger
+        expect(ComplianceEngine.log).to be_a(described_class)
+      end
+    end
+
+    context 'when a logger is already configured' do
+      let(:custom_logger) { instance_double(Logger) }
+
+      before(:each) { ComplianceEngine.log = custom_logger }
+
+      it 'does not overwrite the existing logger' do
+        ComplianceEngine.install_puppet_logger
+        expect(ComplianceEngine.log).to be(custom_logger)
+      end
     end
   end
 end
