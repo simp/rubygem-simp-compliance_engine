@@ -3,7 +3,11 @@
 require 'compliance_engine'
 require 'compliance_engine/puppet_logger'
 
-ComplianceEngine.log = ComplianceEngine::PuppetLogger.new
+# Only install the Puppet logger when no logger has been explicitly
+# configured.  ComplianceEngine.log auto-initialises to a default
+# Logger when @log is nil, so we inspect the instance variable
+# directly rather than using ||= (which would always see a truthy value).
+ComplianceEngine.log = ComplianceEngine::PuppetLogger.new unless ComplianceEngine.instance_variable_get(:@log)
 
 # @summary Hiera entry point for Compliance Engine
 Puppet::Functions.create_function(:'compliance_engine::enforcement') do
@@ -14,10 +18,6 @@ Puppet::Functions.create_function(:'compliance_engine::enforcement') do
     param 'Hash[String[1], Any]', :options
     param 'Puppet::LookupContext', :context
   end
-
-  # Load the module library using a path relative to this function file so we
-  # do not mutate the global LOAD_PATH inside the long-lived server process.
-  require_relative '../../../compliance_engine'
 
   def enforcement(key, options, context)
     @compat = options['compliance_markup_compatibility']

@@ -60,7 +60,15 @@ RSpec.describe ComplianceEngine::PuppetLogger do
 
   describe 'ComplianceEngine.log' do
     before(:each) do
-      require 'puppet/functions/compliance_engine/enforcement'
+      @original_log = ComplianceEngine.instance_variable_get(:@log)
+      # Clear the raw instance variable so enforcement.rb installs
+      # PuppetLogger even if the file was already required by another spec.
+      ComplianceEngine.instance_variable_set(:@log, nil)
+      load File.expand_path('../../../lib/puppet/functions/compliance_engine/enforcement.rb', __dir__)
+    end
+
+    after(:each) do
+      ComplianceEngine.instance_variable_set(:@log, @original_log)
     end
 
     it 'is set to a PuppetLogger instance when enforcement.rb is loaded' do
