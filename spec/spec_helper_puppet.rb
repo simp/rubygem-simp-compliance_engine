@@ -11,12 +11,12 @@ end
 # correctly and the Win32::Registry stub gets defined.
 if defined?(JRUBY_VERSION)
   module Kernel
-    alias_method :require_without_fiddle_dl_error_fix, :require
+    alias require_without_fiddle_dl_error_fix require
 
     def require(path)
       require_without_fiddle_dl_error_fix(path)
-    rescue => e
-      raise unless e.class.name == 'Fiddle::DLError'
+    rescue StandardError => e
+      raise unless e.instance_of?(::Fiddle::DLError)
 
       raise LoadError, e.message
     end
