@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'compliance_engine'
 
-RSpec.describe ComplianceEngine::Version do
+RSpec.describe ComplianceEngine::DataVersion do
   context 'with a valid version number' do
     subject(:version) { described_class.new('2.0.0') }
 

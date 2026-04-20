@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../compliance_engine'
-require_relative 'version'
+require_relative 'data_version'
 require_relative 'component'
 require_relative 'ce'
 require_relative 'check'
@@ -221,7 +221,7 @@ class ComplianceEngine::Data
       loader.add_observer(self, :update)
       data[key] = {
         loader: loader,
-        version: ComplianceEngine::Version.new(loader.data['version']),
+        version: ComplianceEngine::DataVersion.new(loader.data['version']),
         content: loader.data,
       }
     else
@@ -237,7 +237,7 @@ class ComplianceEngine::Data
         data[filename.key][:loader] = filename
         data[filename.key][:loader].add_observer(self, :update)
       end
-      data[filename.key][:version] = ComplianceEngine::Version.new(filename.data['version'])
+      data[filename.key][:version] = ComplianceEngine::DataVersion.new(filename.data['version'])
       data[filename.key][:content] = filename.data
     end
 
