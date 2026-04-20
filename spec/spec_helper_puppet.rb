@@ -4,6 +4,28 @@ RSpec.configure do |c|
   c.mock_with :rspec
 end
 
+# JRuby 10.0 / Ruby 3.4 workaround: rspec-puppet unconditionally requires
+# 'win32/registry' and only rescues LoadError. On JRuby 10.0+ the file exists
+# in the Ruby 3.4 stdlib but raises Fiddle::DLError (not LoadError) when it
+# cannot open kernel32.dll. Patch Kernel#require so rspec-puppet's rescue fires
+# correctly and the Win32::Registry stub gets defined.
+if defined?(JRUBY_VERSION)
+  module Kernel
+    alias_method :require_without_fiddle_dl_error_fix, :require
+
+    def require(path)
+      require_without_fiddle_dl_error_fix(path)
+    rescue => e
+      raise unless e.class.name == 'Fiddle::DLError'
+
+      raise LoadError, e.message
+    end
+
+    module_function :require
+    module_function :require_without_fiddle_dl_error_fix
+  end
+end
+
 require 'voxpupuli/test/spec_helper'
 require 'rspec-puppet-facts'
 
