@@ -19,11 +19,11 @@ group :release do
 end
 
 group :acceptance do
-  gem 'voxpupuli-acceptance', '~> 4.0'
+  gem 'voxpupuli-acceptance', '~> 4.0', platforms: :mri
 end
 
 group :development do
   gem 'pry'
-  gem 'pry-byebug'
-  gem 'ruby-prof'
+  gem 'pry-byebug', platforms: :mri
+  gem 'ruby-prof', platforms: :mri
 end

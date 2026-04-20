@@ -66,9 +66,14 @@ jobs:
           - '3.3'
           - '3.4'
           - '4.0'  # Latest
+          - 'jruby-9.4'  # OpenVox Server 8
+          - 'jruby-10.0'  # Ruby 3.4-compatible
 
     steps:
       - uses: actions/checkout@v6
+      - name: Install native build tools (required by prism on JRuby)
+        if: startsWith(matrix.ruby, 'jruby')
+        run: sudo apt-get update && sudo apt-get install -y build-essential
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
