@@ -95,7 +95,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: '4.0.2'
       - name: Install dependencies (with acceptance group)
         run: bundle install
         env:
@@ -128,7 +128,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: '4.0.2'
       - name: Install dependencies (with acceptance group)
         run: bundle install
         env:
