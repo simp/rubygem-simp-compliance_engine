@@ -26,7 +26,7 @@ module ComplianceEngine
 
   # Get the logger
   #
-  # @return [Logger]
+  # @return [Logger, ComplianceEngine::PuppetLogger]
   def self.log
     return @log unless @log.nil?
 
@@ -36,7 +36,8 @@ module ComplianceEngine
   end
 
   # Set the logger
-  # @param logger [Logger] The logger to use
+  #
+  # @param value [Logger, ComplianceEngine::PuppetLogger] The logger to use
   def self.log=(value)
     @log = value
   end
