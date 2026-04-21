@@ -1149,4 +1149,84 @@ RSpec.describe ComplianceEngine::Data do
       expect(compliance_engine.ces.keys).to eq(['ce_00', 'ce_01', 'ce_02', 'ce_03'])
     end
   end
+
+  context 'with knockout_prefix support' do
+    def setup_module(module_path, file_data)
+      allow(File).to receive(:directory?).with(module_path).and_return(true)
+      allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
+      allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
+      allow(Dir).to receive(:glob)
+        .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
+        .and_return(file_data.map { |name, _| "#{module_path}/SIMP/compliance_profiles/#{name}" })
+      allow(Dir).to receive(:glob)
+        .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
+        .and_return([])
+      file_data.each do |name, contents|
+        filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
+        allow(File).to receive(:size).with(filename).and_return(contents.length)
+        allow(File).to receive(:mtime).with(filename).and_return(Time.now)
+        allow(File).to receive(:read).with(filename).and_return(contents)
+      end
+    end
+
+    context 'when a check uses a knockout parameter name' do
+      subject(:compliance_engine) { described_class.new('test_module_00') }
+
+      before(:each) do
+        setup_module('test_module_00', {
+                       'a.yaml' => <<~YAML,
+                         ---
+                         version: 2.0.0
+                         profiles:
+                           base_profile:
+                             ces:
+                               base_ce: true
+                         ce:
+                           base_ce:
+                             controls:
+                               control_a: true
+                         checks:
+                           set_param:
+                             type: puppet-class-parameter
+                             settings:
+                               parameter: mymodule::param
+                               value: original_value
+                             ces:
+                               - base_ce
+                       YAML
+          'b.yaml' => <<~YAML,
+            ---
+            version: 2.0.0
+            profiles:
+              knockout_profile:
+                ces:
+                  knockout_ce: true
+            ce:
+              knockout_ce:
+                controls:
+                  control_b: true
+            checks:
+              knockout_param:
+                type: puppet-class-parameter
+                settings:
+                  parameter: "--mymodule::param"
+                  value: ~
+                ces:
+                  - knockout_ce
+          YAML
+                     })
+      end
+
+      it 'knocks out the parameter when both profiles are requested' do
+        hiera = compliance_engine.hiera(['base_profile', 'knockout_profile'])
+        expect(hiera).not_to have_key('mymodule::param')
+        expect(hiera).not_to have_key('--mymodule::param')
+      end
+
+      it 'still returns the parameter when only the base profile is requested' do
+        hiera = compliance_engine.hiera(['base_profile'])
+        expect(hiera).to include('mymodule::param' => 'original_value')
+      end
+    end
+  end
 end

@@ -306,7 +306,7 @@ class ComplianceEngine::Data
         v.to_a.each do |component|
           next unless component.key?('confine')
 
-          @confines = DeepMerge.deep_merge!(component['confine'], @confines)
+          @confines = DeepMerge.deep_merge!(Marshal.load(Marshal.dump(component['confine'])), @confines, knockout_prefix: '--')
         end
       end
     end
@@ -348,8 +348,22 @@ class ComplianceEngine::Data
 
     valid_profiles.reverse_each do |profile|
       check_mapping(profile).each_value do |check|
-        parameters = DeepMerge.deep_merge!(check.hiera, parameters)
+        hiera_data = check.hiera
+        next if hiera_data.nil?
+
+        parameters = DeepMerge.deep_merge!(Marshal.load(Marshal.dump(hiera_data)), parameters)
       end
+    end
+
+    # deep_merge does not support hash-key knockout via knockout_prefix.
+    # Handle parameter-name knockout explicitly: any key starting with '--'
+    # signals that the matching key without the prefix should be suppressed
+    # (mirrors compliance_markup behavior).
+    parameters.each_key do |key|
+      next unless key.start_with?('--')
+
+      parameters.delete(key.delete_prefix('--'))
+      parameters.delete(key)
     end
 
     @hiera[cache_key] = parameters
