@@ -46,7 +46,7 @@ module ComplianceEngine
   #
   # @return [String] absolute path to sce-schema.json
   def self.schema_path
-    File.join(__dir__, 'compliance_engine', 'sce-schema.json')
+    File.expand_path(File.join(__dir__, 'compliance_engine', 'sce-schema.json'))
   end
 
   # Return the parsed JSON schema for SCE data files
@@ -54,7 +54,11 @@ module ComplianceEngine
   # @return [Hash] the parsed JSON schema
   def self.schema
     require 'json'
-    @schema ||= JSON.parse(File.read(schema_path))
+    @schema ||= begin
+      JSON.parse(File.read(schema_path))
+    rescue Errno::ENOENT, JSON::ParserError => e
+      raise Error, "Failed to load schema from #{schema_path}: #{e.class}: #{e.message}"
+    end
   end
 
   # Install a PuppetLogger unless a logger has already been explicitly configured.

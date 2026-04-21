@@ -291,8 +291,8 @@
             },
             "settings": {
               "type": "object",
-              "default": {},
-              "title": "Settings for the check (required when type is puppet-class-parameter)",
+              "title": "Settings for the check",
+              "required": ["parameter", "value"],
               "properties": {
                 "parameter": {
                   "type": "string",
@@ -354,6 +354,8 @@
                     "properties": {
                       "level": {
                         "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
                         "title": "Numeric risk level (1-100). Checks are skipped when this value is >= the enforcement_tolerance setting."
                       },
                       "reason": {
@@ -393,6 +395,12 @@
                 }
               }
             }
+          },
+          "if": {
+            "required": ["type"]
+          },
+          "then": {
+            "required": ["settings"]
           },
           "examples": [
             {
