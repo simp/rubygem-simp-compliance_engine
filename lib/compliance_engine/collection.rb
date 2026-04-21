@@ -12,7 +12,15 @@ class ComplianceEngine::Collection
     @collection ||= {}
     hash_key = key
     data.files.each do |file|
-      data.get(file)[hash_key]&.each do |k, v|
+      entries = data.get(file)[hash_key]
+      next if entries.nil?
+
+      unless entries.is_a?(Hash)
+        ComplianceEngine.log.error "Expected '#{hash_key}' in #{file} to be a Hash, got #{entries.class}"
+        next
+      end
+
+      entries.each do |k, v|
         @collection[k] ||= collected.new(k, data: self)
         @collection[k].add(file, v)
       end

@@ -161,6 +161,12 @@ RSpec.describe ComplianceEngine::Data do
     it 'get returns nil' do
       expect(compliance_engine.get('file')).to be_nil
     end
+
+    it 'logs an error' do
+      allow(ComplianceEngine.log).to receive(:error)
+      compliance_engine.files
+      expect(ComplianceEngine.log).to have_received(:error).with('Data must be a hash')
+    end
   end
 
   context 'with an invalid version number' do
@@ -185,6 +191,154 @@ RSpec.describe ComplianceEngine::Data do
 
     it 'get returns nil' do
       expect(compliance_engine.get('file')).to be_nil
+    end
+
+    it 'logs an error' do
+      allow(ComplianceEngine.log).to receive(:error)
+      compliance_engine.files
+      expect(ComplianceEngine.log).to have_received(:error).with("Unsupported version '1.0'")
+    end
+  end
+
+  context 'with a missing version key' do
+    subject(:compliance_engine) { described_class.new('file') }
+
+    before(:each) do
+      allow(File).to receive(:directory?).with('file').and_return(false)
+      allow(File).to receive(:file?).with('file').and_return(true)
+      allow(File).to receive(:size).with('file').and_return(0)
+      allow(File).to receive(:mtime).with('file').and_return(Time.now)
+      allow(File).to receive(:read).with('file').and_return("---\nprofiles: {}")
+      allow(ComplianceEngine.log).to receive(:error)
+    end
+
+    it 'initializes without raising' do
+      expect { compliance_engine }.not_to raise_error
+    end
+
+    it 'returns an empty list of files' do
+      expect(compliance_engine.files).to eq([])
+    end
+
+    it 'logs an error' do
+      compliance_engine.files
+      expect(ComplianceEngine.log).to have_received(:error).with('Missing version')
+    end
+  end
+
+  context 'with malformed YAML content' do
+    subject(:compliance_engine) { described_class.new('file') }
+
+    before(:each) do
+      allow(File).to receive(:directory?).with('file').and_return(false)
+      allow(File).to receive(:file?).with('file').and_return(true)
+      allow(File).to receive(:size).with('file').and_return(0)
+      allow(File).to receive(:mtime).with('file').and_return(Time.now)
+      allow(File).to receive(:read).with('file').and_return("---\nkey: {unclosed")
+      allow(ComplianceEngine.log).to receive(:error)
+    end
+
+    it 'initializes without raising' do
+      expect { compliance_engine }.not_to raise_error
+    end
+
+    it 'returns an empty list of files' do
+      expect(compliance_engine.files).to eq([])
+    end
+
+    it 'logs an error' do
+      compliance_engine.files
+      expect(ComplianceEngine.log).to have_received(:error)
+    end
+  end
+
+  context 'with a non-hash collection value in data' do
+    subject(:compliance_engine) { described_class.new('file') }
+
+    before(:each) do
+      allow(File).to receive(:directory?).with('file').and_return(false)
+      allow(File).to receive(:file?).with('file').and_return(true)
+      allow(File).to receive(:size).with('file').and_return(0)
+      allow(File).to receive(:mtime).with('file').and_return(Time.now)
+      allow(File).to receive(:read).with('file').and_return(
+        "---\nversion: '2.0.0'\nprofiles: not_a_hash\n",
+      )
+      allow(ComplianceEngine.log).to receive(:error)
+    end
+
+    it 'initializes without raising' do
+      expect { compliance_engine }.not_to raise_error
+    end
+
+    it 'returns the file as loaded' do
+      expect(compliance_engine.files).to eq(['file'])
+    end
+
+    it 'returns an empty profiles collection' do
+      expect(compliance_engine.profiles.keys).to eq([])
+    end
+
+    it 'logs an error for the invalid profiles value' do
+      compliance_engine.profiles
+      expect(ComplianceEngine.log).to have_received(:error).with(%r{Expected 'profiles' in file to be a Hash})
+    end
+  end
+
+  context 'with one valid file and one malformed file' do
+    subject(:compliance_engine) { described_class.new('good_file', 'bad_file') }
+
+    let(:good_content) do
+      <<~YAML
+        ---
+        version: '2.0.0'
+        profiles:
+          valid_profile:
+            ces:
+              valid_ce: true
+        ce:
+          valid_ce: {}
+        checks:
+          valid_check:
+            type: puppet-class-parameter
+            settings:
+              parameter: mymodule::param
+              value: valid_value
+            ces:
+              - valid_ce
+      YAML
+    end
+
+    before(:each) do
+      allow(File).to receive(:directory?).with('good_file').and_return(false)
+      allow(File).to receive(:file?).with('good_file').and_return(true)
+      allow(File).to receive(:size).with('good_file').and_return(good_content.length)
+      allow(File).to receive(:mtime).with('good_file').and_return(Time.now)
+      allow(File).to receive(:read).with('good_file').and_return(good_content)
+
+      allow(File).to receive(:directory?).with('bad_file').and_return(false)
+      allow(File).to receive(:file?).with('bad_file').and_return(true)
+      allow(File).to receive(:size).with('bad_file').and_return(0)
+      allow(File).to receive(:mtime).with('bad_file').and_return(Time.now)
+      allow(File).to receive(:read).with('bad_file').and_return("---\nversion: 1.0")
+
+      allow(ComplianceEngine.log).to receive(:error)
+    end
+
+    it 'initializes without raising' do
+      expect { compliance_engine }.not_to raise_error
+    end
+
+    it 'loads the valid file and skips the malformed file' do
+      expect(compliance_engine.files).to eq(['good_file'])
+    end
+
+    it 'logs an error for the malformed file' do
+      compliance_engine.files
+      expect(ComplianceEngine.log).to have_received(:error).with("Unsupported version '1.0'")
+    end
+
+    it 'returns hiera data from the valid file' do
+      expect(compliance_engine.hiera(['valid_profile'])).to include('mymodule::param' => 'valid_value')
     end
   end
 
