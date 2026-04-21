@@ -12,7 +12,12 @@ class ComplianceEngine::ModuleLoader
   # @param fileclass [File] the class to use for file operations (default: `File`)
   # @param dirclass [Dir] the class to use for directory operations (default: `Dir`)
   # @param zipfile_path [String, nil] the path to the zip file if loading from a zip archive
-  def initialize(path, fileclass: File, dirclass: Dir, zipfile_path: nil)
+  # @param load_dotfiles [Boolean] whether to load files whose relative path contains
+  #   a component (directory or filename) beginning with '.'. Defaults to false so that
+  #   dotfiles are skipped during normal module scanning, matching the behavior of
+  #   Ruby's Dir.glob on real filesystems. Set to true only when the caller explicitly
+  #   needs dotfile support (e.g. zip-based environment loading).
+  def initialize(path, fileclass: File, dirclass: Dir, zipfile_path: nil, load_dotfiles: false)
     raise ComplianceEngine::Error, "#{path} is not a directory" unless fileclass.directory?(path)
 
     @name = nil
@@ -34,27 +39,39 @@ class ComplianceEngine::ModuleLoader
 
     # In this directory, we want to look for all yaml and json files
     # under SIMP/compliance_profiles and simp/compliance_profiles.
-    globs = ['SIMP/compliance_profiles', 'simp/compliance_profiles']
-            .select { |dir| fileclass.directory?(File.join(path, dir)) }
-            .map { |dir|
-      ['yaml', 'json'].map { |type| File.join(path, dir, '**', "*.#{type}") }
-    }.flatten
-    # Using .each here to make mocking with rspec easier.
-    globs.each do |glob|
-      dirclass.glob(glob).sort.each do |file|
-        key = if @zipfile_path
-                File.join(@zipfile_path, '.', file.to_s)
-              else
-                file.to_s
-              end
-        loader = if File.extname(file.to_s) == '.json'
-                   ComplianceEngine::DataLoader::Json.new(file.to_s, fileclass: fileclass, key: key)
-                 else
-                   ComplianceEngine::DataLoader::Yaml.new(file.to_s, fileclass: fileclass, key: key)
-                 end
-        @files << loader
-      rescue StandardError => e
-        ComplianceEngine.log.warn "Could not load #{file}: #{e.message}"
+    # The loops are structured this way (rather than building a flat globs
+    # array first) so that each glob result can be checked against its
+    # base directory for dotfile filtering.
+    ['SIMP/compliance_profiles', 'simp/compliance_profiles'].each do |dir|
+      base = File.join(path, dir)
+      next unless fileclass.directory?(base)
+
+      # Using .each here to make mocking with rspec easier.
+      ['yaml', 'json'].each do |type|
+        dirclass.glob(File.join(base, '**', "*.#{type}")).sort.each do |file|
+          unless load_dotfiles
+            # Skip any file whose path (relative to the compliance_profiles
+            # base) contains a component beginning with '.', e.g. hidden
+            # files (.profile.yaml) or files inside hidden directories
+            # (.hidden/profile.yaml).
+            relative = file.to_s.delete_prefix("#{base}/")
+            next if relative.split('/').any? { |part| part.start_with?('.') }
+          end
+
+          key = if @zipfile_path
+                  File.join(@zipfile_path, '.', file.to_s)
+                else
+                  file.to_s
+                end
+          loader = if File.extname(file.to_s) == '.json'
+                     ComplianceEngine::DataLoader::Json.new(file.to_s, fileclass: fileclass, key: key)
+                   else
+                     ComplianceEngine::DataLoader::Yaml.new(file.to_s, fileclass: fileclass, key: key)
+                   end
+          @files << loader
+        rescue StandardError => e
+          ComplianceEngine.log.warn "Could not load #{file}: #{e.message}"
+        end
       end
     end
   end
