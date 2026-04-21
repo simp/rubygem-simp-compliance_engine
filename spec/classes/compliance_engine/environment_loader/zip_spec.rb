@@ -47,5 +47,15 @@ RSpec.describe ComplianceEngine::EnvironmentLoader::Zip do
       expect(environment_loader.modules.count).to eq(2)
       expect(environment_loader.modulepath).to eq(path)
     end
+
+    it 'passes load_dotfiles: true to ModuleLoader by default' do
+      environment_loader
+      expect(ComplianceEngine::ModuleLoader).to have_received(:new).with(anything, hash_including(load_dotfiles: true)).at_least(:once)
+    end
+
+    it 'passes load_dotfiles: false to ModuleLoader when requested' do
+      described_class.new(path, load_dotfiles: false)
+      expect(ComplianceEngine::ModuleLoader).to have_received(:new).with(anything, hash_including(load_dotfiles: false)).at_least(:once)
+    end
   end
 end
