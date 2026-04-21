@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'compliance_engine/version'
+require_relative 'compliance_engine/tolerance'
 require_relative 'compliance_engine/data'
 require 'logger'
 
