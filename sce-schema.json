@@ -60,21 +60,34 @@
       ]
     },
     "identifiers": {
-      "type": "object",
       "title": "External framework identifiers",
-      "description": "Keys are framework names (e.g. nist_800_53:rev4, disa_stig, cis). Values are arrays of identifier strings or numbers within that framework.",
-      "patternProperties": {
-        "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+      "description": "Preferred form: an object whose keys are framework names (e.g. nist_800_53:rev4, disa_stig) and whose values are arrays of identifier strings or numbers within that framework. A plain array of identifier strings is also accepted.",
+      "oneOf": [
+        {
+          "type": "object",
+          "patternProperties": {
+            "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+              "type": "array",
+              "items": {
+                "type": ["string", "number"]
+              }
+            }
+          },
+          "examples": [
+            {
+              "nist_800_53:rev4": ["AU-2", "AU-3"],
+              "disa_stig": ["RHEL-07-021820", "CCI-000293"]
+            }
+          ]
+        },
+        {
           "type": "array",
           "items": {
             "type": ["string", "number"]
-          }
-        }
-      },
-      "examples": [
-        {
-          "nist_800_53:rev4": ["AU-2", "AU-3"],
-          "disa_stig": ["RHEL-07-021820", "CCI-000293"]
+          },
+          "examples": [
+            ["ID1.1", "ID1.2"]
+          ]
         }
       ]
     }
