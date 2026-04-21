@@ -8,34 +8,104 @@
   "required": [
     "version"
   ],
+  "$defs": {
+    "collectionKey": {
+      "description": "A colon-delimited hierarchical key used to name profiles, CEs, checks, and controls",
+      "type": "string",
+      "pattern": "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$"
+    },
+    "confine": {
+      "type": "object",
+      "title": "Conditions that confine this entry to specific environments",
+      "description": "Keys are dot-notation Puppet fact paths (e.g. os.release.major) or the special keys module_name and module_version. Values may be a single string (exact match, prefix with ! to negate) or an array of strings (any match).",
+      "patternProperties": {
+        "^\\w+(?:[.\\-]\\w+)*$": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "os.release.major": ["8"],
+          "os.name": "RedHat"
+        },
+        {
+          "module_name": "simp-compliance_engine",
+          "module_version": ">=1.0.0 <2.0.0"
+        }
+      ]
+    },
+    "controlsMap": {
+      "type": "object",
+      "title": "References to top-level controls entries. Enforced when value is true.",
+      "patternProperties": {
+        "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "examples": [
+        {
+          "nist_800_53:rev4:AU-2": true
+        }
+      ]
+    },
+    "identifiers": {
+      "type": "object",
+      "title": "External framework identifiers",
+      "description": "Keys are framework names (e.g. nist_800_53:rev4, disa_stig, cis). Values are arrays of identifier strings or numbers within that framework.",
+      "patternProperties": {
+        "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+          "type": "array",
+          "items": {
+            "type": ["string", "number"]
+          }
+        }
+      },
+      "examples": [
+        {
+          "nist_800_53:rev4": ["AU-2", "AU-3"],
+          "disa_stig": ["RHEL-07-021820", "CCI-000293"]
+        }
+      ]
+    }
+  },
   "properties": {
     "version": {
       "type": "string",
       "const": "2.0.0",
-      "title": "The SCE data version"
+      "title": "The SCE data format version"
     },
     "profiles": {
       "type": "object",
       "default": {},
-      "title": "A checklist of the Checks, CEs, and Controls to add (or remove) from the profile.",
+      "title": "Collection of compliance profiles",
+      "description": "Each profile is a named checklist of Checks, CEs, and Controls to enforce.",
       "patternProperties": {
         "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
           "type": "object",
           "default": {},
-          "title": "An SCE profile",
+          "title": "A compliance profile",
           "properties": {
             "title": {
               "type": "string",
-              "default": "",
-              "title": "Optional. Short description of the profile.",
+              "title": "Short description of the profile",
               "examples": [
                 "Level 1 - Server"
               ]
             },
             "description": {
               "type": "string",
-              "default": "",
-              "title": "Optional. Longer description of the profile.",
+              "title": "Longer description of the profile",
               "examples": [
                 "Items in this profile intend to: be practical and prudent; provide a clear security benefit; and not inhibit the utility of the technology beyond acceptable means. This profile is intended for servers."
               ]
@@ -43,46 +113,30 @@
             "ces": {
               "type": "object",
               "default": {},
-              "title": "Key is a reference to an entry in the top-level ce hash. Enforced if value is true.",
+              "title": "CEs to include in this profile. Enforced when value is true.",
               "patternProperties": {
                 "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
                   "type": "boolean",
-                  "default": false,
-                  "title": "Entry in the top-level ce hash"
+                  "default": false
                 }
               },
               "examples": [
                 {
-                  "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1": true
+                  "oval:simp.cis.el8.1.6.2_Ensure_ASLR_is_enabled:def:1": true
                 }
               ]
             },
             "controls": {
-              "type": "object",
-              "default": {},
-              "title": "Key is a reference to an entry in the top-level control hash. Enforced if value is true.",
-              "patternProperties": {
-                "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
-                  "type": "boolean",
-                  "default": false,
-                  "title": "Entry in the top-level control hash"
-                }
-              },
-              "examples": [
-                {
-                  "nist_800_53:rev4:AU-2": true
-                }
-              ]
+              "$ref": "#/$defs/controlsMap"
             },
             "checks": {
               "type": "object",
               "default": {},
-              "title": "Key is a reference to an entry in the top-level checks hash. Enforced if value is true.",
+              "title": "Checks to include in this profile. Enforced when value is true.",
               "patternProperties": {
                 "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
                   "type": "boolean",
-                  "default": false,
-                  "title": "Entry in the top-level checks hash"
+                  "default": false
                 }
               },
               "examples": [
@@ -92,35 +146,15 @@
               ]
             },
             "confine": {
-              "type": "object",
-              "default": {},
-              "title": "Conditions that confine this profile to specific environments",
-              "patternProperties": {
-                "^\\w(?:[\\.-]\\w+)*$": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "examples": [
-                {
-                  "os.release.major": [
-                    "8"
-                  ],
-                  "os.name": [
-                    "RedHat"
-                  ]
-                }
-              ]
+              "$ref": "#/$defs/confine"
             }
           },
           "examples": [
             {
               "title": "Level 1 - Server",
               "description": "Items in this profile intend to: be practical and prudent; provide a clear security benefit; and not inhibit the utility of the technology beyond acceptable means. This profile is intended for servers.",
-              "ces": {
-                "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1": true
+              "controls": {
+                "cis:el8:l1": true
               }
             }
           ]
@@ -128,11 +162,10 @@
       },
       "examples": [
         {
-          "cis:level:1:server": {
-            "title": "Level 1 - Server",
-            "description": "Items in this profile intend to: be practical and prudent; provide a clear security benefit; and not inhibit the utility of the technology beyond acceptable means. This profile is intended for servers.",
-            "ces": {
-              "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1": true
+          "cis:el8:l1:server": {
+            "title": "CIS Level 1 - Server",
+            "controls": {
+              "cis:el8:l1": true
             }
           }
         }
@@ -141,127 +174,61 @@
     "ce": {
       "type": "object",
       "default": {},
-      "title": "Collection of compliance engine entries",
+      "title": "Collection of Compliance Elements (CEs)",
+      "description": "Each CE names a single compliance capability and bridges profiles to checks via a shared vocabulary.",
       "patternProperties": {
         "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
           "type": "object",
           "default": {},
-          "title": "A compliance engine entry",
-          "required": [
-            "controls",
-            "title",
-            "description"
-          ],
+          "title": "A Compliance Element",
           "properties": {
-            "controls": {
-              "type": "object",
-              "default": {},
-              "title": "References to controls related to this CE",
-              "patternProperties": {
-                "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
-                  "type": "boolean",
-                  "default": false,
-                  "title": "Control reference"
-                }
-              },
-              "examples": [
-                {
-                  "cis:el8:v1.0.0.1": true
-                }
-              ]
-            },
-            "identifiers": {
-              "type": "object",
-              "default": {},
-              "title": "External identifiers for this compliance control",
-              "patternProperties": {
-                "^\\w+$": {
-                  "type": "array",
-                  "items": {
-                    "type": ["string", "number"]
-                  }
-                }
-              },
-              "examples": [
-                {
-                  "cis": []
-                }
-              ]
-            },
-            "oval-ids": {
-              "type": "array",
-              "default": [],
-              "title": "OVAL identifiers for this compliance control",
-              "items": {
-                "type": "string",
-                "default": "",
-                "title": "OVAL identifier"
-              },
-              "examples": [
-                [
-                  "xccdf_org.cisecurity.benchmarks_rule_1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled"
-                ]
-              ]
-            },
             "title": {
               "type": "string",
-              "default": "",
-              "title": "Title of the compliance control",
+              "title": "Short title of the compliance element",
               "examples": [
                 "Ensure address space layout randomization (ASLR) is enabled"
               ]
             },
             "description": {
               "type": "string",
-              "default": "",
-              "title": "Description of the compliance control",
+              "title": "Detailed description of the compliance element",
               "examples": [
                 "Address space layout randomization (ASLR) is an exploit mitigation technique which randomly arranges the address space of key data areas of a process."
+              ]
+            },
+            "controls": {
+              "$ref": "#/$defs/controlsMap"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/identifiers"
+            },
+            "oval-ids": {
+              "type": "array",
+              "default": [],
+              "title": "OVAL identifiers associated with this CE",
+              "items": {
+                "type": "string"
+              },
+              "examples": [
+                [
+                  "xccdf_org.cisecurity.benchmarks_rule_1.6.2_Ensure_ASLR_is_enabled"
+                ]
               ]
             },
             "imported_data": {
               "type": "object",
               "default": {},
-              "title": "Data imported from external sources",
+              "title": "Data imported from external benchmark sources",
               "properties": {
                 "fixtext": {
                   "type": "string",
-                  "default": "",
-                  "title": "Text describing how to fix compliance issues",
-                  "examples": [
-                    "Set the following parameter in /etc/sysctl.conf or a /etc/sysctl.d/* file: kernel.randomize_va_space = 2 Run the following command to set the active kernel parameter: # sysctl -w kernel.randomize_va_space=2"
-                  ]
+                  "title": "Remediation instructions from the source benchmark"
                 }
               },
-              "additionalProperties": true,
-              "examples": [
-                {
-                  "fixtext": "Set the following parameter in /etc/sysctl.conf or a /etc/sysctl.d/* file: kernel.randomize_va_space = 2 Run the following command to set the active kernel parameter: # sysctl -w kernel.randomize_va_space=2"
-                }
-              ]
+              "additionalProperties": true
             },
             "confine": {
-              "type": "object",
-              "default": {},
-              "title": "Conditions that confine this control to specific environments",
-              "patternProperties": {
-                "^\\w(?:[\\.-]\\w+)*$": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "examples": [
-                {
-                  "os.release.major": [
-                    "8"
-                  ],
-                  "os.name": [
-                    "RedHat"
-                  ]
-                }
-              ]
+              "$ref": "#/$defs/confine"
             }
           },
           "examples": [
@@ -270,61 +237,25 @@
                 "cis:el8:v1.0.0.1": true
               },
               "identifiers": {
-                "cis": []
+                "cis": ["1.6.2"],
+                "nist_800_53:rev4": ["SC-39"]
               },
-              "oval-ids": [
-                "xccdf_org.cisecurity.benchmarks_rule_1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled"
-              ],
               "title": "Ensure address space layout randomization (ASLR) is enabled",
               "description": "Address space layout randomization (ASLR) is an exploit mitigation technique which randomly arranges the address space of key data areas of a process.",
-              "imported_data": {
-                "fixtext": "Set the following parameter in /etc/sysctl.conf or a /etc/sysctl.d/* file: kernel.randomize_va_space = 2 Run the following command to set the active kernel parameter: # sysctl -w kernel.randomize_va_space=2"
-              },
               "confine": {
-                "os.release.major": [
-                  "8"
-                ],
-                "os.name": [
-                  "RedHat"
-                ]
+                "os.release.major": ["8"],
+                "os.name": ["RedHat"]
               }
             }
           ]
         }
-      },
-      "examples": [
-        {
-          "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1": {
-            "controls": {
-              "cis:el8:v1.0.0.1": true
-            },
-            "identifiers": {
-              "cis": []
-            },
-            "oval-ids": [
-              "xccdf_org.cisecurity.benchmarks_rule_1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled"
-            ],
-            "title": "Ensure address space layout randomization (ASLR) is enabled",
-            "description": "Address space layout randomization (ASLR) is an exploit mitigation technique which randomly arranges the address space of key data areas of a process.",
-            "imported_data": {
-              "fixtext": "Set the following parameter in /etc/sysctl.conf or a /etc/sysctl.d/* file: kernel.randomize_va_space = 2 Run the following command to set the active kernel parameter: # sysctl -w kernel.randomize_va_space=2"
-            },
-            "confine": {
-              "os.release.major": [
-                "8"
-              ],
-              "os.name": [
-                "RedHat"
-              ]
-            }
-          }
-        }
-      ]
+      }
     },
     "checks": {
       "type": "object",
       "default": {},
       "title": "Collection of compliance checks",
+      "description": "Each check is a verifiable assertion about a system setting. Checks of type puppet-class-parameter carry a parameter and value that become Hiera data.",
       "patternProperties": {
         "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
           "type": "object",
@@ -334,24 +265,34 @@
             "type"
           ],
           "properties": {
+            "type": {
+              "type": "string",
+              "title": "The type of check",
+              "examples": [
+                "puppet-class-parameter"
+              ]
+            },
             "settings": {
               "type": "object",
               "default": {},
-              "title": "Settings for the compliance check",
+              "title": "Settings for the check (required when type is puppet-class-parameter)",
               "properties": {
                 "parameter": {
                   "type": "string",
-                  "default": "",
-                  "title": "The parameter to check",
+                  "title": "The fully-qualified Puppet class parameter name. Prefix with -- to knock out an existing parameter.",
                   "examples": [
-                    "simp::sysctl::kernel__randomize_va_space"
+                    "simp::sysctl::kernel__randomize_va_space",
+                    "--simp::sysctl::kernel__randomize_va_space"
                   ]
                 },
                 "value": {
-                  "type": ["integer", "string", "boolean", "array"],
-                  "title": "The expected value of the parameter",
+                  "title": "The value to enforce for the parameter",
+                  "type": ["boolean", "integer", "number", "string", "array", "object", "null"],
                   "examples": [
-                    2
+                    2,
+                    true,
+                    "weekly",
+                    ["item1", "item2"]
                   ]
                 }
               },
@@ -362,71 +303,142 @@
                 }
               ]
             },
-            "type": {
-              "type": "string",
-              "default": "",
-              "title": "The type of check",
-              "examples": [
-                "puppet-class-parameter"
-              ]
-            },
             "ces": {
               "type": "array",
               "default": [],
-              "title": "References to compliance engine entries",
+              "title": "CEs that this check satisfies",
               "items": {
-                "type": "string",
-                "title": "Reference to a CE entry"
+                "type": "string"
               },
               "examples": [
                 [
-                  "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1"
+                  "oval:simp.cis.el8.1.6.2_Ensure_ASLR_is_enabled:def:1"
                 ]
               ]
             },
             "controls": {
+              "$ref": "#/$defs/controlsMap"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/identifiers"
+            },
+            "confine": {
+              "$ref": "#/$defs/confine"
+            },
+            "remediation": {
               "type": "object",
-              "default": {},
-              "title": "References to controls related to this check",
-              "patternProperties": {
-                "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
-                  "type": "boolean",
-                  "default": false,
-                  "title": "Control reference"
+              "title": "Remediation metadata used to filter checks by enforcement tolerance",
+              "properties": {
+                "risk": {
+                  "type": "array",
+                  "title": "Risk entries describing the potential impact of enforcing this check",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "type": "integer",
+                        "title": "Numeric risk level (1-100). Checks are skipped when this value is >= the enforcement_tolerance setting."
+                      },
+                      "reason": {
+                        "type": "string",
+                        "title": "Human-readable explanation of the risk"
+                      }
+                    }
+                  },
+                  "examples": [
+                    [
+                      {
+                        "level": 41,
+                        "reason": "Depending on the system being scanned, aide could cause system sluggishness during the period it performs its scan."
+                      }
+                    ]
+                  ]
+                },
+                "disabled": {
+                  "type": "array",
+                  "title": "Entries indicating this check is disabled. Disabled checks are always skipped when enforcement_tolerance is set.",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "reason": {
+                        "type": "string",
+                        "title": "Human-readable explanation of why this check is disabled"
+                      }
+                    }
+                  },
+                  "examples": [
+                    [
+                      {
+                        "reason": "This check is not applicable to containerized environments."
+                      }
+                    ]
+                  ]
                 }
-              },
-              "examples": [
-                {
-                  "nist_800_53:rev4:AU-2": true
-                }
-              ]
+              }
             }
           },
           "examples": [
             {
+              "type": "puppet-class-parameter",
               "settings": {
                 "parameter": "simp::sysctl::kernel__randomize_va_space",
                 "value": 2
               },
-              "type": "puppet-class-parameter",
-              "ces": [
-                "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1"
-              ]
+              "controls": {
+                "nist_800_53:rev4:SC-39": true
+              },
+              "confine": {
+                "os.family": "RedHat",
+                "os.release.major": ["7", "8", "9"]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "controls": {
+      "type": "object",
+      "default": {},
+      "title": "Collection of compliance controls",
+      "description": "Controls are cross-reference labels from external frameworks (e.g. nist_800_53:rev4:AU-2, disa_stig). Profiles and checks annotate themselves with controls to express alignment. Control entries carry optional metadata; an empty object {} is valid.",
+      "patternProperties": {
+        "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+          "type": "object",
+          "default": {},
+          "title": "A compliance control",
+          "properties": {
+            "title": {
+              "type": "string",
+              "title": "Short title of the control"
+            },
+            "description": {
+              "type": "string",
+              "title": "Description of the control"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/identifiers"
+            },
+            "confine": {
+              "$ref": "#/$defs/confine"
+            }
+          },
+          "examples": [
+            {},
+            {
+              "title": "Audit Events",
+              "identifiers": {
+                "nist_800_53:rev4": ["AU-2"]
+              }
             }
           ]
         }
       },
       "examples": [
         {
-          "oval:com.puppet.forge.simp.cis.simp.sysctl.kernel__randomize_va_space": {
-            "settings": {
-              "parameter": "simp::sysctl::kernel__randomize_va_space",
-              "value": 2
-            },
-            "type": "puppet-class-parameter",
-            "ces": [
-              "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1"
-            ]
+          "nist_800_53:rev4": {},
+          "disa_stig": {},
+          "nist_800_53:rev4:AU-2": {
+            "title": "Audit Events"
           }
         }
       ]
@@ -436,51 +448,47 @@
     {
       "version": "2.0.0",
       "profiles": {
-        "cis:level:1:server": {
-          "title": "Level 1 - Server",
-          "description": "Items in this profile intend to: be practical and prudent; provide a clear security benefit; and not inhibit the utility of the technology beyond acceptable means. This profile is intended for servers.",
-          "ces": {
-            "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1": true
+        "cis:el8:l1:server": {
+          "title": "CIS Level 1 - Server",
+          "controls": {
+            "cis:el8:l1": true
           }
         }
       },
       "ce": {
-        "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1": {
+        "oval:simp.cis.el8.1.6.2_Ensure_ASLR_is_enabled:def:1": {
           "controls": {
-            "cis:el8:v1.0.0.1": true
+            "cis:el8:l1": true
           },
           "identifiers": {
-            "cis": []
+            "cis": ["1.6.2"],
+            "nist_800_53:rev4": ["SC-39"]
           },
-          "oval-ids": [
-            "xccdf_org.cisecurity.benchmarks_rule_1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled"
-          ],
           "title": "Ensure address space layout randomization (ASLR) is enabled",
-          "description": "Address space layout randomization (ASLR) is an exploit mitigation technique which randomly arranges the address space of key data areas of a process.",
-          "imported_data": {
-            "fixtext": "Set the following parameter in /etc/sysctl.conf or a /etc/sysctl.d/* file: kernel.randomize_va_space = 2 Run the following command to set the active kernel parameter: # sysctl -w kernel.randomize_va_space=2"
-          },
+          "description": "ASLR is an exploit mitigation technique which randomly arranges the address space of key data areas of a process.",
           "confine": {
-            "os.release.major": [
-              "8"
-            ],
-            "os.name": [
-              "RedHat"
-            ]
+            "os.release.major": ["8"],
+            "os.name": ["RedHat"]
           }
         }
       },
       "checks": {
         "oval:com.puppet.forge.simp.cis.simp.sysctl.kernel__randomize_va_space": {
+          "type": "puppet-class-parameter",
           "settings": {
             "parameter": "simp::sysctl::kernel__randomize_va_space",
             "value": 2
           },
-          "type": "puppet-class-parameter",
-          "ces": [
-            "oval:simp.cis.el8.1.6.2_Ensure_address_space_layout_randomization_ASLR_is_enabled:def:1"
-          ]
+          "controls": {
+            "cis:el8:l1": true
+          },
+          "confine": {
+            "os.family": "RedHat"
+          }
         }
+      },
+      "controls": {
+        "cis:el8:l1": {}
       }
     }
   ]
