@@ -52,6 +52,65 @@ RSpec.describe ComplianceEngine::ModuleLoader do
     end
   end
 
+  context 'dotfile handling' do
+    let(:module_path) { 'test_module_dot' }
+    let(:normal_content) { "---\nversion: '2.0.0'\nprofiles: {}\n" }
+    let(:dot_content)    { "---\nversion: '2.0.0'\nprofiles: {dot: true}\n" }
+
+    before(:each) do
+      allow(File).to receive(:directory?).with(module_path).and_return(true)
+      allow(File).to receive(:exist?).with("#{module_path}/metadata.json").and_return(false)
+      allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
+      allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
+      allow(Dir).to receive(:glob)
+        .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
+        .and_return([])
+
+      # Glob returns both a normal file and two dotfile paths.
+      allow(Dir).to receive(:glob)
+        .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
+        .and_return([
+                      "#{module_path}/SIMP/compliance_profiles/normal.yaml",
+                      "#{module_path}/SIMP/compliance_profiles/.hidden.yaml",
+                      "#{module_path}/SIMP/compliance_profiles/.dotdir/nested.yaml",
+                    ])
+
+      [
+        ['normal.yaml', normal_content],
+        ['.hidden.yaml', dot_content],
+        ['.dotdir/nested.yaml', dot_content],
+      ].each do |name, contents|
+        filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
+        allow(File).to receive(:size).with(filename).and_return(contents.length)
+        allow(File).to receive(:mtime).with(filename).and_return(Time.now)
+        allow(File).to receive(:read).with(filename).and_return(contents)
+      end
+    end
+
+    context 'by default (load_dotfiles: false)' do
+      subject(:module_loader) { described_class.new(module_path) }
+
+      it 'excludes dotfiles and files inside dot-directories' do
+        expect(module_loader.files.map(&:key)).to eq(
+          ["#{module_path}/SIMP/compliance_profiles/normal.yaml"],
+        )
+      end
+    end
+
+    context 'with load_dotfiles: true' do
+      subject(:module_loader) { described_class.new(module_path, load_dotfiles: true) }
+
+      it 'includes dotfiles and files inside dot-directories' do
+        # .sort puts dot-prefixed names before regular names (ASCII order)
+        expect(module_loader.files.map(&:key)).to eq([
+                                                       "#{module_path}/SIMP/compliance_profiles/.dotdir/nested.yaml",
+                                                       "#{module_path}/SIMP/compliance_profiles/.hidden.yaml",
+                                                       "#{module_path}/SIMP/compliance_profiles/normal.yaml",
+                                                     ])
+      end
+    end
+  end
+
   context 'with module data' do
     subject(:module_loader) { described_class.new(test_data.keys.first) }
 

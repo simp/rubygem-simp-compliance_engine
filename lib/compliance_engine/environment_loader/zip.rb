@@ -18,7 +18,7 @@ class ComplianceEngine::EnvironmentLoader::Zip < ComplianceEngine::EnvironmentLo
       dir = zipfile.dir
       file = zipfile.file
 
-      super(root, fileclass: file, dirclass: dir, zipfile_path: path)
+      super(root, fileclass: file, dirclass: dir, zipfile_path: path, load_dotfiles: true)
     end
   end
 end
