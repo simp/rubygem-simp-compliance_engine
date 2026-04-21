@@ -12,12 +12,12 @@
     "collectionKey": {
       "description": "A colon-delimited hierarchical key used to name profiles, CEs, checks, and controls",
       "type": "string",
-      "pattern": "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$"
+      "pattern": "^\\w(?:[\\w.-]*[\\w-])?(?::\\w(?:[\\w.-]*[\\w-])?)*$"
     },
     "confine": {
       "type": "object",
       "title": "Conditions that confine this entry to specific environments",
-      "description": "Keys are dot-notation Puppet fact paths (e.g. os.release.major) or the special keys module_name and module_version. Values may be a single string (exact match, prefix with ! to negate) or an array of strings (any match).",
+      "description": "Keys are dot-notation Puppet fact paths (e.g. os.release.major) or the special keys module_name and module_version. Values may be a single scalar (exact match; strings may be prefixed with ! to negate) or an array of scalars (any match).",
       "patternProperties": {
         "^\\w+(?:[.\\-]\\w+)*$": {
           "oneOf": [
@@ -25,9 +25,15 @@
               "type": "string"
             },
             {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
               "type": "array",
               "items": {
-                "type": "string"
+                "type": ["string", "boolean", "integer"]
               }
             }
           ]
@@ -39,6 +45,9 @@
           "os.name": "RedHat"
         },
         {
+          "ipv6_enabled": true
+        },
+        {
           "module_name": "simp-compliance_engine",
           "module_version": ">=1.0.0 <2.0.0"
         }
@@ -48,7 +57,7 @@
       "type": "object",
       "title": "References to top-level controls entries. Enforced when value is true.",
       "patternProperties": {
-        "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+        "^\\w(?:[\\w.-]*[\\w-])?(?::\\w(?:[\\w.-]*[\\w-])?)*$": {
           "type": "boolean",
           "default": false
         }
@@ -66,7 +75,7 @@
         {
           "type": "object",
           "patternProperties": {
-            "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+            "^\\w(?:[\\w.-]*[\\w-])?(?::\\w(?:[\\w.-]*[\\w-])?)*$": {
               "type": "array",
               "items": {
                 "type": ["string", "number"]
@@ -104,7 +113,7 @@
       "title": "Collection of compliance profiles",
       "description": "Each profile is a named checklist of Checks, CEs, and Controls to enforce.",
       "patternProperties": {
-        "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+        "^\\w(?:[\\w.-]*[\\w-])?(?::\\w(?:[\\w.-]*[\\w-])?)*$": {
           "type": "object",
           "default": {},
           "title": "A compliance profile",
@@ -128,7 +137,7 @@
               "default": {},
               "title": "CEs to include in this profile. Enforced when value is true.",
               "patternProperties": {
-                "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+                "^\\w(?:[\\w.-]*[\\w-])?(?::\\w(?:[\\w.-]*[\\w-])?)*$": {
                   "type": "boolean",
                   "default": false
                 }
@@ -147,7 +156,7 @@
               "default": {},
               "title": "Checks to include in this profile. Enforced when value is true.",
               "patternProperties": {
-                "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+                "^\\w(?:[\\w.-]*[\\w-])?(?::\\w(?:[\\w.-]*[\\w-])?)*$": {
                   "type": "boolean",
                   "default": false
                 }
@@ -190,7 +199,7 @@
       "title": "Collection of Compliance Elements (CEs)",
       "description": "Each CE names a single compliance capability and bridges profiles to checks via a shared vocabulary.",
       "patternProperties": {
-        "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+        "^\\w(?:[\\w.-]*[\\w-])?(?::\\w(?:[\\w.-]*[\\w-])?)*$": {
           "type": "object",
           "default": {},
           "title": "A Compliance Element",
@@ -270,13 +279,10 @@
       "title": "Collection of compliance checks",
       "description": "Each check is a verifiable assertion about a system setting. Checks of type puppet-class-parameter carry a parameter and value that become Hiera data.",
       "patternProperties": {
-        "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+        "^\\w(?:[\\w.-]*[\\w-])?(?::\\w(?:[\\w.-]*[\\w-])?)*$": {
           "type": "object",
           "default": {},
           "title": "A compliance check",
-          "required": [
-            "type"
-          ],
           "properties": {
             "type": {
               "type": "string",
@@ -415,7 +421,7 @@
       "title": "Collection of compliance controls",
       "description": "Controls are cross-reference labels from external frameworks (e.g. nist_800_53:rev4:AU-2, disa_stig). Profiles and checks annotate themselves with controls to express alignment. Control entries carry optional metadata; an empty object {} is valid.",
       "patternProperties": {
-        "^\\w(?:[-\\w]*\\w)?(?::\\w(?:[-\\w]*\\w)?)*$": {
+        "^\\w(?:[\\w.-]*[\\w-])?(?::\\w(?:[\\w.-]*[\\w-])?)*$": {
           "type": "object",
           "default": {},
           "title": "A compliance control",
