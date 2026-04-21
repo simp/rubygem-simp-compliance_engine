@@ -161,9 +161,16 @@ class ComplianceEngine::Data
 
       if path.is_a?(ComplianceEngine::ModuleLoader)
         modules[path.name] = path.version unless path.name.nil?
-        path.files.each do |file_loader|
-          update(file_loader)
-        end
+        new_keys = path.files.to_set(&:key)
+        module_prefix = if path.zipfile_path
+                          ::File.join(path.zipfile_path, '.', path.path)
+                        else
+                          path.path
+                        end
+        stale_keys = data.keys.select { |k| k.start_with?(module_prefix) && !new_keys.include?(k) }
+        stale_keys.each { |k| data.delete(k) }
+        path.files.each { |file_loader| update(file_loader) }
+        reset_collection unless stale_keys.empty?
         next
       end
 

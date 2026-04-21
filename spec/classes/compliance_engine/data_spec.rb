@@ -1149,4 +1149,118 @@ RSpec.describe ComplianceEngine::Data do
       expect(compliance_engine.ces.keys).to eq(['ce_00', 'ce_01', 'ce_02', 'ce_03'])
     end
   end
+
+  context 'data updates' do
+    subject(:compliance_engine) { described_class.new }
+
+    let(:module_path) { 'update_test_module' }
+    let(:compliance_dir) { "#{module_path}/SIMP/compliance_profiles" }
+    let(:file_a_path) { "#{compliance_dir}/a.yaml" }
+    let(:file_b_path) { "#{compliance_dir}/b.yaml" }
+
+    let(:file_a_contents) do
+      <<~YAML
+        ---
+        version: 2.0.0
+        profiles:
+          profile_a:
+            ces:
+              ce_a: true
+        ce:
+          ce_a:
+            controls:
+              control_a: true
+        checks:
+          check_a:
+            type: puppet-class-parameter
+            settings:
+              parameter: mymodule::param_a
+              value: value_a
+            ces:
+              - ce_a
+      YAML
+    end
+
+    let(:file_b_contents) do
+      <<~YAML
+        ---
+        version: 2.0.0
+        profiles:
+          profile_b:
+            ces:
+              ce_b: true
+        ce:
+          ce_b:
+            controls:
+              control_b: true
+        checks:
+          check_b:
+            type: puppet-class-parameter
+            settings:
+              parameter: mymodule::param_b
+              value: value_b
+            ces:
+              - ce_b
+      YAML
+    end
+
+    def stub_module(glob_results)
+      allow(File).to receive(:directory?).with(module_path).and_return(true)
+      allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
+      allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
+      allow(Dir).to receive(:glob).with("#{compliance_dir}/**/*.yaml").and_return(*glob_results)
+      allow(Dir).to receive(:glob).with("#{compliance_dir}/**/*.json").and_return([])
+
+      [[file_a_path, file_a_contents], [file_b_path, file_b_contents]].each do |path, contents|
+        allow(File).to receive(:size).with(path).and_return(contents.length)
+        allow(File).to receive(:mtime).with(path).and_return(Time.now)
+        allow(File).to receive(:read).with(path).and_return(contents)
+      end
+    end
+
+    context 'when a new file is added between scans' do
+      before(:each) { stub_module([[file_a_path], [file_a_path, file_b_path]]) }
+
+      it 'picks up the new profile on re-scan' do
+        compliance_engine.open(module_path)
+        expect(compliance_engine.profiles.keys).to contain_exactly('profile_a')
+        expect(compliance_engine.files).to contain_exactly(file_a_path)
+        expect(compliance_engine.hiera(['profile_a'])).to eq({ 'mymodule::param_a' => 'value_a' })
+
+        compliance_engine.open(module_path)
+        expect(compliance_engine.profiles.keys).to contain_exactly('profile_a', 'profile_b')
+        expect(compliance_engine.files).to contain_exactly(file_a_path, file_b_path)
+        expect(compliance_engine.hiera(['profile_b'])).to eq({ 'mymodule::param_b' => 'value_b' })
+      end
+    end
+
+    context 'when a file is deleted between scans' do
+      before(:each) { stub_module([[file_a_path, file_b_path], [file_a_path]]) }
+
+      it 'drops data from the deleted file on re-scan' do
+        compliance_engine.open(module_path)
+        expect(compliance_engine.profiles.keys).to contain_exactly('profile_a', 'profile_b')
+        expect(compliance_engine.files).to contain_exactly(file_a_path, file_b_path)
+        expect(compliance_engine.hiera(['profile_b'])).to eq({ 'mymodule::param_b' => 'value_b' })
+
+        compliance_engine.open(module_path)
+        expect(compliance_engine.profiles.keys).to contain_exactly('profile_a')
+        expect(compliance_engine.files).to contain_exactly(file_a_path)
+        expect(compliance_engine.hiera(['profile_b'])).to eq({})
+      end
+    end
+
+    context 'when all files in a module are deleted between scans' do
+      before(:each) { stub_module([[file_a_path, file_b_path], []]) }
+
+      it 'drops all module data on re-scan' do
+        compliance_engine.open(module_path)
+        expect(compliance_engine.profiles.keys).to contain_exactly('profile_a', 'profile_b')
+
+        compliance_engine.open(module_path)
+        expect(compliance_engine.profiles.keys).to be_empty
+        expect(compliance_engine.files).to be_empty
+      end
+    end
+  end
 end
