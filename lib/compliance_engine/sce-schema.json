@@ -286,10 +286,8 @@
           "properties": {
             "type": {
               "type": "string",
-              "title": "The type of check",
-              "examples": [
-                "puppet-class-parameter"
-              ]
+              "const": "puppet-class-parameter",
+              "title": "The type of check"
             },
             "settings": {
               "type": "object",
