@@ -46,6 +46,5 @@ RSpec.describe ComplianceEngine do
     it 'defines profiles, ce, checks, and controls' do
       expect(schema['properties'].keys).to include('profiles', 'ce', 'checks', 'controls')
     end
-
   end
 end
