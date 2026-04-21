@@ -306,7 +306,8 @@ class ComplianceEngine::Data
         v.to_a.each do |component|
           next unless component.key?('confine')
 
-          @confines = DeepMerge.deep_merge!(component['confine'], @confines)
+          confine = component['confine'].transform_values { |v| v.is_a?(Array) ? v : Array(v) }
+          @confines = DeepMerge.deep_merge!(confine, @confines)
         end
       end
     end

@@ -634,6 +634,87 @@ RSpec.describe ComplianceEngine::Data do
     end
   end
 
+  context 'with scalar confine values across multiple components' do
+    def test_data
+      {
+        'test_module_00' => {
+          'a/file.yaml' => <<~A_YAML,
+            ---
+            version: 2.0.0
+            profiles:
+              custom_profile_1:
+                ces:
+                  enable_widget_spinner_audit_logging: true
+                confine:
+                  os.name: CentOS
+            ce:
+              enable_widget_spinner_audit_logging:
+                controls:
+                  nist_800_53:rev4:AU-2: true
+                confine:
+                  os.name: CentOS
+            checks:
+              widget_spinner_audit_logging:
+                type: 'puppet-class-parameter'
+                settings:
+                  parameter: 'widget_spinner::audit_logging'
+                  value: true
+                ces:
+                  - enable_widget_spinner_audit_logging
+          A_YAML
+          'b/file.yaml' => <<~B_YAML,
+            ---
+            version: 2.0.0
+            profiles:
+              custom_profile_2:
+                ces:
+                  enable_widget_spinner_audit_logging: true
+                confine:
+                  os.name: RedHat
+            ce:
+              enable_widget_spinner_audit_logging:
+                controls:
+                  nist_800_53:rev4:AU-2: true
+                confine:
+                  os.name: RedHat
+          B_YAML
+        },
+      }
+    end
+
+    subject(:compliance_engine) { described_class.new(*test_data.keys) }
+
+    before(:each) do
+      test_data.each do |module_path, file_data|
+        allow(File).to receive(:directory?).with(module_path).and_return(true)
+        allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
+        allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
+          .and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+          )
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
+          .and_return([])
+
+        file_data.each do |name, contents|
+          filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
+          allow(File).to receive(:size).with(filename).and_return(contents.length)
+          allow(File).to receive(:mtime).with(filename).and_return(Time.now)
+          allow(File).to receive(:read).with(filename).and_return(contents)
+        end
+      end
+    end
+
+    it 'merges scalar confine values into arrays without error' do
+      confines = compliance_engine.confines
+      expect(confines).to be_instance_of(Hash)
+      expect(confines['os.name']).to be_instance_of(Array)
+      expect(confines['os.name']).to include('CentOS', 'RedHat')
+    end
+  end
+
   context 'with mapping based on ce' do
     def test_data
       {
