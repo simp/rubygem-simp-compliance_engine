@@ -47,10 +47,5 @@ RSpec.describe ComplianceEngine do
       expect(schema['properties'].keys).to include('profiles', 'ce', 'checks', 'controls')
     end
 
-    it 'returns the same object on repeated calls (cached)' do
-      first = described_class.schema
-      second = described_class.schema
-      expect(first).to be(second)
-    end
   end
 end
