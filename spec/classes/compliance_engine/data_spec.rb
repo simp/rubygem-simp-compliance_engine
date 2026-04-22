@@ -1110,6 +1110,167 @@ RSpec.describe ComplianceEngine::Data do
     end
   end
 
+  context 'with multiple profiles and conflicting settings' do
+    subject(:compliance_engine) { described_class.new(module_path) }
+
+    let(:profile_a_yaml) do
+      <<~YAML
+        ---
+        version: 2.0.0
+        profiles:
+          profile_a:
+            ces:
+              ce_a: true
+        ce:
+          ce_a:
+            controls:
+              control_a: true
+        checks:
+          check_string_a:
+            type: puppet-class-parameter
+            settings:
+              parameter: mymodule::string_param
+              value: value from A
+            ces:
+              - ce_a
+          check_array_a:
+            type: puppet-class-parameter
+            settings:
+              parameter: mymodule::array_param
+              value:
+                - a1
+                - a2
+            ces:
+              - ce_a
+          check_hash_a:
+            type: puppet-class-parameter
+            settings:
+              parameter: mymodule::hash_param
+              value:
+                shared_key: from A
+                a_only_key: a value
+            ces:
+              - ce_a
+      YAML
+    end
+
+    let(:profile_b_yaml) do
+      <<~YAML
+        ---
+        version: 2.0.0
+        profiles:
+          profile_b:
+            ces:
+              ce_b: true
+        ce:
+          ce_b:
+            controls:
+              control_b: true
+        checks:
+          check_string_b:
+            type: puppet-class-parameter
+            settings:
+              parameter: mymodule::string_param
+              value: value from B
+            ces:
+              - ce_b
+          check_array_b:
+            type: puppet-class-parameter
+            settings:
+              parameter: mymodule::array_param
+              value:
+                - b1
+                - b2
+            ces:
+              - ce_b
+          check_hash_b:
+            type: puppet-class-parameter
+            settings:
+              parameter: mymodule::hash_param
+              value:
+                shared_key: from B
+                b_only_key: b value
+            ces:
+              - ce_b
+      YAML
+    end
+
+    let(:module_path) { 'test_merge_module' }
+
+    before(:each) do
+      allow(File).to receive(:directory?).with(module_path).and_return(true)
+      allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
+      allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
+      allow(Dir).to receive(:glob)
+        .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
+        .and_return([
+                      "#{module_path}/SIMP/compliance_profiles/profile_a.yaml",
+                      "#{module_path}/SIMP/compliance_profiles/profile_b.yaml",
+                    ])
+      allow(Dir).to receive(:glob)
+        .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
+        .and_return([])
+
+      [['profile_a.yaml', profile_a_yaml], ['profile_b.yaml', profile_b_yaml]].each do |name, contents|
+        filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
+        allow(File).to receive(:size).with(filename).and_return(contents.length)
+        allow(File).to receive(:mtime).with(filename).and_return(Time.now)
+        allow(File).to receive(:read).with(filename).and_return(contents)
+      end
+    end
+
+    context 'when profile_a is listed before profile_b' do
+      let(:hiera) { compliance_engine.hiera(['profile_a', 'profile_b']) }
+
+      it 'profile_a wins for string parameters' do
+        expect(hiera['mymodule::string_param']).to eq('value from A')
+      end
+
+      it 'merges array parameters with profile_a values appended last (highest priority)' do
+        expect(hiera['mymodule::array_param']).to eq(['b1', 'b2', 'a1', 'a2'])
+      end
+
+      it 'deep-merges hash parameters with profile_a winning on shared keys' do
+        expect(hiera['mymodule::hash_param']).to include(
+          'shared_key' => 'from A',
+          'a_only_key' => 'a value',
+          'b_only_key' => 'b value',
+        )
+      end
+    end
+
+    context 'when profile_b is listed before profile_a' do
+      let(:hiera) { compliance_engine.hiera(['profile_b', 'profile_a']) }
+
+      it 'profile_b wins for string parameters' do
+        expect(hiera['mymodule::string_param']).to eq('value from B')
+      end
+
+      it 'merges array parameters with profile_b values appended last (highest priority)' do
+        expect(hiera['mymodule::array_param']).to eq(['a1', 'a2', 'b1', 'b2'])
+      end
+
+      it 'deep-merges hash parameters with profile_b winning on shared keys' do
+        expect(hiera['mymodule::hash_param']).to include(
+          'shared_key' => 'from B',
+          'a_only_key' => 'a value',
+          'b_only_key' => 'b value',
+        )
+      end
+    end
+
+    context 'when only profile_a is requested' do
+      let(:hiera) { compliance_engine.hiera(['profile_a']) }
+
+      it 'returns only profile_a settings' do
+        expect(hiera['mymodule::string_param']).to eq('value from A')
+        expect(hiera['mymodule::array_param']).to eq(['a1', 'a2'])
+        expect(hiera['mymodule::hash_param']).to include('shared_key' => 'from A', 'a_only_key' => 'a value')
+        expect(hiera['mymodule::hash_param']).not_to have_key('b_only_key')
+      end
+    end
+  end
+
   context 'with a supplied module path' do
     subject(:compliance_engine) { described_class.new }
 
