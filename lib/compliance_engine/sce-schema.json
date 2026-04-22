@@ -277,7 +277,7 @@
       "type": "object",
       "default": {},
       "title": "Collection of compliance checks",
-      "description": "Each check is a verifiable assertion about a system setting. Checks of type puppet-class-parameter carry a parameter and value that become Hiera data.",
+      "description": "Each check is a verifiable assertion about a system setting. Currently only type puppet-class-parameter is supported; it carries a parameter and value that become Hiera data.",
       "patternProperties": {
         "^\\w(?:[\\w.-]*[\\w-])?(?::\\w(?:[\\w.-]*[\\w-])?)*$": {
           "type": "object",

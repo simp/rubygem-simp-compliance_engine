@@ -55,9 +55,10 @@ module ComplianceEngine
   def self.schema
     require 'json'
     @schema ||= begin
-      JSON.parse(File.read(schema_path))
+      path = schema_path
+      JSON.parse(File.read(path, encoding: 'UTF-8'))
     rescue Errno::ENOENT, JSON::ParserError => e
-      raise Error, "Failed to load schema from #{schema_path}: #{e.class}: #{e.message}"
+      raise Error, "Failed to load schema from #{path}: #{e.class}: #{e.message}"
     end
   end
 
