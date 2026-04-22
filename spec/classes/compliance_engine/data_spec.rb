@@ -147,6 +147,7 @@ RSpec.describe ComplianceEngine::Data do
       allow(File).to receive(:size).with('file').and_return(0)
       allow(File).to receive(:mtime).with('file').and_return(Time.now)
       allow(File).to receive(:read).with('file').and_return('')
+      allow(ComplianceEngine.log).to receive(:error)
     end
 
     it 'initializes' do
@@ -163,7 +164,6 @@ RSpec.describe ComplianceEngine::Data do
     end
 
     it 'logs an error' do
-      allow(ComplianceEngine.log).to receive(:error)
       compliance_engine.files
       expect(ComplianceEngine.log).to have_received(:error).with('Data must be a hash')
     end
@@ -178,6 +178,7 @@ RSpec.describe ComplianceEngine::Data do
       allow(File).to receive(:size).with('file').and_return(0)
       allow(File).to receive(:mtime).with('file').and_return(Time.now)
       allow(File).to receive(:read).with('file').and_return("---\nversion: 1.0")
+      allow(ComplianceEngine.log).to receive(:error)
     end
 
     it 'initializes' do
@@ -194,7 +195,6 @@ RSpec.describe ComplianceEngine::Data do
     end
 
     it 'logs an error' do
-      allow(ComplianceEngine.log).to receive(:error)
       compliance_engine.files
       expect(ComplianceEngine.log).to have_received(:error).with("Unsupported version '1.0'")
     end
