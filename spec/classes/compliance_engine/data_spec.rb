@@ -1194,7 +1194,6 @@ RSpec.describe ComplianceEngine::Data do
               - ce_b
       YAML
     end
-    # rubocop:enable RSpec/MultipleMemoizedHelpers
 
     let(:module_path) { 'test_merge_module' }
 
