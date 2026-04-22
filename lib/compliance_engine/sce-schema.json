@@ -8,6 +8,7 @@
   "required": [
     "version"
   ],
+  "additionalProperties": false,
   "$defs": {
     "collectionKey": {
       "description": "A colon-delimited hierarchical key used to name profiles, CEs, checks, and controls",
