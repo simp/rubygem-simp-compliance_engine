@@ -18,6 +18,7 @@ class ComplianceEngine::ModuleLoader
     @name = nil
     @version = nil
     @files = []
+    @path = path.to_s
     @zipfile_path = zipfile_path
 
     # Read the Puppet module's metadata.json
@@ -59,5 +60,5 @@ class ComplianceEngine::ModuleLoader
     end
   end
 
-  attr_reader :name, :version, :files, :zipfile_path
+  attr_reader :name, :version, :files, :path, :zipfile_path
 end
