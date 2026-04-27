@@ -58,4 +58,46 @@ RSpec.describe ComplianceEngine::EnvironmentLoader::Zip do
       expect(ComplianceEngine::ModuleLoader).to have_received(:new).with(anything, hash_including(load_dotfiles: false)).at_least(:once)
     end
   end
+
+  context 'with an opened ::Zip::File' do
+    subject(:environment_loader) { described_class.new(zipfile) }
+
+    let(:path) { File.expand_path('../../../fixtures/test_environment.zip', __dir__) }
+    let(:zipfile) { Zip::File.open(path) }
+
+    before(:each) do
+      allow(ComplianceEngine::ModuleLoader).to receive(:new).and_return(instance_double(ComplianceEngine::ModuleLoader))
+    end
+
+    it 'initializes' do
+      expect(environment_loader).to be_instance_of(described_class)
+    end
+
+    it 'defaults modulepath to the zipfile name' do
+      expect(environment_loader.modulepath).to eq(zipfile.name)
+      expect(environment_loader.zipfile_path).to eq(zipfile.name)
+    end
+
+    it 'loads modules from the opened zip' do
+      expect(environment_loader.modules).to be_instance_of(Array)
+      expect(environment_loader.modules.count).to eq(2)
+    end
+  end
+
+  context 'with an explicit name' do
+    subject(:environment_loader) { described_class.new(zipfile, name: name) }
+
+    let(:path) { File.expand_path('../../../fixtures/test_environment.zip', __dir__) }
+    let(:zipfile) { Zip::File.open(path) }
+    let(:name) { '/outer.zip!modules.zip' }
+
+    before(:each) do
+      allow(ComplianceEngine::ModuleLoader).to receive(:new).and_return(instance_double(ComplianceEngine::ModuleLoader))
+    end
+
+    it 'uses the explicit name for modulepath and zipfile_path' do
+      expect(environment_loader.modulepath).to eq(name)
+      expect(environment_loader.zipfile_path).to eq(name)
+    end
+  end
 end
