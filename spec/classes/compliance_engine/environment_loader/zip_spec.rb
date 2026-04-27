@@ -69,6 +69,8 @@ RSpec.describe ComplianceEngine::EnvironmentLoader::Zip do
       allow(ComplianceEngine::ModuleLoader).to receive(:new).and_return(instance_double(ComplianceEngine::ModuleLoader))
     end
 
+    after(:each) { zipfile.close }
+
     it 'initializes' do
       expect(environment_loader).to be_instance_of(described_class)
     end
@@ -94,6 +96,8 @@ RSpec.describe ComplianceEngine::EnvironmentLoader::Zip do
     before(:each) do
       allow(ComplianceEngine::ModuleLoader).to receive(:new).and_return(instance_double(ComplianceEngine::ModuleLoader))
     end
+
+    after(:each) { zipfile.close }
 
     it 'uses the explicit name for modulepath and zipfile_path' do
       expect(environment_loader.modulepath).to eq(name)
