@@ -1743,4 +1743,108 @@ RSpec.describe ComplianceEngine::Data do
       end
     end
   end
+
+  context 'zip data updates' do
+    subject(:compliance_engine) { described_class.new }
+
+    let(:zip_path) { 'test_env.zip' }
+    let(:module_path) { '/zip_test_module' }
+    let(:compliance_dir) { "#{module_path}/SIMP/compliance_profiles" }
+    let(:file_a_path) { "#{compliance_dir}/a.yaml" }
+    let(:file_b_path) { "#{compliance_dir}/b.yaml" }
+
+    let(:file_a_contents) do
+      <<~YAML
+        ---
+        version: 2.0.0
+        profiles:
+          profile_a:
+            ces:
+              ce_a: true
+        ce:
+          ce_a:
+            controls:
+              control_a: true
+        checks:
+          check_a:
+            type: puppet-class-parameter
+            settings:
+              parameter: mymodule::param_a
+              value: value_a
+            ces:
+              - ce_a
+      YAML
+    end
+
+    let(:file_b_contents) do
+      <<~YAML
+        ---
+        version: 2.0.0
+        profiles:
+          profile_b:
+            ces:
+              ce_b: true
+        ce:
+          ce_b:
+            controls:
+              control_b: true
+        checks:
+          check_b:
+            type: puppet-class-parameter
+            settings:
+              parameter: mymodule::param_b
+              value: value_b
+            ces:
+              - ce_b
+      YAML
+    end
+
+    def make_zip_loaders(first_glob, second_glob)
+      allow(File).to receive(:directory?).and_call_original
+      allow(File).to receive(:exist?).and_call_original
+      allow(Dir).to receive(:glob).and_call_original
+      allow(File).to receive(:directory?).with(module_path).and_return(true)
+      allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
+      allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
+      allow(File).to receive(:exist?).with("#{module_path}/metadata.json").and_return(false)
+      allow(Dir).to receive(:glob).with("#{compliance_dir}/**/*.yaml").and_return(first_glob, second_glob)
+      allow(Dir).to receive(:glob).with("#{compliance_dir}/**/*.json").and_return([])
+
+      [[file_a_path, file_a_contents], [file_b_path, file_b_contents]].each do |path, contents|
+        allow(File).to receive(:size).with(path).and_return(contents.length)
+        allow(File).to receive(:mtime).with(path).and_return(Time.now)
+        allow(File).to receive(:read).with(path).and_return(contents)
+      end
+
+      first = ComplianceEngine::ModuleLoader.new(module_path, zipfile_path: zip_path)
+      second = ComplianceEngine::ModuleLoader.new(module_path, zipfile_path: zip_path)
+      [first, second]
+    end
+
+    context 'when a file is deleted between scans' do
+      it 'drops data from the deleted file on re-scan' do
+        first_loader, second_loader = make_zip_loaders([file_a_path, file_b_path], [file_a_path])
+
+        compliance_engine.open(first_loader)
+        expect(compliance_engine.profiles.keys).to contain_exactly('profile_a', 'profile_b')
+
+        compliance_engine.open(second_loader)
+        expect(compliance_engine.profiles.keys).to contain_exactly('profile_a')
+        expect(compliance_engine.hiera(['profile_b'])).to eq({})
+      end
+    end
+
+    context 'when all files in a zip module are deleted between scans' do
+      it 'drops all module data on re-scan' do
+        first_loader, second_loader = make_zip_loaders([file_a_path, file_b_path], [])
+
+        compliance_engine.open(first_loader)
+        expect(compliance_engine.profiles.keys).to contain_exactly('profile_a', 'profile_b')
+
+        compliance_engine.open(second_loader)
+        expect(compliance_engine.profiles.keys).to be_empty
+        expect(compliance_engine.files).to be_empty
+      end
+    end
+  end
 end
