@@ -44,6 +44,12 @@ configure_beaker(modules: :metadata) do |host|
 
   on(host, 'puppet config set --section master autosign true')
 
+  # Disable the puppetserver environment cache so tests that mutate compliance
+  # data within an environment see the changes on the next agent run instead of
+  # being masked by the server's own caching.  This isolates compliance_engine's
+  # cache behaviour as the thing under test.
+  on(host, 'puppet config set --section master environment_timeout 0')
+
   # Service name may differ between OpenVox and upstream Puppet packages.
   on(host, 'systemctl start openvox-server 2>/dev/null || systemctl start puppetserver')
 
