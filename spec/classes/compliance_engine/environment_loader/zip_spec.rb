@@ -56,7 +56,10 @@ RSpec.describe ComplianceEngine::EnvironmentLoader::Zip do
       close_called = false
       allow(Zip::File).to receive(:open).and_wrap_original do |original, p|
         zip = original.call(p)
-        allow(zip).to receive(:close).and_wrap_original { |m, *args| close_called = true; m.call(*args) }
+        allow(zip).to(receive(:close).and_wrap_original do |m, *args|
+          close_called = true
+          m.call(*args)
+        end)
         zip
       end
       environment_loader
@@ -111,9 +114,10 @@ RSpec.describe ComplianceEngine::EnvironmentLoader::Zip do
     end
 
     it 'does not call Zip::File.open' do
-      zipfile  # materialise the let before restricting Zip::File.open
-      expect(Zip::File).not_to receive(:open)
+      allow(Zip::File).to receive(:open).and_call_original
+      zipfile # materialise the let; the one permitted Zip::File.open call
       environment_loader
+      expect(Zip::File).to have_received(:open).once
     end
 
     it 'passes load_dotfiles: true to ModuleLoader by default' do
