@@ -123,6 +123,9 @@ jobs:
           - name: 'environment leakage'
             spec: '04_env_leakage_spec.rb'
             label: 'env-leakage'
+          - name: 'data update'
+            spec: '05_data_update_spec.rb'
+            label: 'data-update'
     steps:
       - uses: actions/checkout@v6
       - name: Set up Ruby
