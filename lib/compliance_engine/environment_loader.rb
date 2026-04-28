@@ -11,7 +11,9 @@ class ComplianceEngine::EnvironmentLoader
   # @param fileclass [File] the class to use for file operations (default: `File`)
   # @param dirclass [Dir] the class to use for directory operations (default: `Dir`)
   # @param zipfile_path [String, nil] the path to the zip file if loading from a zip archive
-  def initialize(*paths, fileclass: File, dirclass: Dir, zipfile_path: nil)
+  # @param load_dotfiles [Boolean] whether to load dotfiles; passed through to
+  #   each ModuleLoader (default: false)
+  def initialize(*paths, fileclass: File, dirclass: Dir, zipfile_path: nil, load_dotfiles: false)
     raise ArgumentError, 'No paths specified' if paths.empty?
 
     @modulepath ||= paths
@@ -26,7 +28,7 @@ class ComplianceEngine::EnvironmentLoader
       []
     end
     modules.flatten!
-    @modules = modules.map { |path| ComplianceEngine::ModuleLoader.new(path, fileclass: fileclass, dirclass: dirclass, zipfile_path: @zipfile_path) }
+    @modules = modules.map { |path| ComplianceEngine::ModuleLoader.new(path, fileclass: fileclass, dirclass: dirclass, zipfile_path: @zipfile_path, load_dotfiles: load_dotfiles) }
   end
 
   attr_reader :modulepath, :modules, :zipfile_path

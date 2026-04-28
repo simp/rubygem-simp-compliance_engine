@@ -11,14 +11,16 @@ class ComplianceEngine::EnvironmentLoader::Zip < ComplianceEngine::EnvironmentLo
   #
   # @param path [String] the path to the zip file containing the Puppet environment
   # @param root [String] a directory within the zip file to use as the root of the environment
-  def initialize(path, root: '/'.dup)
+  # @param load_dotfiles [Boolean] whether to load dotfiles; defaults to true to
+  #   preserve the historical zip-loader behaviour of including all files
+  def initialize(path, root: '/'.dup, load_dotfiles: true)
     @modulepath = path
 
     ::Zip::File.open(path) do |zipfile|
       dir = zipfile.dir
       file = zipfile.file
 
-      super(root, fileclass: file, dirclass: dir, zipfile_path: path)
+      super(root, fileclass: file, dirclass: dir, zipfile_path: path, load_dotfiles: load_dotfiles)
     end
   end
 end
