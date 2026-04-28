@@ -56,11 +56,26 @@ module ComplianceEngine
     require 'json'
     @schema ||= begin
       path = schema_path
-      JSON.parse(File.read(path, encoding: 'UTF-8'))
+      deep_freeze(JSON.parse(File.read(path, encoding: 'UTF-8')))
     rescue Errno::ENOENT, JSON::ParserError => e
       raise Error, "Failed to load schema from #{path}: #{e.class}: #{e.message}"
     end
   end
+
+  # Recursively freeze a Hash, Array, and all nested objects.
+  #
+  # @param obj [Object] the object to freeze
+  # @return [Object] the frozen object
+  def self.deep_freeze(obj)
+    case obj
+    when Hash
+      obj.each_value { |v| deep_freeze(v) }
+    when Array
+      obj.each { |v| deep_freeze(v) }
+    end
+    obj.freeze
+  end
+  private_class_method :deep_freeze
 
   # Install a PuppetLogger unless a logger has already been explicitly configured.
   # Extracted so the behaviour can be unit-tested without reloading enforcement.rb.
