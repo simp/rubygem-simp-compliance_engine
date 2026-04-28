@@ -172,7 +172,7 @@ class ComplianceEngine::Data
         stale_keys = data.keys.select { |k| (k == module_root || k.start_with?(module_prefix)) && !new_keys.include?(k) }
         stale_keys.each { |k| data.delete(k) }
         path.files.each { |file_loader| update(file_loader) }
-        reset_collection unless stale_keys.empty?
+        reset_collection if path.files.empty? && !stale_keys.empty?
         next
       end
 
