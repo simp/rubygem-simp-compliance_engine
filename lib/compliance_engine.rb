@@ -69,7 +69,10 @@ module ComplianceEngine
   def self.deep_freeze(obj)
     case obj
     when Hash
-      obj.each_value { |v| deep_freeze(v) }
+      obj.each do |k, v|
+        deep_freeze(k)
+        deep_freeze(v)
+      end
     when Array
       obj.each { |v| deep_freeze(v) }
     end

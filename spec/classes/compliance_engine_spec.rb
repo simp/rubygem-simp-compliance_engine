@@ -45,5 +45,10 @@ RSpec.describe ComplianceEngine do
     it 'defines profiles, ce, checks, and controls' do
       expect(schema['properties'].keys).to include('profiles', 'ce', 'checks', 'controls')
     end
+
+    it 'returns a deeply frozen schema' do
+      expect(schema).to be_frozen
+      expect(schema['properties']).to be_frozen
+    end
   end
 end
