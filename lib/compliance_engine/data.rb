@@ -164,7 +164,7 @@ class ComplianceEngine::Data
         modules[path.name] = path.version unless path.name.nil?
         new_keys = path.files.to_set(&:key)
         module_root = if path.zipfile_path
-                        ::File.join(path.zipfile_path, '.', path.path)
+                        ::File.join(path.zipfile_path, '.', path.path.sub(%r{^/+}, ''))
                       else
                         path.path
                       end
