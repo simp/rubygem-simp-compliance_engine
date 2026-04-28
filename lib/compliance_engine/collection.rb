@@ -12,7 +12,13 @@ class ComplianceEngine::Collection
     @collection ||= {}
     hash_key = key
     data.files.each do |file|
-      entries = data.get(file)[hash_key]
+      file_data = data.get(file)
+      unless file_data.is_a?(Hash)
+        ComplianceEngine.log.debug "Skipping #{file}: expected Hash content, got #{file_data.class}"
+        next
+      end
+
+      entries = file_data[hash_key]
       next if entries.nil?
 
       unless entries.is_a?(Hash)
