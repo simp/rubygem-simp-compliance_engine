@@ -1,3 +1,6 @@
+### 0.6.0 / 2026-04-29
+* Honor explicit `false` in profile `checks` and `ces` mappings as exclusions that override positive matches (#117)
+
 ### 0.5.0 / 2026-04-29
 * Add JSON Schema for SCE data, exposed via `ComplianceEngine.schema` (#49)
 * Add `ComplianceEngine::Tolerance` constants for enforcement tolerance levels (#107)
