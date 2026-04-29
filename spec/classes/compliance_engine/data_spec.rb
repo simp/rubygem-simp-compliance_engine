@@ -1305,6 +1305,140 @@ RSpec.describe ComplianceEngine::Data do
     end
   end
 
+  context 'with explicit `false` exclusions in profile mappings' do
+    def test_data
+      {
+        'test_module_00' => {
+          'a/file.yaml' => <<~A_YAML,
+            ---
+            version: 2.0.0
+            profiles:
+              profile_with_excluded_ce:
+                controls:
+                  XY-n: true
+                ces:
+                  abc: false
+              profile_with_excluded_check:
+                controls:
+                  XY-n: true
+                checks:
+                  excluded_check: false
+              profile_with_partial_ce_exclusion:
+                controls:
+                  XY-n: true
+                ces:
+                  xyz: false
+              profile_baseline:
+                controls:
+                  XY-n: true
+            ce:
+              abc:
+                controls:
+                  XY-n: true
+              xyz:
+                controls:
+                  XY-n: true
+              other_ce:
+                controls:
+                  XY-n: true
+            checks:
+              check_via_excluded_ce:
+                type: 'puppet-class-parameter'
+                settings:
+                  parameter: 'test_module_00::via_excluded_ce'
+                  value: 'should be excluded'
+                ces:
+                  - abc
+              check_via_other_ce:
+                type: 'puppet-class-parameter'
+                settings:
+                  parameter: 'test_module_00::via_other_ce'
+                  value: 'should be included'
+                ces:
+                  - other_ce
+              check_via_two_ces:
+                type: 'puppet-class-parameter'
+                settings:
+                  parameter: 'test_module_00::via_two_ces'
+                  value: 'should be included via abc'
+                ces:
+                  - abc
+                  - xyz
+              excluded_check:
+                type: 'puppet-class-parameter'
+                settings:
+                  parameter: 'test_module_00::hard_excluded'
+                  value: 'should never appear'
+                controls:
+                  XY-n: true
+          A_YAML
+        },
+      }
+    end
+
+    subject(:compliance_engine) { described_class.new(*test_data.keys) }
+
+    before(:each) do
+      test_data.each do |module_path, file_data|
+        allow(File).to receive(:directory?).with(module_path).and_return(true)
+        allow(File).to receive(:directory?).with("#{module_path}/SIMP/compliance_profiles").and_return(true)
+        allow(File).to receive(:directory?).with("#{module_path}/simp/compliance_profiles").and_return(false)
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.yaml")
+          .and_return(
+            file_data.map { |name, _contents| "#{module_path}/SIMP/compliance_profiles/#{name}" },
+          )
+        allow(Dir).to receive(:glob)
+          .with("#{module_path}/SIMP/compliance_profiles/**/*.json")
+          .and_return([])
+
+        file_data.each do |name, contents|
+          filename = "#{module_path}/SIMP/compliance_profiles/#{name}"
+          allow(File).to receive(:size).with(filename).and_return(contents.length)
+          allow(File).to receive(:mtime).with(filename).and_return(Time.now)
+          allow(File).to receive(:read).with(filename).and_return(contents)
+        end
+      end
+    end
+
+    it 'excludes a CE explicitly set to false even when the CE matches a positive control' do
+      checks = compliance_engine.check_mapping(compliance_engine.profiles['profile_with_excluded_ce'])
+      keys = checks.values.map(&:key)
+      expect(keys).not_to include('check_via_excluded_ce')
+      expect(keys).to include('check_via_other_ce')
+    end
+
+    it 'omits hiera data for checks reachable only via an excluded CE' do
+      hiera = compliance_engine.hiera(['profile_with_excluded_ce'])
+      expect(hiera).not_to have_key('test_module_00::via_excluded_ce')
+      expect(hiera).to include('test_module_00::via_other_ce' => 'should be included')
+    end
+
+    it 'still includes a check that has another non-excluded CE as a bridge' do
+      checks = compliance_engine.check_mapping(compliance_engine.profiles['profile_with_partial_ce_exclusion'])
+      keys = checks.values.map(&:key)
+      expect(keys).to include('check_via_two_ces')
+    end
+
+    it 'hard-excludes a check explicitly set to false even when other routes match' do
+      checks = compliance_engine.check_mapping(compliance_engine.profiles['profile_with_excluded_check'])
+      keys = checks.values.map(&:key)
+      expect(keys).not_to include('excluded_check')
+    end
+
+    it 'omits hiera data for a hard-excluded check' do
+      hiera = compliance_engine.hiera(['profile_with_excluded_check'])
+      expect(hiera).not_to have_key('test_module_00::hard_excluded')
+    end
+
+    it 'still includes unrelated checks when a different CE is excluded (regression guard)' do
+      excluded_keys = compliance_engine.check_mapping(compliance_engine.profiles['profile_with_excluded_ce']).values.map(&:key)
+      baseline_keys = compliance_engine.check_mapping(compliance_engine.profiles['profile_baseline']).values.map(&:key)
+      expect(excluded_keys).to include('check_via_other_ce')
+      expect(baseline_keys).to include('check_via_other_ce')
+    end
+  end
+
   context 'with zip data' do
     subject(:compliance_engine) { described_class.new }
 

@@ -51,7 +51,7 @@
     },
     "controlsMap": {
       "type": "object",
-      "title": "References to top-level controls entries. Enforced when value is true.",
+      "title": "References to top-level controls entries. Enforced when value is true; explicitly excluded when value is false.",
       "patternProperties": {
         "^\\w(?:[\\w.-]*[\\w-])?(?::\\w(?:[\\w.-]*[\\w-])?)*$": {
           "type": "boolean",
@@ -132,7 +132,7 @@
             "ces": {
               "type": "object",
               "default": {},
-              "title": "CEs to include in this profile. Enforced when value is true.",
+              "title": "CEs to include in this profile. Enforced when value is true; explicitly excluded when value is false (overrides any positive mapping route).",
               "patternProperties": {
                 "^\\w(?:[\\w.-]*[\\w-])?(?::\\w(?:[\\w.-]*[\\w-])?)*$": {
                   "type": "boolean",
@@ -151,7 +151,7 @@
             "checks": {
               "type": "object",
               "default": {},
-              "title": "Checks to include in this profile. Enforced when value is true.",
+              "title": "Checks to include in this profile. Enforced when value is true; hard-excluded when value is false (overrides any positive mapping route).",
               "patternProperties": {
                 "^\\w(?:[\\w.-]*[\\w-])?(?::\\w(?:[\\w.-]*[\\w-])?)*$": {
                   "type": "boolean",
