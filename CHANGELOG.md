@@ -1,3 +1,13 @@
+### 0.5.0 / 2026-04-29
+* Add JSON Schema for SCE data, exposed via `ComplianceEngine.schema` (#49)
+* Add `ComplianceEngine::Tolerance` constants for enforcement tolerance levels (#107)
+* Drop stale file data on environment rescan (#108)
+* Handle malformed compliance data gracefully instead of raising (#111)
+* Make dotfile loading opt-in (defaults to off) (#112)
+* Accept `::Zip::File` objects directly in `EnvironmentLoader::Zip` (#114)
+* Support `compliance_markup`-style parameter knockout prefixes
+* Split `version.rb`: separate gem `VERSION` from data format validator (#104)
+
 ### 0.4.0 / 2026-04-20
 * Route Puppet Hiera backend log messages through Puppet's logging system (#96)
 * Fix JRuby compatibility: convert internal requires to require_relative so the library loads correctly inside Puppet Server / OpenVox Server when installed as a Puppet module rather than a standalone gem
