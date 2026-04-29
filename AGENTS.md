@@ -91,6 +91,8 @@ A component can have multiple **fragments** (one per source file), which are dee
 | CE→Control overlap | Any of `check.ces`' CEs has a control that also appears in `profile.controls` |
 | Direct reference | `profile.checks[check_key]` is truthy |
 
+An entry on the **profile side** with value `false` is treated as an **explicit exclusion** that overrides positive matches: `profile.checks[X] = false` hard-excludes check `X` from every route, and `profile.ces[X] = false` prevents CE `X` from being used as either a direct CE match or as a CE→Control bridge. On the **check side**, `false` is local-only (e.g. `check.controls[X] = false` simply means the check is not associated with control `X`); `check.ces` is an array, so no `false` handling applies.
+
 `check_mapping` can also be called with CE objects (in addition to profiles). Results are cached by `"#{object.class}:#{object.key}"`.
 
 ### Loading Pipeline
