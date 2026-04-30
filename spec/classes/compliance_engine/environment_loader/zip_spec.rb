@@ -131,6 +131,32 @@ RSpec.describe ComplianceEngine::EnvironmentLoader::Zip do
     end
   end
 
+  context 'with a buffer-opened ::Zip::File' do
+    let(:path) { File.expand_path('../../../fixtures/test_environment.zip', __dir__) }
+    let(:bytes) { File.binread(path) }
+
+    before(:each) do
+      allow(ComplianceEngine::ModuleLoader).to receive(:new).and_return(instance_double(ComplianceEngine::ModuleLoader))
+    end
+
+    it 'defaults modulepath to "-" when no name: is given' do
+      Zip::File.open_buffer(bytes) do |zip|
+        env = described_class.new(zip)
+        expect(env.modulepath).to eq('-')
+        expect(env.modules.count).to eq(2)
+      end
+    end
+
+    it 'initializes and loads modules when name: is given' do
+      Zip::File.open_buffer(bytes) do |zip|
+        env = described_class.new(zip, name: 'buffer.zip')
+        expect(env).to be_instance_of(described_class)
+        expect(env.modulepath).to eq('buffer.zip')
+        expect(env.modules.count).to eq(2)
+      end
+    end
+  end
+
   context 'with a valid zip and an explicit name' do
     subject(:environment_loader) { described_class.new(path, name: name) }
 
