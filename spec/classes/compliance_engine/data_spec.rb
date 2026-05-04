@@ -1479,6 +1479,31 @@ RSpec.describe ComplianceEngine::Data do
     end
   end
 
+  context 'with a buffer-opened zip' do
+    subject(:compliance_engine) { described_class.new }
+
+    let(:zip_path) { File.expand_path('../../fixtures/test_environment.zip', __dir__) }
+    let(:bytes) { File.binread(zip_path) }
+
+    it 'loads CEs when no name: is given, defaulting modulepath to "-"' do
+      require 'zip'
+      Zip::File.open_buffer(bytes) do |zip|
+        compliance_engine.open_environment_zip(zip)
+        expect(compliance_engine.modulepath).to eq('-')
+        expect(compliance_engine.ces.keys).not_to be_empty
+      end
+    end
+
+    it 'loads CEs when name: is given' do
+      require 'zip'
+      Zip::File.open_buffer(bytes) do |zip|
+        compliance_engine.open_environment_zip(zip, name: 'buffer.zip')
+        expect(compliance_engine.modulepath).to eq('buffer.zip')
+        expect(compliance_engine.ces.keys).not_to be_empty
+      end
+    end
+  end
+
   context 'with multiple profiles and conflicting settings' do
     subject(:compliance_engine) { described_class.new(module_path) }
 

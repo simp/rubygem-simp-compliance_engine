@@ -21,7 +21,10 @@ class ComplianceEngine::EnvironmentLoader::Zip < ComplianceEngine::EnvironmentLo
   #   zip to keep cache keys unique and logs informative.
   def initialize(input, root: '/'.dup, load_dotfiles: true, name: nil)
     zipfile = input.is_a?(::Zip::File) ? input : ::Zip::File.open(input)
-    @modulepath = name || zipfile.name
+    # rubyzip 3.x returns the StringIO object from #name on buffer-opened zips;
+    # rubyzip 2.x returned "-".  Coerce any non-String to "-" so the key is
+    # always a stable string regardless of rubyzip version.
+    @modulepath = name || (zipfile.name.is_a?(String) ? zipfile.name : '-')
     super(root, fileclass: zipfile.file, dirclass: zipfile.dir, zipfile_path: @modulepath, load_dotfiles: load_dotfiles)
   ensure
     zipfile.close if zipfile && !input.is_a?(::Zip::File)

@@ -126,12 +126,18 @@ class ComplianceEngine::Data
   end
 
   # Scan a Puppet environment from a zip file
-  # @param path [String] The Puppet environment archive file
+  # @param path [String, ::Zip::File] filesystem path to the zip archive, or
+  #   an already-opened ::Zip::File (e.g. from Zip::File.open_buffer); when a
+  #   ::Zip::File is passed, the caller owns its lifecycle
+  # @param name [String, nil] stable string identifier used as the modulepath
+  #   and cache-key prefix; defaults to the zip's filename on disk, or "-" for
+  #   buffer-opened zips.  Pass an explicit value when loading from a buffer to
+  #   keep cache keys unique and logs informative.
   # @return [NilClass]
-  def open_environment_zip(path)
+  def open_environment_zip(path, name: nil)
     require 'compliance_engine/environment_loader/zip'
 
-    environment = ComplianceEngine::EnvironmentLoader::Zip.new(path)
+    environment = ComplianceEngine::EnvironmentLoader::Zip.new(path, name: name)
     self.modulepath = environment.modulepath
     open(environment)
   end
