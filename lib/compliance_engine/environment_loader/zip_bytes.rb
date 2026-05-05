@@ -16,6 +16,8 @@ class ComplianceEngine::EnvironmentLoader::ZipBytes < ComplianceEngine::Environm
   # @param name [String, nil] identifier used for modulepath and downstream
   #   cache keys; defaults to "-" when no filename is available.
   def initialize(bytes, root: '/'.dup, load_dotfiles: true, name: nil)
+    raise ArgumentError, "bytes must be a String, got #{bytes.class}" unless bytes.is_a?(String)
+
     zipfile = ::Zip::File.open_buffer(bytes)
     @modulepath = name || '-'
     super(root, fileclass: zipfile.file, dirclass: zipfile.dir, zipfile_path: @modulepath, load_dotfiles: load_dotfiles)
