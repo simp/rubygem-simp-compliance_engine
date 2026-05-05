@@ -1479,27 +1479,66 @@ RSpec.describe ComplianceEngine::Data do
     end
   end
 
-  context 'with a buffer-opened zip' do
+  context 'with zip_bytes data' do
     subject(:compliance_engine) { described_class.new }
 
     let(:zip_path) { File.expand_path('../../fixtures/test_environment.zip', __dir__) }
     let(:bytes) { File.binread(zip_path) }
-
-    it 'loads CEs when no name: is given, defaulting modulepath to "-"' do
-      require 'zip'
-      Zip::File.open_buffer(bytes) do |zip|
-        compliance_engine.open_environment_zip(zip)
-        expect(compliance_engine.modulepath).to eq('-')
-        expect(compliance_engine.ces.keys).not_to be_empty
-      end
+    let(:test_files) do
+      [
+        'test_module_00/SIMP/compliance_profiles/a/file.yaml',
+        'test_module_00/SIMP/compliance_profiles/b/file.yaml',
+        'test_module_01/SIMP/compliance_profiles/c/file.yaml',
+      ]
     end
 
-    it 'loads CEs when name: is given' do
+    before(:each) do
+      compliance_engine.open_environment_zip_bytes(bytes)
+    end
+
+    it 'initializes' do
+      expect(compliance_engine).not_to be_nil
+      expect(compliance_engine).to be_instance_of(described_class)
+    end
+
+    it 'defaults modulepath to "-"' do
+      expect(compliance_engine.modulepath).to eq('-')
+    end
+
+    it 'returns a list of files' do
+      expect(compliance_engine.files).to eq(test_files.map { |file| File.join('-', '.', file) })
+    end
+
+    it 'returns a list of profiles' do
+      expect(compliance_engine.profiles).to be_instance_of(ComplianceEngine::Profiles)
+      expect(compliance_engine.profiles.keys).to eq(['test_profile_00', 'test_profile_01', 'test_profile_02'])
+    end
+
+    it 'returns a list of ces' do
+      expect(compliance_engine.ces).to be_instance_of(ComplianceEngine::Ces)
+      expect(compliance_engine.ces.keys).to eq(['ce_00', 'ce_01', 'ce_02', 'ce_03'])
+    end
+
+    it 'uses an explicit name as modulepath' do
+      engine = described_class.new
+      engine.open_environment_zip_bytes(bytes, name: 'buffer.zip')
+      expect(engine.modulepath).to eq('buffer.zip')
+      expect(engine.ces.keys).to eq(['ce_00', 'ce_01', 'ce_02', 'ce_03'])
+    end
+  end
+
+  # Regression lock: open_environment_zip previously accepted a pre-opened
+  # Zip::File, which allowed consumers to trigger a silent empty-load bug when
+  # the Zip::File was opened before zip/filesystem was required.  Ensure that
+  # path is permanently closed.
+  context 'regression: zip/filesystem require-order bug' do
+    let(:zip_path) { File.expand_path('../../fixtures/test_environment.zip', __dir__) }
+    let(:bytes) { File.binread(zip_path) }
+
+    it 'open_environment_zip rejects a pre-opened Zip::File' do
       require 'zip'
       Zip::File.open_buffer(bytes) do |zip|
-        compliance_engine.open_environment_zip(zip, name: 'buffer.zip')
-        expect(compliance_engine.modulepath).to eq('buffer.zip')
-        expect(compliance_engine.ces.keys).not_to be_empty
+        expect { described_class.new.open_environment_zip(zip) }.to raise_error(ArgumentError, %r{must be a String path})
       end
     end
   end
