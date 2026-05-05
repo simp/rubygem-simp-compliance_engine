@@ -59,10 +59,10 @@ RSpec.describe ComplianceEngine::EnvironmentLoader::ZipBytes do
       close_called = false
       allow(Zip::File).to receive(:open_buffer).and_wrap_original do |original, b|
         zip = original.call(b)
-        allow(zip).to(receive(:close).and_wrap_original do |m, *args|
+        allow(zip).to receive(:close).and_wrap_original do |m, *args|
           close_called = true
           m.call(*args)
-        end)
+        end
         zip
       end
       environment_loader
