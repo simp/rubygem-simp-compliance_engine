@@ -14,7 +14,7 @@ class ComplianceEngine::EnvironmentLoader::Zip < ComplianceEngine::EnvironmentLo
   # @param load_dotfiles [Boolean] whether to load dotfiles; defaults to true to
   #   preserve the historical zip-loader behaviour of including all files
   # @param name [String, nil] identifier used for modulepath and downstream
-  #   cache keys; defaults to the zip path on disk.
+  #   cache keys; defaults to the full path string passed as +input+.
   def initialize(input, root: '/'.dup, load_dotfiles: true, name: nil)
     raise ArgumentError, "input must be a String path, got #{input.class}" unless input.is_a?(String)
 

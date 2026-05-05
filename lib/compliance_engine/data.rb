@@ -128,7 +128,7 @@ class ComplianceEngine::Data
   # Scan a Puppet environment from a zip file on disk
   # @param path [String] filesystem path to the zip archive
   # @param name [String, nil] stable string identifier used as the modulepath
-  #   and cache-key prefix; defaults to the zip's filename on disk.
+  #   and cache-key prefix; defaults to the full path string passed as +path+.
   # @return [NilClass]
   def open_environment_zip(path, name: nil)
     require 'compliance_engine/environment_loader/zip'
