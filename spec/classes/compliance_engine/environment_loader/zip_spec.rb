@@ -82,13 +82,13 @@ RSpec.describe ComplianceEngine::EnvironmentLoader::Zip do
       require 'zip'
       path = File.expand_path('../../../fixtures/test_environment.zip', __dir__)
       Zip::File.open(path) do |zipfile|
-        expect { described_class.new(zipfile) }.to raise_error(ArgumentError, /must be a String path/)
+        expect { described_class.new(zipfile) }.to raise_error(ArgumentError, %r{must be a String path})
       end
     end
 
     it 'raises ArgumentError for any non-String' do
-      expect { described_class.new(42) }.to raise_error(ArgumentError, /must be a String path/)
-      expect { described_class.new(nil) }.to raise_error(ArgumentError, /must be a String path/)
+      expect { described_class.new(42) }.to raise_error(ArgumentError, %r{must be a String path})
+      expect { described_class.new(nil) }.to raise_error(ArgumentError, %r{must be a String path})
     end
   end
 
@@ -107,5 +107,4 @@ RSpec.describe ComplianceEngine::EnvironmentLoader::Zip do
       expect(environment_loader.zipfile_path).to eq(name)
     end
   end
-
 end

@@ -17,8 +17,8 @@ RSpec.describe ComplianceEngine::EnvironmentLoader::ZipBytes do
 
   context 'with a non-String input' do
     it 'raises ArgumentError for any non-String' do
-      expect { described_class.new(42) }.to raise_error(ArgumentError, /must be a String/)
-      expect { described_class.new(nil) }.to raise_error(ArgumentError, /must be a String/)
+      expect { described_class.new(42) }.to raise_error(ArgumentError, %r{must be a String})
+      expect { described_class.new(nil) }.to raise_error(ArgumentError, %r{must be a String})
     end
   end
 

@@ -1538,7 +1538,7 @@ RSpec.describe ComplianceEngine::Data do
     it 'open_environment_zip rejects a pre-opened Zip::File' do
       require 'zip'
       Zip::File.open_buffer(bytes) do |zip|
-        expect { described_class.new.open_environment_zip(zip) }.to raise_error(ArgumentError, /must be a String path/)
+        expect { described_class.new.open_environment_zip(zip) }.to raise_error(ArgumentError, %r{must be a String path})
       end
     end
   end
