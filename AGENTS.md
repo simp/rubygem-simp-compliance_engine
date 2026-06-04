@@ -126,6 +126,10 @@ paths → EnvironmentLoader → ModuleLoader (one per module dir)
 
 In practice, only fact confinement is bypassed when `facts` is `nil`; module confinement still applies whenever `environment_data` is available. All confinement and risk/disabled-remediation filtering are effectively bypassed only when both `facts` and `environment_data` are unset and `enforcement_tolerance` is not a positive `Integer` (every fragment is then included). This is useful for offline analysis where system context and enforcement settings are unavailable.
 
+### Releases
+
+Keep the version in `lib/compliance_engine/version.rb` (`ComplianceEngine::VERSION`) and the `version` field in `metadata.json` in sync — they must always match. Any version bump must also be accompanied by a corresponding entry in `CHANGELOG.md`.
+
 ### Code Style
 
 Rubocop is configured via `.rubocop.yml` inheriting from `voxpupuli-test`. Key style choices:
