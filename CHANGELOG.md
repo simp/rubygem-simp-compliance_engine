@@ -1,3 +1,6 @@
+### 1.0.0 / 2026-06-04
+* Declare the gem and Puppet module production-ready; no functional changes since 0.6.0
+
 ### 0.6.0 / 2026-05-05
 * Honor explicit `false` in profile `checks` and `ces` mappings as exclusions that override positive matches (#117)
 * Coerce non-String `zipfile.name` to `-` for buffer-opened zips (#121)
