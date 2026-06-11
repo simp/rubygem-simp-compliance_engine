@@ -1,5 +1,5 @@
 ### Unreleased
-* Include `Enumerable` in `ComplianceEngine::Collection` so all collections (`Ces`, `Checks`, `Controls`, `Profiles`) gain the full Enumerable interface (`#each_with_object`, `#map`, `#reduce`, `#find`, ...); they defined `#each` but raised `NoMethodError` on these. The explicit `#select`/`#reject`/`#keys` still return Collections. (#127)
+* Include `Enumerable` in `ComplianceEngine::Collection` so all collections (`Ces`, `Checks`, `Controls`, `Profiles`) gain the full Enumerable interface (`#each_with_object`, `#map`, `#reduce`, `#find`, ...); they defined `#each` but raised `NoMethodError` on these. The explicit `#select`/`#reject` still return Collections. (#127)
 
 ### 1.0.0 / 2026-06-04
 * Declare the gem and Puppet module production-ready; no functional changes since 0.6.0

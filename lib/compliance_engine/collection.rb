@@ -6,9 +6,9 @@ require_relative '../compliance_engine'
 class ComplianceEngine::Collection
   # Collections define #each (yielding [name, component] pairs), so mixing in
   # Enumerable gives them the full collection interface: #each_with_object,
-  # #map, #reduce, #find, #count, etc. The hash-like methods this class defines
-  # explicitly (#select, #reject, #keys) shadow Enumerable's, so they keep
-  # returning Collections rather than Arrays. See #37.
+  # #map, #reduce, #find, #count, etc. The #select/#reject defined explicitly on
+  # this class shadow Enumerable's, so they keep returning Collections rather
+  # than Arrays. See #37.
   include Enumerable
 
   # A generic compliance engine data collection
