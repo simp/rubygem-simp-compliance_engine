@@ -77,6 +77,47 @@ RSpec.describe ComplianceEngine::Ces do
   end
 
   # ---------------------------------------------------------------------------
+  # Enumerable interface: Collection defines #each, so it mixes in Enumerable
+  # ---------------------------------------------------------------------------
+  describe 'Enumerable interface' do
+    subject(:ces) { described_class.new(ComplianceEngine::Data.new(ComplianceEngine::DataLoader.new(compliance_data))) }
+
+    let(:compliance_data) do
+      {
+        'version' => '2.0.0',
+        'ce' => {
+          'ce_one' => { 'title' => 'CE One' },
+          'ce_two' => { 'title' => 'CE Two' },
+        },
+      }
+    end
+
+    it 'is Enumerable' do
+      expect(ces).to be_a(Enumerable)
+    end
+
+    # Regression: Ces defined #each but did not include Enumerable, so
+    # #each_with_object (and the rest of Enumerable) raised NoMethodError.
+    it 'supports #each_with_object over [name, component] pairs' do
+      index = ces.each_with_object({}) { |(name, ce), acc| acc[ce.title] = name }
+      expect(index).to eq('CE One' => 'ce_one', 'CE Two' => 'ce_two')
+    end
+
+    it 'supports #map and #find' do
+      expect(ces.map { |name, _ce| name }).to contain_exactly('ce_one', 'ce_two')
+      _name, ce = ces.find { |name, _ce| name == 'ce_two' }
+      expect(ce.title).to eq('CE Two')
+    end
+
+    # The explicit #select/#reject must keep shadowing Enumerable's, so they
+    # still return Collections rather than Arrays of pairs.
+    it 'keeps Collection-returning #select/#reject' do
+      expect(ces.select { |k, _| k == 'ce_one' }).to be_instance_of(described_class) # rubocop:disable Style/HashSlice
+      expect(ces.reject { |k, _| k == 'ce_one' }).to be_instance_of(described_class)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # clone/dup isolation (Collection behavior)
   #
   # Ces is used as the concrete Collection subclass.  Source has all Ce caches
