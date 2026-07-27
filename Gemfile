@@ -11,7 +11,7 @@ gem 'rake', '~> 13.4.0'
 # so `bundle install` fails on JRuby. rdoc comes in transitively by way of
 # voxpupuli-test -> openvox-strings -> irb -> rdoc, so pin it here until rbs
 # publishes JRuby-compatible releases.
-gem 'rdoc', '< 8', platforms: :jruby, require: false
+gem 'rdoc', '< 9', platforms: :jruby, require: false
 
 group :tests do
   # renovate: datasource=rubygems versioning=ruby
