@@ -17,7 +17,7 @@ group :tests do
   # renovate: datasource=rubygems versioning=ruby
   gem 'openvox', ENV.fetch('OPENVOX_VERSION', ENV.fetch('PUPPET_VERSION', '~> 8.0'))
   gem 'syslog', require: false
-  gem 'voxpupuli-test', '~> 14.0'
+  gem 'voxpupuli-test', '~> 15.0'
 end
 
 group :release do
