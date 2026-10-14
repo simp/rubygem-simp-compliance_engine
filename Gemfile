@@ -17,7 +17,7 @@ group :tests do
   # json 3 breaks openvox (Puppet::Util::Json.load passes an options Hash
   # positionally) and jgrep, via facterdb (JSON.create_id=). voxpupuli-test 14 capped json
   # below 3 implicitly via rubocop 1.85; voxpupuli-test 15 does not.
-  gem 'json', '>= 2.3', '< 3'
+  gem 'json', '>= 2.3', '< 4'
   # renovate: datasource=rubygems versioning=ruby
   gem 'openvox', ENV.fetch('OPENVOX_VERSION', ENV.fetch('PUPPET_VERSION', '~> 8.0'))
   gem 'syslog', require: false
