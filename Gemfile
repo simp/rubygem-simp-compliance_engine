@@ -14,10 +14,14 @@ gem 'rake', '~> 13.4.0'
 gem 'rdoc', '< 8', platforms: :jruby, require: false
 
 group :tests do
+  # json 3 breaks openvox (Puppet::Util::Json.load passes an options Hash
+  # positionally) and jgrep, via facterdb (JSON.create_id=). voxpupuli-test 14 capped json
+  # below 3 implicitly via rubocop 1.85; voxpupuli-test 15 does not.
+  gem 'json', '>= 2.3', '< 3'
   # renovate: datasource=rubygems versioning=ruby
   gem 'openvox', ENV.fetch('OPENVOX_VERSION', ENV.fetch('PUPPET_VERSION', '~> 8.0'))
   gem 'syslog', require: false
-  gem 'voxpupuli-test', '~> 14.0'
+  gem 'voxpupuli-test', '~> 15.0'
 end
 
 group :release do

@@ -35,7 +35,7 @@ RSpec.describe ComplianceEngine do
     end
 
     it 'is valid JSON Schema (has $schema key)' do
-      expect(schema['$schema']).to match(%r{json-schema\.org})
+      expect(schema['$schema']).to include('json-schema.org')
     end
 
     it 'requires version 2.0.0' do

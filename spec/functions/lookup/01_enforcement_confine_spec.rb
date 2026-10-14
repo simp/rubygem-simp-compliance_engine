@@ -158,9 +158,8 @@ RSpec.describe 'lookup' do
     File.write(File.join(compliance_dir, 'checks.yaml'), checks_yaml)
 
     # Mock the Puppet environment's modulepath to include our temp directory
-    # rubocop:disable RSpec/AnyInstance
+    # rubocop:disable-next RSpec/AnyInstance
     allow_any_instance_of(Puppet::Node::Environment).to receive(:full_modulepath).and_return([tmpdir])
-    # rubocop:enable RSpec/AnyInstance
   end
 
   after(:each) do
@@ -217,7 +216,7 @@ RSpec.describe 'lookup' do
       # TODO: This does not currently work as one might expect. This will still positively match OracleLinux even though
       # we ask for OS names that aren't RedHat but are CentOS. The array we're confining can only do an OR operation rather
       # than an AND with a negative lookup.
-      # rubocop:disable RSpec/RepeatedExample
+      # rubocop:disable-next RSpec/RepeatedExample
       if (os_facts[:os]['name'] != 'RedHat') && (os_facts[:os]['name'] == 'CentOS') && os_facts[:os]['release']['major'] == '7'
         it { is_expected.to run.with_params('test_module_01::not_el_centos_version').and_return('7') }
       elsif (os_facts[:os]['name'] != 'RedHat') && (os_facts[:os]['name'] != 'CentOS') && os_facts[:os]['release']['major'] == '7'
@@ -228,7 +227,6 @@ RSpec.describe 'lookup' do
                             .and_raise_error(Puppet::DataBinding::LookupError, "Function lookup() did not find a value for the name 'test_module_01::not_el_centos_version'")
         end
       end
-      # rubocop:enable RSpec/RepeatedExample
 
       # Test for confine on module name & module version in ce.
       it do
