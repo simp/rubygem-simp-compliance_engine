@@ -211,7 +211,7 @@ class ComplianceEngine::Data
     end
 
     self.environment_data ||= {}
-    self.environment_data = self.environment_data.merge(modules)
+    self.environment_data = environment_data.merge(modules)
 
     nil
   end

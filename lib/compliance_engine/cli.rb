@@ -50,9 +50,8 @@ class ComplianceEngine::CLI < Thor
   def inspect
     # Run the CLI with `data` as the object containing the compliance data.
     require 'irb'
-    # rubocop:disable Lint/Debugger
+    # rubocop:disable-next Lint/Debugger
     binding.irb
-    # rubocop:enable Lint/Debugger
   end
 
   private
