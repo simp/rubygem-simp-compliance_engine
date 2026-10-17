@@ -19,7 +19,7 @@ group :tests do
   # below 3 implicitly via rubocop 1.85; voxpupuli-test 15 does not.
   gem 'json', '>= 2.3', '< 3'
   # renovate: datasource=rubygems versioning=ruby
-  gem 'openvox', ENV.fetch('OPENVOX_VERSION', ENV.fetch('PUPPET_VERSION', '~> 8.0'))
+  gem 'openvox', ENV.fetch('OPENVOX_VERSION', ENV.fetch('PUPPET_VERSION', '~> 9.0'))
   gem 'syslog', require: false
   gem 'voxpupuli-test', '~> 15.0'
 end

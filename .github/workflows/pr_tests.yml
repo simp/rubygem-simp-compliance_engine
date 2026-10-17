@@ -58,16 +58,25 @@ jobs:
 
   spec-tests:
     runs-on: ubuntu-latest
-    name: Ruby ${{ matrix.ruby }}
+    name: Ruby ${{ matrix.ruby }} (OpenVox ${{ matrix.openvox }})
     strategy:
+      fail-fast: false
       matrix:
-        ruby:
-          - '3.2'  # Puppet 8
-          - '3.3'
-          - '3.4'
-          - '4.0'  # Latest
-          - 'jruby-9.4'  # OpenVox Server 8
-          - 'jruby-10.0'  # Ruby 3.4-compatible
+        include:
+          - ruby: '3.2'  # OpenVox 8 agent
+            openvox: '8'
+          - ruby: '3.3'
+            openvox: '8'
+          - ruby: '3.4'
+            openvox: '9'
+          - ruby: '4.0'  # OpenVox 9 agent
+            openvox: '9'
+          - ruby: 'jruby-9.4'  # OpenVox Server 8
+            openvox: '8'
+          - ruby: 'jruby-10.0'  # OpenVox Server 9
+            openvox: '9'
+    env:
+      OPENVOX_VERSION: '~> ${{ matrix.openvox }}.0'
 
     steps:
       - uses: actions/checkout@v7
@@ -80,16 +89,17 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
       - name: Spec tests
-        run: |
-          if [ "${{ matrix.ruby }}" = "4.0" ]; then
-            bundle exec rspec spec/classes
-          else
-            bundle exec rake parallel_spec
-          fi
+        run: bundle exec rake parallel_spec
 
   acceptance-apply:
-    name: 'Acceptance: puppet apply (alma9)'
+    name: 'Acceptance: puppet apply (alma9, ${{ matrix.collection }})'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        collection:
+          - openvox8
+          - openvox9
     steps:
       - uses: actions/checkout@v7
       - name: Set up Ruby
@@ -104,15 +114,18 @@ jobs:
         run: bundle exec rake acceptance:apply
         env:
           BEAKER_SETFILE: spec/acceptance/nodesets/apply.yml
-          BEAKER_PUPPET_COLLECTION: openvox8
+          BEAKER_PUPPET_COLLECTION: ${{ matrix.collection }}
           BEAKER_HYPERVISOR: docker
 
   acceptance-server:
-    name: 'Acceptance: puppet agent + openvox-server (alma9)'
+    name: 'Acceptance: puppet agent + openvox-server (alma9, ${{ matrix.collection }}, ${{ matrix.suite.label }})'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        collection:
+          - openvox8
+          - openvox9
         suite:
           - name: 'basic server/agent'
             spec: '02_server_agent_spec.rb'
@@ -140,5 +153,5 @@ jobs:
         run: bundle exec rspec spec/acceptance/${{ matrix.suite.spec }}
         env:
           BEAKER_SETFILE: spec/acceptance/nodesets/server_agent.yml
-          BEAKER_PUPPET_COLLECTION: openvox8
+          BEAKER_PUPPET_COLLECTION: ${{ matrix.collection }}
           BEAKER_HYPERVISOR: docker

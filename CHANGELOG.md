@@ -1,3 +1,7 @@
+### 1.2.0 / 2026-10-17
+* Allow OpenVox 9 (and Puppet 9) in the Puppet module's `metadata.json`
+* Test with OpenVox 9: spec tests on Ruby 4.0 and JRuby 10.0, and acceptance tests against the `openvox9` collection alongside `openvox8`
+
 ### 1.1.0 / 2026-06-11
 * Include `Enumerable` in `ComplianceEngine::Collection` so all collections (`Ces`, `Checks`, `Controls`, `Profiles`) gain the full Enumerable interface (`#each_with_object`, `#map`, `#reduce`, `#find`, ...); they defined `#each` but raised `NoMethodError` on these. The explicit `#select`/`#reject` still return Collections. (#127)
 

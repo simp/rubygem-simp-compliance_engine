@@ -1,6 +1,6 @@
 {
   "name": "simp-compliance_engine",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "Sicura",
   "summary": "Hiera backend for Sicura Compliance Engine data",
   "license": "Apache-2.0",
@@ -53,11 +53,11 @@
   "requirements": [
     {
       "name": "puppet",
-      "version_requirement": ">= 8.0.0 < 9.0.0"
+      "version_requirement": ">= 8.0.0 < 10.0.0"
     },
     {
       "name": "openvox",
-      "version_requirement": ">= 8.0.0 < 9.0.0"
+      "version_requirement": ">= 8.0.0 < 10.0.0"
     }
   ]
 }
