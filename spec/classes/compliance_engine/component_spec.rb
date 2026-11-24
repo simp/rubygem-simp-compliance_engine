@@ -188,6 +188,23 @@ RSpec.describe ComplianceEngine::Component do
         expect(source.to_a.map { |f| f['merge_key'] }.flatten).not_to include('value_new')
       end
 
+      it 'shares deeply-frozen fragments with the source instead of copying them' do
+        fragment = { 'x' => { 'y' => ['z'].freeze }.freeze }.freeze
+        src = described_class.new('frozen_key')
+        src.add('file_frozen', fragment)
+        copy = src.public_send(copy_method)
+        expect(copy.to_a.first).to be(fragment)
+        expect(copy.to_h).to eq({ 'x' => { 'y' => ['z'] } })
+      end
+
+      it 'deep-copies a frozen fragment that still has a mutable nested value' do
+        src = described_class.new('shallow_frozen_key')
+        src.add('file_shallow', { 'x' => { 'y' => 1 } }.freeze)
+        copy = src.public_send(copy_method)
+        copy.to_a.first['x']['y'] = 2
+        expect(src.to_a.first['x']['y']).to eq(1)
+      end
+
       it 'mutating a nested value in a copy fragment does not affect the source' do
         # initialize_copy must deep-copy each fragment payload so that nested
         # mutable structures in the copy are independent from those in the source.

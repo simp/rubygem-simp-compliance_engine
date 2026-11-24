@@ -40,11 +40,18 @@ class ComplianceEngine::Component
   # an independent fragment store.  Cache variables are cleared so each
   # copy rebuilds them lazily from its own fragments on first access.
   #
+  # A fragment that is deeply frozen (as everything loaded through a
+  # ComplianceEngine::DataLoader is) cannot be mutated through either
+  # object, so the copy references it instead of deep-copying it.  Any
+  # other fragment is deep-copied so nested values stay independent.
+  #
   # @return [NilClass]
   def initialize_copy(_source)
     super
     @component = @component.dup
-    @component[:fragments] = @component[:fragments].transform_values { |fragment| Marshal.load(Marshal.dump(fragment)) }
+    @component[:fragments] = @component[:fragments].transform_values do |fragment|
+      deep_frozen?(fragment) ? fragment : Marshal.load(Marshal.dump(fragment))
+    end
     cache_variables.each { |var| instance_variable_set(var, nil) }
     nil
   end
@@ -143,6 +150,23 @@ class ComplianceEngine::Component
   # @return [Array<Symbol>]
   def cache_variables
     instance_variables - (context_variables + [:@component])
+  end
+
+  # Check whether an object and everything nested within it is frozen
+  #
+  # @param obj [Object] The object to check
+  # @return [TrueClass, FalseClass] true if no part of the object can be mutated
+  def deep_frozen?(obj)
+    return false unless obj.frozen?
+
+    case obj
+    when Hash
+      obj.all? { |k, v| deep_frozen?(k) && deep_frozen?(v) }
+    when Array
+      obj.all? { |v| deep_frozen?(v) }
+    else
+      true
+    end
   end
 
   # Compare a fact value against a confine value
