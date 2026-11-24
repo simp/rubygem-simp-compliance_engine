@@ -1,5 +1,6 @@
 ### Unreleased
 * Reduce memory use in `ComplianceEngine::Data#check_mapping` by dropping a redundant internal cache that held one entry per check for every profile or CE mapped
+* Reduce memory use by keeping a single copy of each distinct string value in loaded compliance data
 
 ### 1.2.0 / 2026-10-17
 * Allow OpenVox 9 (and Puppet 9) in the Puppet module's `metadata.json`

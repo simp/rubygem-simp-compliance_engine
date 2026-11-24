@@ -56,14 +56,32 @@ class ComplianceEngine::DataLoader
   # that invariant explicit and surfaces any accidental in-place mutation
   # immediately as a FrozenError rather than silent data corruption.
   #
+  # String values are also interned (deduplicated).  Compliance data repeats
+  # the same control, CE, and parameter names many times across files, and
+  # the parsers allocate a new String for every occurrence that is not a
+  # Hash key.  Interning them keeps a single copy of each distinct string.
+  #
   # @param obj [Object] the object to freeze
-  # @return [Object] the frozen object (modified in-place)
+  # @return [Object] the frozen object; a String may be returned as a
+  #   different (interned) object, everything else is frozen in-place
   def deep_freeze(obj)
     case obj
     when Hash
-      obj.each_value { |v| deep_freeze(v) }
+      if obj.frozen?
+        # A frozen container cannot have its values replaced, so its strings
+        # are frozen where they are instead of being interned.
+        obj.each_value { |v| v.is_a?(String) ? v.freeze : deep_freeze(v) }
+      else
+        obj.transform_values! { |v| deep_freeze(v) }
+      end
     when Array
-      obj.each { |v| deep_freeze(v) }
+      if obj.frozen?
+        obj.each { |v| v.is_a?(String) ? v.freeze : deep_freeze(v) }
+      else
+        obj.map! { |v| deep_freeze(v) }
+      end
+    when String
+      return -obj
     end
     obj.freeze
   end

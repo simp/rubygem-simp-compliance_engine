@@ -123,6 +123,25 @@ RSpec.describe ComplianceEngine::DataLoader do
       expect(loader.data['ce']['some_ce']['title']).to be_frozen
     end
 
+    it 'interns equal string values so that only one copy is kept' do
+      loader.data = {
+        'checks' => {
+          'check_a' => { 'ces' => ['shared_ce'.dup], 'type' => 'puppet-class-parameter'.dup },
+          'check_b' => { 'ces' => ['shared_ce'.dup], 'type' => 'puppet-class-parameter'.dup },
+        },
+      }
+      checks = loader.data['checks']
+      expect(checks['check_a']['ces'].first).to be(checks['check_b']['ces'].first)
+      expect(checks['check_a']['type']).to be(checks['check_b']['type'])
+    end
+
+    it 'accepts data that is already frozen' do
+      frozen = { 'ce' => { 'some_ce' => { 'oval-ids' => ['oval:example:def:1'.dup].freeze }.freeze }.freeze }.freeze
+      loader.data = frozen
+      expect(loader.data).to eq(frozen)
+      expect(loader.data['ce']['some_ce']['oval-ids'].first).to be_frozen
+    end
+
     it 'prevents top-level mutation' do
       expect { loader.data['new_key'] = 'value' }.to raise_error(FrozenError)
     end
