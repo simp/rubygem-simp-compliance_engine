@@ -445,43 +445,42 @@ class ComplianceEngine::Data
 
   # Return true if the check is mapped to the profile or CE
   #
+  # The result is not memoized here: the only caller is #check_mapping, which
+  # asks about each check once per profile or CE and caches its own result.
+  #
   # @param check [ComplianceEngine::Check] The check
   # @param profile_or_ce [ComplianceEngine::Profile, ComplianceEngine::Ce] The profile or CE
   # @return [TrueClass, FalseClass]
   def mapping?(check, profile_or_ce)
     raise ArgumentError, 'Argument must be a ComplianceEngine::Profile object' unless profile_or_ce.is_a?(ComplianceEngine::Profile) || profile_or_ce.is_a?(ComplianceEngine::Ce)
 
-    @mapping ||= {}
-    cache_key = [check.key, "#{profile_or_ce.class}:#{profile_or_ce.key}"].to_s
-    return @mapping[cache_key] if @mapping.key?(cache_key)
-
     # An explicit `false` on the profile side hard-excludes the check, regardless of any other route.
-    return @mapping[cache_key] = false if profile_or_ce.is_a?(ComplianceEngine::Profile) && profile_or_ce.checks&.dig(check.key) == false
+    return false if profile_or_ce.is_a?(ComplianceEngine::Profile) && profile_or_ce.checks&.dig(check.key) == false
 
     # Correlate based on controls
     controls = check.controls&.select { |_, v| v }&.map { |k, _| k }
 
-    return @mapping[cache_key] = true if correlate(controls, profile_or_ce.controls)
+    return true if correlate(controls, profile_or_ce.controls)
 
     if profile_or_ce.is_a?(ComplianceEngine::Ce)
       # Correlate based on CEs
-      return @mapping[cache_key] = true if check.ces&.include?(profile_or_ce.key)
+      return true if check.ces&.include?(profile_or_ce.key)
 
-      return @mapping[cache_key] = false
+      return false
     end
 
     # Correlate based on direct reference to checks
-    return @mapping[cache_key] = true if profile_or_ce.checks&.dig(check.key)
+    return true if profile_or_ce.checks&.dig(check.key)
 
     # Correlate based on CEs
-    return @mapping[cache_key] = true if correlate(check.ces, profile_or_ce.ces)
+    return true if correlate(check.ces, profile_or_ce.ces)
 
     # Correlate based on CEs and controls. A CE explicitly set to `false` in the profile
     # cannot be used as a bridge; absence (nil) still allows the bridge.
-    return @mapping[cache_key] = true if profile_or_ce.ces&.any? { |k, v| v && correlate(controls, ces[k]&.controls) }
-    return @mapping[cache_key] = true if check.ces&.any? { |ce| profile_or_ce.ces&.dig(ce) != false && ces[ce]&.controls&.any? { |k, v| v && profile_or_ce.controls&.dig(k) } }
+    return true if profile_or_ce.ces&.any? { |k, v| v && correlate(controls, ces[k]&.controls) }
+    return true if check.ces&.any? { |ce| profile_or_ce.ces&.dig(ce) != false && ces[ce]&.controls&.any? { |k, v| v && profile_or_ce.controls&.dig(k) } }
 
-    @mapping[cache_key] = false
+    false
   end
 
   # Correlate between arrays and hashes
