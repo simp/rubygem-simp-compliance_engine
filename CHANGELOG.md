@@ -1,7 +1,7 @@
 ### Unreleased
 * Reduce memory use in `ComplianceEngine::Data#check_mapping` by dropping a redundant internal cache that held one entry per check for every profile or CE mapped
 * Reduce memory use by keeping a single copy of each distinct string value in loaded compliance data
-* Reduce memory use in `ComplianceEngine::Data#check_mapping` and `Collection#select`/`#reject` by no longer deep-copying loaded compliance data each time a collection is copied. The fragments returned by `#to_a` on a copied component are now frozen, as they already were on the original
+* Reduce memory use in `ComplianceEngine::Data#check_mapping` and `Collection#select`/`#reject` by no longer deep-copying loaded compliance data each time a collection is copied. The deeply frozen fragments returned by `#to_a` on a copied component (everything loaded from compliance data files) are now shared with the original and remain frozen
 
 ### 1.2.0 / 2026-10-17
 * Allow OpenVox 9 (and Puppet 9) in the Puppet module's `metadata.json`

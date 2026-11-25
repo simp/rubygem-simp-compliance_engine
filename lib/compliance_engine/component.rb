@@ -154,9 +154,11 @@ class ComplianceEngine::Component
 
   # Check whether an object and everything nested within it is frozen
   #
-  # Only Hashes, Arrays, and immutable scalars are recognized.  Any other
-  # object (a Set or a Struct, for example) may hold mutable state even when
-  # it is frozen itself, so it is never considered deeply frozen.
+  # Only plain Hashes, Arrays, and Strings and immutable scalars are
+  # recognized.  Any other object (a Set, a Struct, or a subclass of Hash,
+  # Array, or String, for example) may hold mutable state even when it is
+  # frozen itself, so it is never considered deeply frozen.  Neither is a
+  # Hash with a default value or default proc, which a copy would share.
   #
   # @param obj [Object] The object to check
   # @param seen [Hash] The containers already visited, compared by identity,
@@ -166,14 +168,18 @@ class ComplianceEngine::Component
     return false unless obj.frozen?
 
     case obj
-    when String, Symbol, Numeric, NilClass, TrueClass, FalseClass
+    when Symbol, Numeric, NilClass, TrueClass, FalseClass
       true
+    when String
+      obj.instance_of?(String)
     when Hash
+      return false unless obj.instance_of?(Hash) && obj.default.nil? && obj.default_proc.nil?
       return true if seen.key?(obj)
 
       seen[obj] = true
       obj.all? { |k, v| deep_frozen?(k, seen) && deep_frozen?(v, seen) }
     when Array
+      return false unless obj.instance_of?(Array)
       return true if seen.key?(obj)
 
       seen[obj] = true

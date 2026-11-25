@@ -231,6 +231,26 @@ RSpec.describe ComplianceEngine::Component do
         expect(src.to_a.first['x'].list).to eq(['a'])
       end
 
+      it 'deep-copies a frozen fragment that has a mutable default value' do
+        src = described_class.new('default_key')
+        # The shared mutable default is the hazard under test.
+        src.add('file_default', Hash.new([]).freeze) # rubocop:disable Lint/SharedMutableDefault
+        copy = src.public_send(copy_method)
+        copy.to_a.first['missing'] << 'x'
+        expect(src.to_a.first['missing']).to eq([])
+      end
+
+      it 'deep-copies a frozen fragment holding a Hash subclass with mutable state' do
+        stub_const('FragmentHash', Class.new(Hash) { attr_accessor :extra })
+        nested = FragmentHash.new
+        nested.extra = ['a']
+        src = described_class.new('subclass_key')
+        src.add('file_subclass', { 'x' => nested.freeze }.freeze)
+        copy = src.public_send(copy_method)
+        copy.to_a.first['x'].extra << 'b'
+        expect(src.to_a.first['x'].extra).to eq(['a'])
+      end
+
       it 'shares a deeply-frozen fragment that refers back to itself' do
         inner = []
         fragment = { 'x' => inner }
