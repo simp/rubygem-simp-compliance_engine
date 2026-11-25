@@ -40,7 +40,32 @@ class ComplianceEngine::Collection
     end
   end
 
-  attr_accessor :collection, :facts, :enforcement_tolerance, :environment_data
+  attr_accessor :collection
+  attr_reader :facts, :enforcement_tolerance, :environment_data
+
+  # Set the facts on the collection and every component in it
+  #
+  # @param value [Hash, NilClass] The facts to evaluate confinement against
+  def facts=(value)
+    @facts = value
+    invalidate_cache(self)
+  end
+
+  # Set the enforcement tolerance on the collection and every component in it
+  #
+  # @param value [Integer, NilClass] The enforcement tolerance
+  def enforcement_tolerance=(value)
+    @enforcement_tolerance = value
+    invalidate_cache(self)
+  end
+
+  # Set the environment data on the collection and every component in it
+  #
+  # @param value [Hash, NilClass] The environment data (module name => version)
+  def environment_data=(value)
+    @environment_data = value
+    invalidate_cache(self)
+  end
 
   # Invalidate the cache of computed data
   #

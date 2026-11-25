@@ -1,3 +1,6 @@
+### 1.2.1 / 2026-11-25
+* Fix stale results after setting `facts`, `enforcement_tolerance`, or `environment_data` directly on a component or collection: a component kept returning data computed with the previous value, and a collection did not pass the new value on to its components
+
 ### 1.2.0 / 2026-10-17
 * Allow OpenVox 9 (and Puppet 9) in the Puppet module's `metadata.json`
 * Test with OpenVox 9: spec tests on Ruby 4.0 and JRuby 10.0, and acceptance tests against the `openvox9` collection alongside `openvox8`

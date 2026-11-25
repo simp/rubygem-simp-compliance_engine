@@ -14,7 +14,32 @@ class ComplianceEngine::Component
     @component ||= { key: name, fragments: {} }
   end
 
-  attr_accessor :component, :facts, :enforcement_tolerance, :environment_data
+  attr_accessor :component
+  attr_reader :facts, :enforcement_tolerance, :environment_data
+
+  # Set the facts and discard anything computed with the previous facts
+  #
+  # @param value [Hash, NilClass] The facts to evaluate confinement against
+  def facts=(value)
+    @facts = value
+    clear_cache
+  end
+
+  # Set the enforcement tolerance and discard anything computed with the previous value
+  #
+  # @param value [Integer, NilClass] The enforcement tolerance
+  def enforcement_tolerance=(value)
+    @enforcement_tolerance = value
+    clear_cache
+  end
+
+  # Set the environment data and discard anything computed with the previous value
+  #
+  # @param value [Hash, NilClass] The environment data (module name => version)
+  def environment_data=(value)
+    @environment_data = value
+    clear_cache
+  end
 
   # Invalidate the cache of computed data
   #
@@ -22,8 +47,7 @@ class ComplianceEngine::Component
   # @return [NilClass]
   def invalidate_cache(data = nil)
     context_variables.each { |var| instance_variable_set(var, data&.instance_variable_get(var)) }
-    cache_variables.each { |var| instance_variable_set(var, nil) }
-    nil
+    clear_cache
   end
 
   # Ensure that cloned/duped objects get independent fragment stores.
@@ -45,8 +69,7 @@ class ComplianceEngine::Component
     super
     @component = @component.dup
     @component[:fragments] = @component[:fragments].transform_values { |fragment| Marshal.load(Marshal.dump(fragment)) }
-    cache_variables.each { |var| instance_variable_set(var, nil) }
-    nil
+    clear_cache
   end
 
   # Adds a value to the fragments array of the component.
@@ -143,6 +166,14 @@ class ComplianceEngine::Component
   # @return [Array<Symbol>]
   def cache_variables
     instance_variables - (context_variables + [:@component])
+  end
+
+  # Discard all computed data
+  #
+  # @return [NilClass]
+  def clear_cache
+    cache_variables.each { |var| instance_variable_set(var, nil) }
+    nil
   end
 
   # Compare a fact value against a confine value

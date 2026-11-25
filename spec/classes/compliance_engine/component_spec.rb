@@ -135,6 +135,44 @@ RSpec.describe ComplianceEngine::Component do
   # since the cached @element and @fragments objects are included in the
   # shallow copy and must be cleared by initialize_copy.
   # ---------------------------------------------------------------------------
+  describe 'changing context after data has been computed' do
+    subject(:component) do
+      c = described_class.new('context_key')
+      c.add('file_linux', { 'merge_key' => ['value_linux'], 'confine' => { 'kernel' => 'Linux', 'module_name' => 'author-module' } })
+      c.add('file_darwin', { 'merge_key' => ['value_darwin'], 'confine' => { 'kernel' => 'Darwin' } })
+      c
+    end
+
+    it 'recomputes the merged data when facts are set' do
+      component.facts = { 'kernel' => 'Linux' }
+      expect(component.to_h['merge_key']).to eq(['value_linux'])
+      component.facts = { 'kernel' => 'Darwin' }
+      expect(component.to_h['merge_key']).to eq(['value_darwin'])
+    end
+
+    it 'recomputes the merged data when environment data is set' do
+      component.facts = { 'kernel' => 'Linux' }
+      expect(component.to_h['merge_key']).to eq(['value_linux'])
+      component.environment_data = { 'other-module' => '1.0.0' }
+      expect(component.to_h).to eq({})
+    end
+  end
+
+  describe 'changing enforcement tolerance after data has been computed' do
+    subject(:check) do
+      c = ComplianceEngine::Check.new('tolerance_key')
+      c.add('file_risky', { 'type' => 'puppet-class-parameter', 'remediation' => { 'risk' => [{ 'level' => 40 }] } })
+      c
+    end
+
+    it 'recomputes the merged data when the enforcement tolerance is set' do
+      check.enforcement_tolerance = 60
+      expect(check.type).to eq('puppet-class-parameter')
+      check.enforcement_tolerance = 30
+      expect(check.type).to be_nil
+    end
+  end
+
   describe 'clone/dup isolation' do
     let(:source) do
       c = described_class.new('test_key')
