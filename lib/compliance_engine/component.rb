@@ -154,18 +154,32 @@ class ComplianceEngine::Component
 
   # Check whether an object and everything nested within it is frozen
   #
+  # Only Hashes, Arrays, and immutable scalars are recognized.  Any other
+  # object (a Set or a Struct, for example) may hold mutable state even when
+  # it is frozen itself, so it is never considered deeply frozen.
+  #
   # @param obj [Object] The object to check
+  # @param seen [Hash] The containers already visited, compared by identity,
+  #   so that data referring back to itself does not recurse forever
   # @return [TrueClass, FalseClass] true if no part of the object can be mutated
-  def deep_frozen?(obj)
+  def deep_frozen?(obj, seen = {}.compare_by_identity)
     return false unless obj.frozen?
 
     case obj
-    when Hash
-      obj.all? { |k, v| deep_frozen?(k) && deep_frozen?(v) }
-    when Array
-      obj.all? { |v| deep_frozen?(v) }
-    else
+    when String, Symbol, Numeric, NilClass, TrueClass, FalseClass
       true
+    when Hash
+      return true if seen.key?(obj)
+
+      seen[obj] = true
+      obj.all? { |k, v| deep_frozen?(k, seen) && deep_frozen?(v, seen) }
+    when Array
+      return true if seen.key?(obj)
+
+      seen[obj] = true
+      obj.all? { |v| deep_frozen?(v, seen) }
+    else
+      false
     end
   end
 

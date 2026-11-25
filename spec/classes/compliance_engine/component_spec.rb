@@ -205,6 +205,44 @@ RSpec.describe ComplianceEngine::Component do
         expect(src.to_a.first['x']['y']).to eq(1)
       end
 
+      it 'does not allow a shared fragment to be mutated through a copy' do
+        src = described_class.new('frozen_key')
+        src.add('file_frozen', { 'x' => { 'y' => ['z'].freeze }.freeze }.freeze)
+        copy = src.public_send(copy_method)
+        expect { copy.to_a.first['x']['y'] << 'new' }.to raise_error(FrozenError)
+        expect { copy.to_a.first['new'] = 1 }.to raise_error(FrozenError)
+      end
+
+      it 'deep-copies a frozen fragment holding a frozen Set with a mutable member' do
+        require 'set'
+        src = described_class.new('set_key')
+        src.add('file_set', { 'x' => Set[['a']].freeze }.freeze)
+        copy = src.public_send(copy_method)
+        copy.to_a.first['x'].first << 'b'
+        expect(src.to_a.first['x'].first).to eq(['a'])
+      end
+
+      it 'deep-copies a frozen fragment holding a frozen Struct with a mutable member' do
+        src = described_class.new('struct_key')
+        stub_const('FragmentStruct', Struct.new(:list))
+        src.add('file_struct', { 'x' => FragmentStruct.new(['a']).freeze }.freeze)
+        copy = src.public_send(copy_method)
+        copy.to_a.first['x'].list << 'b'
+        expect(src.to_a.first['x'].list).to eq(['a'])
+      end
+
+      it 'shares a deeply-frozen fragment that refers back to itself' do
+        inner = []
+        fragment = { 'x' => inner }
+        inner << fragment
+        inner.freeze
+        fragment.freeze
+        src = described_class.new('cyclic_key')
+        src.add('file_cyclic', fragment)
+        copy = src.public_send(copy_method)
+        expect(copy.to_a.first).to be(fragment)
+      end
+
       it 'mutating a nested value in a copy fragment does not affect the source' do
         # initialize_copy must deep-copy each fragment payload so that nested
         # mutable structures in the copy are independent from those in the source.
