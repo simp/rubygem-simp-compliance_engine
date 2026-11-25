@@ -169,9 +169,13 @@ RSpec.describe ComplianceEngine::Ces do
 
       # --- facts isolation ---
 
+      it 'does not allow its context to be set directly' do
+        expect(copy1).not_to respond_to(:facts=, :enforcement_tolerance=, :environment_data=)
+      end
+
       it 'copies have independent facts' do
-        copy1.facts = rhel_data.facts
-        copy2.facts = debian_data.facts
+        copy1.invalidate_cache(rhel_data)
+        copy2.invalidate_cache(debian_data)
         expect(copy1.facts).to eq(rhel_data.facts)
         expect(copy2.facts).to eq(debian_data.facts)
       end

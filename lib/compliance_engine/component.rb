@@ -14,7 +14,8 @@ class ComplianceEngine::Component
     @component ||= { key: name, fragments: {} }
   end
 
-  attr_accessor :component, :facts, :enforcement_tolerance, :environment_data
+  attr_accessor :component
+  attr_reader :facts, :enforcement_tolerance, :environment_data
 
   # Invalidate the cache of computed data
   #

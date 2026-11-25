@@ -1,5 +1,6 @@
 ### Unreleased
 * Reduce memory use in `ComplianceEngine::Data#check_mapping` by dropping a redundant internal cache that held one entry per check for every profile or CE mapped
+* **BREAKING**: Remove the `facts=`, `enforcement_tolerance=`, and `environment_data=` setters from `ComplianceEngine::Component` and `ComplianceEngine::Collection` (and their subclasses). They did not discard data already computed with the previous value, and a collection did not pass the value on to its components. Set these on the `ComplianceEngine::Data` object instead, which updates every collection and component built from it. The readers are unchanged.
 
 ### 1.2.0 / 2026-10-17
 * Allow OpenVox 9 (and Puppet 9) in the Puppet module's `metadata.json`
