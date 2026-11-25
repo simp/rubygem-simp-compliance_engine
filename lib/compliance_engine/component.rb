@@ -40,11 +40,18 @@ class ComplianceEngine::Component
   # an independent fragment store.  Cache variables are cleared so each
   # copy rebuilds them lazily from its own fragments on first access.
   #
+  # A fragment that is deeply frozen (as everything loaded through a
+  # ComplianceEngine::DataLoader is) cannot be mutated through either
+  # object, so the copy references it instead of deep-copying it.  Any
+  # other fragment is deep-copied so nested values stay independent.
+  #
   # @return [NilClass]
   def initialize_copy(_source)
     super
     @component = @component.dup
-    @component[:fragments] = @component[:fragments].transform_values { |fragment| Marshal.load(Marshal.dump(fragment)) }
+    @component[:fragments] = @component[:fragments].transform_values do |fragment|
+      deep_frozen?(fragment) ? fragment : Marshal.load(Marshal.dump(fragment))
+    end
     cache_variables.each { |var| instance_variable_set(var, nil) }
     nil
   end
@@ -143,6 +150,43 @@ class ComplianceEngine::Component
   # @return [Array<Symbol>]
   def cache_variables
     instance_variables - (context_variables + [:@component])
+  end
+
+  # Check whether an object and everything nested within it is frozen
+  #
+  # Only plain Hashes, Arrays, and Strings and immutable scalars are
+  # recognized.  Any other object (a Set, a Struct, or a subclass of Hash,
+  # Array, or String, for example) may hold mutable state even when it is
+  # frozen itself, so it is never considered deeply frozen.  Neither is a
+  # Hash with a default value or default proc, which a copy would share.
+  #
+  # @param obj [Object] The object to check
+  # @param seen [Hash] The containers already visited, compared by identity,
+  #   so that data referring back to itself does not recurse forever
+  # @return [TrueClass, FalseClass] true if no part of the object can be mutated
+  def deep_frozen?(obj, seen = {}.compare_by_identity)
+    return false unless obj.frozen?
+
+    case obj
+    when Symbol, Numeric, NilClass, TrueClass, FalseClass
+      true
+    when String
+      obj.instance_of?(String)
+    when Hash
+      return false unless obj.instance_of?(Hash) && obj.default.nil? && obj.default_proc.nil?
+      return true if seen.key?(obj)
+
+      seen[obj] = true
+      obj.all? { |k, v| deep_frozen?(k, seen) && deep_frozen?(v, seen) }
+    when Array
+      return false unless obj.instance_of?(Array)
+      return true if seen.key?(obj)
+
+      seen[obj] = true
+      obj.all? { |v| deep_frozen?(v, seen) }
+    else
+      false
+    end
   end
 
   # Compare a fact value against a confine value
