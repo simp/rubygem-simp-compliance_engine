@@ -20,10 +20,13 @@ class ComplianceEngine::DataLoader
 
   # Set the data for the data loader
   #
-  # The hash and all nested hashes, arrays, and strings within it are
-  # deep-frozen so that parsed compliance data is treated as read-only
-  # once loaded.  Callers must not retain a mutable reference to the
-  # hash after calling this method.
+  # The hash and all nested hashes and arrays within it are deep-frozen so
+  # that parsed compliance data is treated as read-only once loaded.  String
+  # values are replaced with frozen, deduplicated copies, so a String object
+  # the caller still holds is not itself frozen and is no longer part of the
+  # data.  A hash or array that is already frozen is replaced with a frozen
+  # copy.  Callers must not retain a mutable reference to the hash after
+  # calling this method.
   #
   # @param value [Hash] The new value for the data loader
   # @raise [ComplianceEngine::Error] If the value is not a Hash
@@ -62,24 +65,21 @@ class ComplianceEngine::DataLoader
   # Hash key.  Interning them keeps a single copy of each distinct string.
   #
   # @param obj [Object] the object to freeze
-  # @return [Object] the frozen object; a String may be returned as a
-  #   different (interned) object, everything else is frozen in-place
+  # @return [Object] the frozen object; a String or an already-frozen Hash or
+  #   Array is returned as a different object, everything else is frozen
+  #   in-place
   def deep_freeze(obj)
     case obj
     when Hash
-      if obj.frozen?
-        # A frozen container cannot have its values replaced, so its strings
-        # are frozen where they are instead of being interned.
-        obj.each_value { |v| v.is_a?(String) ? v.freeze : deep_freeze(v) }
-      else
-        obj.transform_values! { |v| deep_freeze(v) }
-      end
+      # A frozen container cannot have its values replaced with interned
+      # strings, so it is replaced with a frozen copy instead.
+      return obj.transform_values { |v| deep_freeze(v) }.freeze if obj.frozen?
+
+      obj.transform_values! { |v| deep_freeze(v) }
     when Array
-      if obj.frozen?
-        obj.each { |v| v.is_a?(String) ? v.freeze : deep_freeze(v) }
-      else
-        obj.map! { |v| deep_freeze(v) }
-      end
+      return obj.map { |v| deep_freeze(v) }.freeze if obj.frozen?
+
+      obj.map! { |v| deep_freeze(v) }
     when String
       return -obj
     end

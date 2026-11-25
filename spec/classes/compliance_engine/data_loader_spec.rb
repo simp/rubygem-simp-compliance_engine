@@ -135,11 +135,30 @@ RSpec.describe ComplianceEngine::DataLoader do
       expect(checks['check_a']['type']).to be(checks['check_b']['type'])
     end
 
-    it 'accepts data that is already frozen' do
-      frozen = { 'ce' => { 'some_ce' => { 'oval-ids' => ['oval:example:def:1'.dup].freeze }.freeze }.freeze }.freeze
-      loader.data = frozen
-      expect(loader.data).to eq(frozen)
-      expect(loader.data['ce']['some_ce']['oval-ids'].first).to be_frozen
+    it 'interns string values inside containers that are already frozen' do
+      loader.data = {
+        'ce' => {
+          'ce_a' => { 'title' => 'Shared title'.dup, 'oval-ids' => ['oval:example:def:1'.dup].freeze }.freeze,
+          'ce_b' => { 'title' => 'Shared title'.dup, 'oval-ids' => ['oval:example:def:1'.dup].freeze }.freeze,
+        }.freeze,
+      }.freeze
+      ces = loader.data['ce']
+      expect(ces['ce_a']['title']).to be(ces['ce_b']['title'])
+      expect(ces['ce_a']['oval-ids'].first).to be(ces['ce_b']['oval-ids'].first)
+      expect(ces['ce_a']['oval-ids']).to be_frozen
+    end
+
+    it 'interns string values in unfrozen data nested inside a frozen container' do
+      loader.data = {
+        'ce' => {
+          'ce_a' => { 'controls' => ['shared_control'.dup] },
+          'ce_b' => { 'controls' => ['shared_control'.dup] },
+        },
+      }.freeze
+      ces = loader.data['ce']
+      expect(ces['ce_a']['controls'].first).to be(ces['ce_b']['controls'].first)
+      expect(ces['ce_a']).to be_frozen
+      expect(ces['ce_a']['controls']).to be_frozen
     end
 
     it 'prevents top-level mutation' do
