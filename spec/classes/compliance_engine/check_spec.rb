@@ -49,7 +49,7 @@ RSpec.describe ComplianceEngine::Check do
       end
 
       it 'includes expected values' do
-        check.facts = { 'kernel' => 'Linux' }
+        check.invalidate_cache(ComplianceEngine::Data.new(facts: { 'kernel' => 'Linux' }))
         expect(check.to_h).to be_a(Hash)
         expect(check.to_h['merge_key']).to include('value0')
         expect(check.to_h['merge_key']).to include('value1')
@@ -57,7 +57,7 @@ RSpec.describe ComplianceEngine::Check do
       end
 
       it 'excludes expected values' do
-        check.facts = { 'kernel' => 'Darwin' }
+        check.invalidate_cache(ComplianceEngine::Data.new(facts: { 'kernel' => 'Darwin' }))
         expect(check.to_h).to be_a(Hash)
         expect(check.to_h['merge_key']).to include('value0')
         expect(check.to_h['merge_key']).not_to include('value1')
@@ -71,7 +71,7 @@ RSpec.describe ComplianceEngine::Check do
       end
 
       it 'excludes values based on module name' do
-        check.environment_data = { 'unknown_author-other_module' => '1.0.0' }
+        check.invalidate_cache(ComplianceEngine::Data.new.tap { |data| data.environment_data = { 'unknown_author-other_module' => '1.0.0' } })
         expect(check.to_h).to be_a(Hash)
         expect(check.to_h['merge_key']).to include('value0')
         expect(check.to_h['merge_key']).not_to include('value3')
@@ -79,7 +79,7 @@ RSpec.describe ComplianceEngine::Check do
       end
 
       it 'includes a value based on module name' do
-        check.environment_data = { 'author-module' => '0.1.0' }
+        check.invalidate_cache(ComplianceEngine::Data.new.tap { |data| data.environment_data = { 'author-module' => '0.1.0' } })
         expect(check.to_h).to be_a(Hash)
         expect(check.to_h['merge_key']).to include('value0')
         expect(check.to_h['merge_key']).to include('value3')
@@ -87,7 +87,7 @@ RSpec.describe ComplianceEngine::Check do
       end
 
       it 'includes a value based on module name and version' do
-        check.environment_data = { 'author-module' => '1.1.0' }
+        check.invalidate_cache(ComplianceEngine::Data.new.tap { |data| data.environment_data = { 'author-module' => '1.1.0' } })
         expect(check.to_h).to be_a(Hash)
         expect(check.to_h['merge_key']).to include('value0')
         expect(check.to_h['merge_key']).to include('value3')
@@ -101,19 +101,19 @@ RSpec.describe ComplianceEngine::Check do
       end
 
       it 'excludes disabled values' do
-        check.enforcement_tolerance = 30
+        check.invalidate_cache(ComplianceEngine::Data.new(enforcement_tolerance: 30))
         expect(check.to_h).to be_a(Hash)
         expect(check.to_h['merge_key']).not_to include('value5')
       end
 
       it 'include values with lower risk' do
-        check.enforcement_tolerance = 30
+        check.invalidate_cache(ComplianceEngine::Data.new(enforcement_tolerance: 30))
         expect(check.to_h).to be_a(Hash)
         expect(check.to_h['merge_key']).to include('value6')
       end
 
       it 'excludes values with higher risk' do
-        check.enforcement_tolerance = 30
+        check.invalidate_cache(ComplianceEngine::Data.new(enforcement_tolerance: 30))
         expect(check.to_h).to be_a(Hash)
         expect(check.to_h['merge_key']).not_to include('value7')
       end

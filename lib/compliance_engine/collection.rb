@@ -40,7 +40,8 @@ class ComplianceEngine::Collection
     end
   end
 
-  attr_accessor :collection, :facts, :enforcement_tolerance, :environment_data
+  attr_accessor :collection
+  attr_reader :facts, :enforcement_tolerance, :environment_data
 
   # Invalidate the cache of computed data
   #

@@ -11,6 +11,10 @@ RSpec.describe ComplianceEngine::Component do
     expect(component).to be_instance_of(described_class)
   end
 
+  it 'does not allow its context to be set directly' do
+    expect(component).not_to respond_to(:facts=, :enforcement_tolerance=, :environment_data=)
+  end
+
   context 'with data' do
     let(:test_data) do
       {
@@ -46,7 +50,7 @@ RSpec.describe ComplianceEngine::Component do
       end
 
       it 'includes expected values' do
-        component.facts = { 'kernel' => 'Linux' }
+        component.invalidate_cache(ComplianceEngine::Data.new(facts: { 'kernel' => 'Linux' }))
         expect(component.to_h).to be_a(Hash)
         expect(component.to_h['merge_key']).to include('value0')
         expect(component.to_h['merge_key']).to include('value1')
@@ -54,7 +58,7 @@ RSpec.describe ComplianceEngine::Component do
       end
 
       it 'excludes expected values' do
-        component.facts = { 'kernel' => 'Darwin' }
+        component.invalidate_cache(ComplianceEngine::Data.new(facts: { 'kernel' => 'Darwin' }))
         expect(component.to_h).to be_a(Hash)
         expect(component.to_h['merge_key']).to include('value0')
         expect(component.to_h['merge_key']).not_to include('value1')
@@ -68,7 +72,7 @@ RSpec.describe ComplianceEngine::Component do
       end
 
       it 'excludes values based on module name' do
-        component.environment_data = { 'unknown_author-other_module' => '1.0.0' }
+        component.invalidate_cache(ComplianceEngine::Data.new.tap { |data| data.environment_data = { 'unknown_author-other_module' => '1.0.0' } })
         expect(component.to_h).to be_a(Hash)
         expect(component.to_h['merge_key']).to include('value0')
         expect(component.to_h['merge_key']).not_to include('value3')
@@ -76,7 +80,7 @@ RSpec.describe ComplianceEngine::Component do
       end
 
       it 'includes a value based on module name' do
-        component.environment_data = { 'author-module' => '0.1.0' }
+        component.invalidate_cache(ComplianceEngine::Data.new.tap { |data| data.environment_data = { 'author-module' => '0.1.0' } })
         expect(component.to_h).to be_a(Hash)
         expect(component.to_h['merge_key']).to include('value0')
         expect(component.to_h['merge_key']).to include('value3')
@@ -84,7 +88,7 @@ RSpec.describe ComplianceEngine::Component do
       end
 
       it 'includes a value based on module name and version' do
-        component.environment_data = { 'author-module' => '1.1.0' }
+        component.invalidate_cache(ComplianceEngine::Data.new.tap { |data| data.environment_data = { 'author-module' => '1.1.0' } })
         expect(component.to_h).to be_a(Hash)
         expect(component.to_h['merge_key']).to include('value0')
         expect(component.to_h['merge_key']).to include('value3')
@@ -154,8 +158,8 @@ RSpec.describe ComplianceEngine::Component do
       # --- facts isolation ---
 
       it 'copies have independent facts' do
-        copy1.facts = { 'kernel' => 'Linux' }
-        copy2.facts = { 'kernel' => 'Darwin' }
+        copy1.invalidate_cache(ComplianceEngine::Data.new(facts: { 'kernel' => 'Linux' }))
+        copy2.invalidate_cache(ComplianceEngine::Data.new(facts: { 'kernel' => 'Darwin' }))
         expect(copy1.facts).to eq({ 'kernel' => 'Linux' })
         expect(copy2.facts).to eq({ 'kernel' => 'Darwin' })
       end
@@ -164,8 +168,8 @@ RSpec.describe ComplianceEngine::Component do
         # initialize_copy clears the pre-computed @element cache so each copy
         # rebuilds it from its own fragments using its own facts, rather than
         # returning a stale cached element computed with the source's facts.
-        copy1.facts = { 'kernel' => 'Linux' }
-        copy2.facts = { 'kernel' => 'Darwin' }
+        copy1.invalidate_cache(ComplianceEngine::Data.new(facts: { 'kernel' => 'Linux' }))
+        copy2.invalidate_cache(ComplianceEngine::Data.new(facts: { 'kernel' => 'Darwin' }))
         expect(copy1.to_h['merge_key']).to include('value_linux', 'value_any')
         expect(copy1.to_h['merge_key']).not_to include('value_darwin')
         expect(copy2.to_h['merge_key']).to include('value_darwin', 'value_any')
@@ -207,7 +211,7 @@ RSpec.describe ComplianceEngine::Component do
         src.add('file_linux', { 'merge_key' => ['value_linux'], 'confine' => { 'kernel' => ['Linux'] } })
         src.add('file_darwin', { 'merge_key' => ['value_darwin'], 'confine' => { 'kernel' => ['Darwin'] } })
         src.add('file_any', { 'merge_key' => ['value_any'] })
-        src.facts = { 'kernel' => 'Linux' }
+        src.invalidate_cache(ComplianceEngine::Data.new(facts: { 'kernel' => 'Linux' }))
         src.to_h # pre-compute with Linux facts
 
         copy = src.public_send(copy_method)
