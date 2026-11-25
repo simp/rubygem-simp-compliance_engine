@@ -1,3 +1,6 @@
+### Unreleased
+* Reduce memory use in `ComplianceEngine::Data#check_mapping` by dropping a redundant internal cache that held one entry per check for every profile or CE mapped
+
 ### 1.2.0 / 2026-10-17
 * Allow OpenVox 9 (and Puppet 9) in the Puppet module's `metadata.json`
 * Test with OpenVox 9: spec tests on Ruby 4.0 and JRuby 10.0, and acceptance tests against the `openvox9` collection alongside `openvox8`
